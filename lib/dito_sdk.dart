@@ -1,4 +1,4 @@
-library sdk_mobile_flutter;
+library dito_sdk;
 
 import 'dart:io';
 import 'dart:convert';
