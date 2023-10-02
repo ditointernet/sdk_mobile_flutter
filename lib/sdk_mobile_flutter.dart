@@ -32,7 +32,7 @@ class DitoSDK {
     _secretKey = secretKey;
   }
 
-  String convertToSHA1(String input) {
+  String _convertToSHA1(String input) {
     final bytes = utf8.encode(input);
     final digest = sha1.convert(bytes);
 
@@ -115,7 +115,7 @@ class DitoSDK {
   Future<void> registerUser() async {
     _checkConfiguration();
 
-    final signature = convertToSHA1(_secretKey!);
+    final signature = _convertToSHA1(_secretKey!);
 
     final params = {
       'platform_api_key': _apiKey,
@@ -159,7 +159,7 @@ class DitoSDK {
       Map<String, String>? customData}) async {
     _checkConfiguration();
 
-    final signature = convertToSHA1(_secretKey!);
+    final signature = _convertToSHA1(_secretKey!);
 
     final params = {
       'id_type': 'id',

@@ -1,3 +1,27 @@
-## 0.0.1
+## 0.1.0 (2023-10-02)
 
-* TODO: Describe initial release.
+### Novos Recursos
+
+- Adicionados os seguintes métodos:
+  - `initialize`: Método para inicializar a biblioteca.
+  - `identify`: Permite guardar dados do usuário.
+  - `registerUser`: Possibilita o registro do usuário.
+  - `trackEvent`: Permite o registro de evento.
+  - `setUserId`: Permite definir o ID do usuário.
+  - `setUserAgent`: Permite definir o User-Agent.
+
+### Mudanças
+
+- Nenhuma mudança significativa nessa versão.
+
+### Correções de Bugs
+
+- Nenhuma correção de bugs nessa versão.
+
+### Outras Alterações
+
+- Nenhuma outra alteração nessa versão.
+
+### Notas Adicionais
+
+- Esta é a primeira versão do nosso package Flutter.
