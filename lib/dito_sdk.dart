@@ -66,8 +66,6 @@ class DitoSDK {
     if (customData != null) {
       _customData = customData;
     }
-
-    print("Identify registered!");
   }
 
   void setUserId(String userId) {
@@ -96,7 +94,6 @@ class DitoSDK {
       model = android.model;
     }
 
-    print('User-Agent $appName/$version ($system; $model)');
     return '$appName/$version ($system; $model)';
   }
 
@@ -135,21 +132,17 @@ class DitoSDK {
 
     final defaultUserAgent = await _getUserAgent();
 
-    final response = await http.post(
-      url,
-      body: params,
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'User-Agent': _userAgent ?? defaultUserAgent,
-      },
-    );
-
-    if (response.statusCode == 201) {
-      // Requisição bem sucedida
-      print("Requisição bem-sucedida: ${response.body}");
-    } else {
-      // Requisição com erro
-      print("Erro na requisição: ${response.statusCode}");
+    try {
+      await http.post(
+        url,
+        body: params,
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'User-Agent': _userAgent ?? defaultUserAgent,
+        },
+      );
+    } catch (e) {
+      throw Exception('Requisition failed: $e');
     }
   }
 
@@ -176,21 +169,17 @@ class DitoSDK {
 
     final defaultUserAgent = await _getUserAgent();
 
-    final response = await http.post(
-      url,
-      body: params,
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'User-Agent': _userAgent ?? defaultUserAgent,
-      },
-    );
-
-    if (response.statusCode == 201) {
-      // Requisição bem sucedida
-      print("Requisição bem-sucedida: ${response.body}");
-    } else {
-      // Requisição com erro
-      print("Erro na requisição: ${response.statusCode}");
+    try {
+      await http.post(
+        url,
+        body: params,
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'User-Agent': _userAgent ?? defaultUserAgent,
+        },
+      );
+    } catch (e) {
+      throw Exception('Requisition failed: $e');
     }
   }
 }

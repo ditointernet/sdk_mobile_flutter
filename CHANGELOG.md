@@ -1,3 +1,22 @@
+## 0.1.1 (2023-10-02)
+
+### Novos Recursos
+
+- Nenhuma novo recurso nessa versão.
+
+### Mudanças
+
+- Removido `print` dos métodos.
+- Feito a tratativa de exceções nos métodos que contem requisição.
+
+### Correções de Bugs
+
+- Nenhuma correção de bugs nessa versão.
+
+### Notas Adicionais
+
+- Nenhuma nota adicional nessa versão.
+
 ## 0.1.0 (2023-10-02)
 
 ### Novos Recursos
