@@ -1,8 +1,27 @@
+## 0.2.0 (2023-10-10)
+
+### Novos Recursos
+
+- Nenhum novo recurso nessa versão.
+
+### Mudanças
+
+- Renomeado o método `registerUser()` para `identifyUser()`.
+- Feito melhorias na documentação.
+
+### Correções de Bugs
+
+- Nenhuma correção de bugs nessa versão.
+
+### Notas Adicionais
+
+- Nenhuma nota adicional nessa versão.
+
 ## 0.1.1 (2023-10-02)
 
 ### Novos Recursos
 
-- Nenhuma novo recurso nessa versão.
+- Nenhum novo recurso nessa versão.
 
 ### Mudanças
 
