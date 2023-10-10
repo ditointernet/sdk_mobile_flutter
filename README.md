@@ -59,11 +59,11 @@ void setUserAgent(String userAgent);
 #### Parâmetros
 - **userAgent** _(String)_: O User-Agent personalizado.
 
-### registerUser()
+### identifyUser()
 Este método registra o usuário na plataforma da Dito com as informações fornecidas anteriormente usando o método identify.
 
 ```dart
-Future<void> registerUser() async;
+Future<void> identifyUser() async;
 ```
 
 ### trackEvent()
@@ -82,25 +82,124 @@ Future<void> trackEvent({
  - **revenue** _(double, opcional)_: A receita associada ao evento.
  - **customData** _(Map<String, String>, opcional)_: Dados personalizados adicionais associados ao evento.
 
-## Exemplo
-Aqui está um exemplo de uso básico da SDK:
+## Exemplos
+### Uso básico da SDK:
 
 ```dart
+import 'package:dito_sdk/dito_sdk.dart';
+
 final dito = DitoSDK();
 
+// Inicializa a SDK com suas chaves de API
 dito.initialize(apiKey: 'sua_api_key', secretKey: 'sua_secret_key');
 
+// Define o ID do usuário
 dito.setUserId('id_do_usuario');
 
+// Define ou atualiza informações do usuário na instância (neste momento, ainda não há comunicação com a Dito)
 dito.identify(
   name: 'João da Silva',
   email: 'joao@example.com',
   location: 'São Paulo',
 );
 
-await dito.registerUser();
+// Envia as informações do usuário (que foram definidas ou atualizadas pelo identify) para a Dito
+await dito.identifyUser();
 
+// Registra um evento na Dito
 await dito.trackEvent(eventName: 'login');
 ```
 
-> Certifique-se de substituir 'sua_api_key', 'sua_secret_key' e 'id_do_usuario' pelos valores apropriados em seu ambiente.
+### Uso avançado da SDK:
+
+#### main.dart
+```dart
+import 'package:dito_sdk/dito_sdk.dart';
+
+final dito = DitoSDK();
+
+// Inicializa a SDK com suas chaves de API
+dito.initialize(apiKey: 'sua_api_key', secretKey: 'sua_secret_key');
+
+// Define um User-Agent personalizado (opcional)
+dito.setUserAgent('Mozilla/5.0 (iPhone 14; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Mobile/15E999 DitoApp/1.0')
+```
+
+#### login.dart
+```dart
+import 'package:dito_sdk/dito_sdk.dart';
+
+final dito = DitoSDK();
+
+// Define o ID do usuário
+dito.setUserId('id_do_usuario');
+```
+
+#### arquivoX.dart
+```dart
+import 'package:dito_sdk/dito_sdk.dart';
+
+final dito = DitoSDK();
+
+// Define ou atualiza informações do usuário na instância (neste momento, ainda não há comunicação com a Dito)
+dito.identify(
+  name: 'João da Silva',
+  email: 'joao@example.com',
+  location: 'São Paulo',
+);
+```
+
+#### arquivoY.dart
+```dart
+import 'package:dito_sdk/dito_sdk.dart';
+
+final dito = DitoSDK();
+
+// Define ou atualiza informações do usuário na instância (neste momento, ainda não há comunicação com a Dito)
+dito.identify(
+  location: 'Rio de Janeiro',
+  customData: {
+    'loja preferida': 'LojaX',
+    'canal preferido': 'Loja Física'
+  }
+);
+
+// Envia as informações do usuário (que foram definidas ou atualizadas pelo identify) para a Dito
+await dito.identifyUser();
+```
+
+Isso resultará no envio do seguinte payload do usuário ao chamar `identifyUser()`:
+
+```javascript
+{
+  name: 'João da Silva',
+  email: 'joao@example.com',
+  location: 'Rio de Janeiro',
+  customData: {
+    'loja preferida': 'LojaX',
+    'canal preferido': 'Loja Física'
+  }
+}
+```
+
+A nossa SDK é uma instância única, o que significa que, mesmo que ela seja inicializada em vários arquivos ou mais de uma vez, ela sempre referenciará as mesmas informações previamente armazenadas. Isso nos proporciona a flexibilidade de chamar o método `identify()` a qualquer momento para adicionar ou atualizar os detalhes do usuário, e somente quando necessário, enviá-los através do método `identifyUser()`.
+
+#### arquivoZ.dart
+```dart
+import 'package:dito_sdk/dito_sdk.dart';
+
+final dito = DitoSDK();
+
+// Registra um evento na Dito
+dito.trackEvent(
+  eventName: 'comprou produto',
+  revenue: 99.90,
+  customData: {
+    'produto': 'produtoX',
+    'sku_produto': '99999999',
+    'metodo_pagamento': 'Visa',
+  },
+);
+```
+
+> Lembre-se de substituir 'sua_api_key', 'sua_secret_key' e 'id_do_usuario' pelos valores corretos em seu ambiente.

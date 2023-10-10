@@ -109,7 +109,7 @@ class DitoSDK {
     }
   }
 
-  Future<void> registerUser() async {
+  Future<void> identifyUser() async {
     _checkConfiguration();
 
     final signature = _convertToSHA1(_secretKey!);
