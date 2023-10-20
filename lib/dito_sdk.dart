@@ -2,10 +2,20 @@ library dito_sdk;
 
 import 'dart:io';
 import 'dart:convert';
+import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import 'package:crypto/crypto.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+
+class Event {
+  String eventName;
+  String eventMoment;
+  double? revenue;
+  Map<String, String>? customData;
+
+  Event(this.eventName, this.eventMoment, {this.revenue, this.customData});
+}
 
 class DitoSDK {
   String? _userAgent;
@@ -18,6 +28,7 @@ class DitoSDK {
   String? _birthday;
   String? _location;
   Map<String, String>? _customData;
+  final List<Event> _untrackedEvents = [];
 
   static final DitoSDK _instance = DitoSDK._internal();
 
@@ -27,7 +38,7 @@ class DitoSDK {
 
   DitoSDK._internal();
 
-  void initialize({required String apiKey, required String secretKey}) async {
+  void initialize({required String apiKey, required String secretKey}) {
     _apiKey = apiKey;
     _secretKey = secretKey;
   }
@@ -70,6 +81,17 @@ class DitoSDK {
 
   void setUserId(String userId) {
     _userID = userId;
+
+    if (_untrackedEvents.isNotEmpty) {
+      for (var event in _untrackedEvents) {
+        trackEvent(
+            eventName: event.eventName,
+            eventMoment: event.eventMoment,
+            revenue: event.revenue,
+            customData: event.customData);
+      }
+      _untrackedEvents.clear();
+    }
   }
 
   void setUserAgent(String userAgent) {
@@ -102,15 +124,15 @@ class DitoSDK {
       throw Exception(
           'API key and Secret Key must be initialized before using. Please call the initialize() method first.');
     }
+  }
+
+  Future<void> identifyUser() async {
+    _checkConfiguration();
 
     if (_userID == null) {
       throw Exception(
           'User registration is required. Please call the setUserId() method first.');
     }
-  }
-
-  Future<void> identifyUser() async {
-    _checkConfiguration();
 
     final signature = _convertToSHA1(_secretKey!);
 
@@ -146,11 +168,26 @@ class DitoSDK {
     }
   }
 
-  Future<void> trackEvent(
-      {required String eventName,
-      double? revenue,
-      Map<String, String>? customData}) async {
+  Future<void> trackEvent({
+    required String eventName,
+    double? revenue,
+    Map<String, String>? customData,
+    String? eventMoment,
+  }) async {
     _checkConfiguration();
+
+    final now = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
+
+    if (_userID == null) {
+      final untrackedEvent = Event(
+        eventName,
+        now,
+        revenue: revenue,
+        customData: customData,
+      );
+      _untrackedEvents.add(untrackedEvent);
+      return;
+    }
 
     final signature = _convertToSHA1(_secretKey!);
 
@@ -160,9 +197,15 @@ class DitoSDK {
       'sha1_signature': signature,
       'encoding': 'base64',
       'network_name': 'pt',
-      'event': jsonEncode(
-          {'action': eventName, 'revenue': revenue, 'data': customData})
+      'event': jsonEncode({
+        'action': eventName,
+        'revenue': revenue,
+        'data': customData,
+        'created_at': eventMoment ?? now
+      })
     };
+
+    print(params);
 
     final url =
         Uri.parse("http://events.plataformasocial.com.br/users/$_userID");
