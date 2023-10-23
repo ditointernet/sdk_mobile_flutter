@@ -3,101 +3,12 @@ library dito_sdk;
 import 'dart:io';
 import 'dart:convert';
 import 'package:intl/intl.dart';
-import 'package:http/http.dart' as http;
 import 'package:crypto/crypto.dart';
-import 'package:sqflite/sqflite.dart';
-import 'package:path/path.dart';
+import 'package:dito_sdk/event.dart';
+import 'package:dito_sdk/database.dart';
+import 'package:http/http.dart' as http;
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-
-class Event {
-  final String eventName;
-  final String eventMoment;
-  final double? revenue;
-  final Map<String, dynamic>? customData;
-
-  Event(
-      {required this.eventName,
-      required this.eventMoment,
-      this.revenue,
-      this.customData});
-
-  Map<String, dynamic> toMap() {
-    return {
-      'eventName': eventName,
-      'eventMoment': eventMoment,
-      'revenue': revenue,
-      'customData': customData != null ? json.encode(customData) : null,
-    };
-  }
-
-  factory Event.fromMap(Map<String, dynamic> map) {
-    return Event(
-      eventName: map['eventName'],
-      eventMoment: map['eventMoment'],
-      revenue: map['revenue'],
-      customData: map['customData'] != null
-          ? Map<String, dynamic>.from(json.decode(map['customData']))
-          : null,
-    );
-  }
-}
-
-class DatabaseHelper {
-  static final DatabaseHelper instance = DatabaseHelper._privateConstructor();
-  static Database? _database;
-
-  DatabaseHelper._privateConstructor();
-
-  Future<Database> get database async {
-    if (_database != null) return _database!;
-
-    _database = await _initDatabase();
-    return _database!;
-  }
-
-  Future<Database> _initDatabase() async {
-    final databasePath = await getDatabasesPath();
-    final path = join(databasePath, 'ditoSDK.db');
-
-    return await openDatabase(
-      path,
-      version: 1,
-      onCreate: _createTable,
-    );
-  }
-
-  Future<void> _createTable(Database db, int version) async {
-    await db.execute('''
-      CREATE TABLE events (
-        id INTEGER PRIMARY KEY,
-        eventName TEXT,
-        eventMoment TEXT,
-        revenue REAL,
-        customData TEXT
-      )
-    ''');
-  }
-
-  Future<void> insertEvent(Event event) async {
-    final db = await database;
-    await db.insert('events', event.toMap());
-  }
-
-  Future<List<Event>> getEvents() async {
-    final db = await database;
-    final List<Map<String, dynamic>> maps = await db.query('events');
-
-    return List.generate(maps.length, (index) {
-      return Event.fromMap(maps[index]);
-    });
-  }
-
-  Future<void> deleteAllEvents() async {
-    final db = await database;
-    await db.delete('events');
-  }
-}
 
 class DitoSDK {
   String? _userAgent;
@@ -109,8 +20,7 @@ class DitoSDK {
   String? _gender;
   String? _birthday;
   String? _location;
-  Map<String, dynamic>? _customData;
-  // final List<Event> _untrackedEvents = [];
+  Map<String, String>? _customData;
 
   static final DitoSDK _instance = DitoSDK._internal();
 
@@ -161,18 +71,6 @@ class DitoSDK {
     }
   }
 
-  void printDB() async {
-    final dbHelper = DatabaseHelper.instance;
-    final events = await dbHelper.getEvents();
-
-    if (events.isNotEmpty) {
-      for (var event in events) {
-        print(
-            '${event.eventName}, ${event.eventMoment}, ${event.revenue}, ${event.customData!.values},');
-      }
-    }
-  }
-
   void setUserId(String userId) async {
     _userID = userId;
 
@@ -190,17 +88,6 @@ class DitoSDK {
       }
       await dbHelper.deleteAllEvents();
     }
-
-    // if (_untrackedEvents.isNotEmpty) {
-    //   for (var event in _untrackedEvents) {
-    //     trackEvent(
-    //         eventName: event.eventName,
-    //         eventMoment: event.eventMoment,
-    //         revenue: event.revenue,
-    //         customData: event.customData);
-    //   }
-    //   _untrackedEvents.clear();
-    // }
   }
 
   void setUserAgent(String userAgent) {
@@ -272,31 +159,32 @@ class DitoSDK {
           'User-Agent': _userAgent ?? defaultUserAgent,
         },
       );
-    } catch (e) {
-      throw Exception('Requisition failed: $e');
+    } catch (event) {
+      throw Exception('Requisition failed: $event');
     }
   }
 
   Future<void> trackEvent({
     required String eventName,
     double? revenue,
-    Map<String, dynamic>? customData,
+    Map<String, String>? customData,
     String? eventMoment,
   }) async {
     _checkConfiguration();
 
-    final now = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
+    final now = DateTime.now();
+    final threeHoursLater = DateFormat('yyyy-MM-dd HH:mm:ss')
+        .format(now.add(const Duration(hours: 3)));
 
     if (_userID == null) {
       final dbHelper = DatabaseHelper.instance;
       final untrackedEvent = Event(
         eventName: eventName,
-        eventMoment: now,
+        eventMoment: threeHoursLater,
         revenue: revenue,
         customData: customData,
       );
       await dbHelper.insertEvent(untrackedEvent);
-      // _untrackedEvents.add(untrackedEvent);
       return;
     }
 
@@ -312,7 +200,7 @@ class DitoSDK {
         'action': eventName,
         'revenue': revenue,
         'data': customData,
-        'created_at': eventMoment ?? now
+        'created_at': eventMoment ?? threeHoursLater
       })
     };
 
@@ -330,8 +218,8 @@ class DitoSDK {
           'User-Agent': _userAgent ?? defaultUserAgent,
         },
       );
-    } catch (e) {
-      throw Exception('Requisition failed: $e');
+    } catch (event) {
+      throw Exception('Requisition failed: $event');
     }
   }
 }
