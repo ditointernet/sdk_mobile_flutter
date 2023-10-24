@@ -229,20 +229,4 @@ class DitoSDK {
       throw Exception('Requisition failed: $event');
     }
   }
-
-  void printDB() async {
-    final dbHelper = DatabaseHelper.instance;
-    final events = await dbHelper.getEvents();
-
-    if (events.isNotEmpty) {
-      for (var event in events) {
-        print("""
-          eventName: ${event.eventName},
-          eventMoment: ${event.eventMoment},
-          revenue: ${event.revenue},
-          customData: ${event.customData},
-          """);
-      }
-    }
-  }
 }
