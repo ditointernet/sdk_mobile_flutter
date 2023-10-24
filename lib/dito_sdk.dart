@@ -2,7 +2,6 @@ library dito_sdk;
 
 import 'dart:io';
 import 'dart:convert';
-import 'package:intl/intl.dart';
 import 'package:crypto/crypto.dart';
 import 'package:dito_sdk/event.dart';
 import 'package:dito_sdk/database.dart';
@@ -164,6 +163,13 @@ class DitoSDK {
     }
   }
 
+  String _twoDigits(int n) {
+    if (n >= 10) {
+      return '$n';
+    }
+    return '0$n';
+  }
+
   Future<void> trackEvent({
     required String eventName,
     double? revenue,
@@ -172,15 +178,16 @@ class DitoSDK {
   }) async {
     _checkConfiguration();
 
-    final now = DateTime.now();
-    final threeHoursLater = DateFormat('yyyy-MM-dd HH:mm:ss')
-        .format(now.add(const Duration(hours: 3)));
+    final threeHoursLater = DateTime.now().add(const Duration(hours: 3));
+
+    final formattedDateTime =
+        '${threeHoursLater.year}-${_twoDigits(threeHoursLater.month)}-${_twoDigits(threeHoursLater.day)} ${_twoDigits(threeHoursLater.hour)}:${_twoDigits(threeHoursLater.minute)}:${_twoDigits(threeHoursLater.second)}';
 
     if (_userID == null) {
       final dbHelper = DatabaseHelper.instance;
       final untrackedEvent = Event(
         eventName: eventName,
-        eventMoment: threeHoursLater,
+        eventMoment: formattedDateTime,
         revenue: revenue,
         customData: customData,
       );
@@ -200,7 +207,7 @@ class DitoSDK {
         'action': eventName,
         'revenue': revenue,
         'data': customData,
-        'created_at': eventMoment ?? threeHoursLater
+        'created_at': eventMoment ?? formattedDateTime
       })
     };
 
@@ -220,6 +227,22 @@ class DitoSDK {
       );
     } catch (event) {
       throw Exception('Requisition failed: $event');
+    }
+  }
+
+  void printDB() async {
+    final dbHelper = DatabaseHelper.instance;
+    final events = await dbHelper.getEvents();
+
+    if (events.isNotEmpty) {
+      for (var event in events) {
+        print("""
+          eventName: ${event.eventName},
+          eventMoment: ${event.eventMoment},
+          revenue: ${event.revenue},
+          customData: ${event.customData},
+          """);
+      }
     }
   }
 }
