@@ -1,4 +1,3 @@
-import 'package:path/path.dart';
 import 'package:dito_sdk/event.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -17,7 +16,7 @@ class DatabaseHelper {
 
   Future<Database> _initDatabase() async {
     final databasePath = await getDatabasesPath();
-    final path = join(databasePath, 'ditoSDK.db');
+    final String path = '$databasePath/ditoSDK.db';
 
     return await openDatabase(
       path,
