@@ -28,7 +28,7 @@ class DatabaseHelper {
   Future<void> _createTable(Database db, int version) async {
     await db.execute('''
       CREATE TABLE events (
-        id INTEGER PRIMARY KEY,
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
         eventName TEXT,
         eventMoment TEXT,
         revenue REAL,
@@ -51,8 +51,12 @@ class DatabaseHelper {
     });
   }
 
-  Future<void> deleteAllEvents() async {
+  Future<int> deleteEvent(Event event) async {
     final db = await database;
-    await db.delete('events');
+    return await db.delete(
+      'events',
+      where: 'eventName = ? AND eventMoment = ?',
+      whereArgs: [event.eventName, event.eventMoment],
+    );
   }
 }

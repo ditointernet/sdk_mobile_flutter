@@ -70,23 +70,9 @@ class DitoSDK {
     }
   }
 
-  void setUserId(String userId) async {
+  Future<void> setUserId(String userId) async {
     _userID = userId;
-
-    final dbHelper = DatabaseHelper.instance;
-    final events = await dbHelper.getEvents();
-
-    if (events.isNotEmpty) {
-      for (var event in events) {
-        trackEvent(
-          eventName: event.eventName,
-          eventMoment: event.eventMoment,
-          revenue: event.revenue,
-          customData: event.customData,
-        );
-      }
-      await dbHelper.deleteAllEvents();
-    }
+    _postDbEvents();
   }
 
   void setUserAgent(String userAgent) {
@@ -150,7 +136,7 @@ class DitoSDK {
     final defaultUserAgent = await _getUserAgent();
 
     try {
-      await http.post(
+      final response = await http.post(
         url,
         body: params,
         headers: {
@@ -158,8 +144,11 @@ class DitoSDK {
           'User-Agent': _userAgent ?? defaultUserAgent,
         },
       );
-    } catch (event) {
-      throw Exception('Requisition failed: $event');
+      if (response.statusCode >= 300) {
+        throw response.statusCode;
+      }
+    } catch (error) {
+      throw Exception('Request failed with status code: $error');
     }
   }
 
@@ -174,26 +163,69 @@ class DitoSDK {
     required String eventName,
     double? revenue,
     Map<String, String>? customData,
-    String? eventMoment,
   }) async {
-    _checkConfiguration();
-
     final threeHoursLater = DateTime.now().add(const Duration(hours: 3));
 
-    final formattedDateTime =
+    final eventMoment =
         '${threeHoursLater.year}-${_twoDigits(threeHoursLater.month)}-${_twoDigits(threeHoursLater.day)} ${_twoDigits(threeHoursLater.hour)}:${_twoDigits(threeHoursLater.minute)}:${_twoDigits(threeHoursLater.second)}';
 
     if (_userID == null) {
       final dbHelper = DatabaseHelper.instance;
       final untrackedEvent = Event(
         eventName: eventName,
-        eventMoment: formattedDateTime,
+        eventMoment: eventMoment,
         revenue: revenue,
         customData: customData,
       );
       await dbHelper.insertEvent(untrackedEvent);
       return;
     }
+
+    _postDbEvents();
+
+    try {
+      final response = await _postEvent(
+        eventName: eventName,
+        revenue: revenue,
+        customData: customData,
+        eventMoment: eventMoment,
+      );
+
+      if (response.statusCode >= 300) {
+        throw response.statusCode;
+      }
+    } catch (error) {
+      throw Exception('Request failed with status code: $error');
+    }
+  }
+
+  Future<void> _postDbEvents() async {
+    final dbHelper = DatabaseHelper.instance;
+    final events = await dbHelper.getEvents();
+
+    if (events.isNotEmpty) {
+      for (var event in events) {
+        final response = await _postEvent(
+          eventName: event.eventName,
+          eventMoment: event.eventMoment,
+          revenue: event.revenue,
+          customData: event.customData,
+        );
+
+        if (response.statusCode < 300) {
+          dbHelper.deleteEvent(event);
+        }
+      }
+    }
+  }
+
+  Future<http.Response> _postEvent({
+    required String eventName,
+    double? revenue,
+    Map<String, String>? customData,
+    String? eventMoment,
+  }) async {
+    _checkConfiguration();
 
     final signature = _convertToSHA1(_secretKey!);
 
@@ -207,7 +239,7 @@ class DitoSDK {
         'action': eventName,
         'revenue': revenue,
         'data': customData,
-        'created_at': eventMoment ?? formattedDateTime
+        'created_at': eventMoment
       })
     };
 
@@ -216,17 +248,27 @@ class DitoSDK {
 
     final defaultUserAgent = await _getUserAgent();
 
-    try {
-      await http.post(
-        url,
-        body: params,
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'User-Agent': _userAgent ?? defaultUserAgent,
-        },
-      );
-    } catch (event) {
-      throw Exception('Requisition failed: $event');
-    }
+    return await http.post(
+      url,
+      body: params,
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'User-Agent': _userAgent ?? defaultUserAgent,
+      },
+    );
+  }
+
+  void printDB() async {
+    final dbHelper = DatabaseHelper.instance;
+    final events = await dbHelper.getEvents();
+    int i = 1;
+
+    if (events.isNotEmpty) {
+      for (var event in events) {
+        print("event number $i: ${event.revenue}");
+        i += 1;
+      }
+    } else
+      print('No events in db');
   }
 }
