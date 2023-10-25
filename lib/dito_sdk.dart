@@ -161,8 +161,7 @@ class DitoSDK {
   }
 
   Future<void> trackEvent({
-    // required String eventName,
-    String? eventName,
+    required String eventName,
     double? revenue,
     Map<String, String>? customData,
   }) async {
@@ -171,27 +170,23 @@ class DitoSDK {
     final eventMoment =
         '${threeHoursLater.year}-${_twoDigits(threeHoursLater.month)}-${_twoDigits(threeHoursLater.day)} ${_twoDigits(threeHoursLater.hour)}:${_twoDigits(threeHoursLater.minute)}:${_twoDigits(threeHoursLater.second)}';
 
+    final event = Event(
+      eventName: eventName,
+      eventMoment: eventMoment,
+      revenue: revenue,
+      customData: customData,
+    );
+
     if (_userID == null) {
       final dbHelper = DatabaseHelper.instance;
-      final untrackedEvent = Event(
-        eventName: eventName,
-        eventMoment: eventMoment,
-        revenue: revenue,
-        customData: customData,
-      );
-      await dbHelper.insertEvent(untrackedEvent);
+      await dbHelper.insertEvent(event);
       return;
     }
 
     _postDbEvents();
 
     try {
-      final response = await _postEvent(
-        eventName: eventName,
-        revenue: revenue,
-        customData: customData,
-        eventMoment: eventMoment,
-      );
+      final response = await _postEvent(event);
 
       if (response.statusCode >= 300) {
         throw response.statusCode;
@@ -207,12 +202,7 @@ class DitoSDK {
 
     if (events.isNotEmpty) {
       for (var event in events) {
-        final response = await _postEvent(
-          eventName: event.eventName,
-          eventMoment: event.eventMoment,
-          revenue: event.revenue,
-          customData: event.customData,
-        );
+        final response = await _postEvent(event);
 
         if (response.statusCode < 300) {
           dbHelper.deleteEvent(event);
@@ -221,13 +211,7 @@ class DitoSDK {
     }
   }
 
-  Future<http.Response> _postEvent({
-    // required String eventName,
-    String? eventName,
-    double? revenue,
-    Map<String, String>? customData,
-    String? eventMoment,
-  }) async {
+  Future<http.Response> _postEvent(Event event) async {
     _checkConfiguration();
 
     final signature = _convertToSHA1(_secretKey!);
@@ -239,10 +223,10 @@ class DitoSDK {
       'encoding': 'base64',
       'network_name': 'pt',
       'event': jsonEncode({
-        'action': eventName,
-        'revenue': revenue,
-        'data': customData,
-        'created_at': eventMoment
+        'action': event.eventName,
+        'revenue': event.revenue,
+        'data': event.customData,
+        'created_at': event.eventMoment
       })
     };
 
@@ -259,19 +243,5 @@ class DitoSDK {
         'User-Agent': _userAgent ?? defaultUserAgent,
       },
     );
-  }
-
-  void printDB() async {
-    final dbHelper = DatabaseHelper.instance;
-    final events = await dbHelper.getEvents();
-    int i = 1;
-
-    if (events.isNotEmpty) {
-      for (var event in events) {
-        print("event number $i: ${event.revenue}");
-        i += 1;
-      }
-    } else
-      print('No events in db');
   }
 }

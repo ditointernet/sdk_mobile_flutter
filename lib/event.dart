@@ -1,15 +1,13 @@
 import 'dart:convert';
 
 class Event {
-  // final String eventName;
-  final String? eventName;
+  final String eventName;
   final String eventMoment;
   final double? revenue;
   final Map<String, String>? customData;
 
   Event({
-    // required this.eventName,
-    this.eventName,
+    required this.eventName,
     required this.eventMoment,
     this.revenue,
     this.customData,
