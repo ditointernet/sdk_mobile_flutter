@@ -202,11 +202,8 @@ class DitoSDK {
 
     if (events.isNotEmpty) {
       for (var event in events) {
-        final response = await _postEvent(event);
-
-        if (response.statusCode < 300) {
-          dbHelper.deleteEvent(event);
-        }
+        await _postEvent(event);
+        dbHelper.deleteEvent(event);
       }
     }
   }
