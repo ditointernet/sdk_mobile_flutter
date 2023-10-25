@@ -72,6 +72,7 @@ class DitoSDK {
 
   Future<void> setUserId(String userId) async {
     _userID = userId;
+
     _postDbEvents();
   }
 
@@ -160,7 +161,8 @@ class DitoSDK {
   }
 
   Future<void> trackEvent({
-    required String eventName,
+    // required String eventName,
+    String? eventName,
     double? revenue,
     Map<String, String>? customData,
   }) async {
@@ -220,7 +222,8 @@ class DitoSDK {
   }
 
   Future<http.Response> _postEvent({
-    required String eventName,
+    // required String eventName,
+    String? eventName,
     double? revenue,
     Map<String, String>? customData,
     String? eventMoment,
