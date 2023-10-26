@@ -1,3 +1,22 @@
+## 0.3.0 (2023-10-26)
+
+### Novos Recursos
+
+- Armazenamento de eventos enquanto não estiver com um userID registrado.
+- Envio dos eventos armazenados assim que registrar um userID.
+
+### Mudanças
+
+- Nenhuma mudança nessa versão.
+
+### Correções de Bugs
+
+- Nenhuma correção de bugs nessa versão.
+
+### Notas Adicionais
+
+- Nenhuma nota adicional nessa versão.
+
 ## 0.2.0 (2023-10-10)
 
 ### Novos Recursos

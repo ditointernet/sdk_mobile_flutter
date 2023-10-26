@@ -60,14 +60,14 @@ void setUserAgent(String userAgent);
 - **userAgent** _(String)_: O User-Agent personalizado.
 
 ### identifyUser()
-Este método registra o usuário na plataforma da Dito com as informações fornecidas anteriormente usando o método identify.
+Este método registra o usuário na plataforma da Dito com as informações fornecidas anteriormente usando o método `identify()`.
 
 ```dart
 Future<void> identifyUser() async;
 ```
 
 ### trackEvent()
-Este método registra um evento na plataforma Dito, associado ao usuário atual.
+O método `trackEvent()` tem a finalidade de registrar um evento na plataforma da Dito. Caso o userID já tenha sido registrado, o evento será enviado imediatamente. No entanto, caso o userID ainda não tenha sido registrado, o evento será armazenado localmente e posteriormente enviado quando o userID for registrado por meio do método `setUserId()`.
 
 ```dart
 Future<void> trackEvent({

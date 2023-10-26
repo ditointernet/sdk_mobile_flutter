@@ -1,11 +1,11 @@
 import 'package:dito_sdk/event.dart';
 import 'package:sqflite/sqflite.dart';
 
-class DatabaseHelper {
-  static final DatabaseHelper instance = DatabaseHelper._privateConstructor();
+class LocalDatabase {
+  static final LocalDatabase instance = LocalDatabase._privateConstructor();
   static Database? _database;
 
-  DatabaseHelper._privateConstructor();
+  LocalDatabase._privateConstructor();
 
   Future<Database> get database async {
     if (_database != null) return _database!;
@@ -37,9 +37,18 @@ class DatabaseHelper {
     ''');
   }
 
-  Future<void> insertEvent(Event event) async {
+  Future<void> createEvent(Event event) async {
     final db = await database;
     await db.insert('events', event.toMap());
+  }
+
+  Future<int> deleteEvent(Event event) async {
+    final db = await database;
+    return await db.delete(
+      'events',
+      where: 'eventName = ? AND eventMoment = ?',
+      whereArgs: [event.eventName, event.eventMoment],
+    );
   }
 
   Future<List<Event>> getEvents() async {
@@ -51,12 +60,8 @@ class DatabaseHelper {
     });
   }
 
-  Future<int> deleteEvent(Event event) async {
+  Future<int> deleteEvents() async {
     final db = await database;
-    return await db.delete(
-      'events',
-      where: 'eventName = ? AND eventMoment = ?',
-      whereArgs: [event.eventName, event.eventMoment],
-    );
+    return await db.delete('events');
   }
 }
