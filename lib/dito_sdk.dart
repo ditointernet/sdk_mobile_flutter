@@ -216,4 +216,73 @@ class DitoSDK {
 
     await _postEvent(event);
   }
+
+  Future<http.Response> registryMobileToken(
+      String token, String? platform) async {
+    _checkConfiguration();
+
+    if (platform != null &&
+        platform != 'Apple iPhone' &&
+        platform != 'Android') {
+      throw Exception(
+          'The platform property in the registryMobileToken method must be "Apple Iphone" or "Android"');
+    }
+
+    final signature = _convertToSHA1(_secretKey!);
+
+    final params = {
+      'id_type': 'id',
+      'platform_api_key': _apiKey,
+      'sha1_signature': signature,
+      'encoding': 'base64',
+      'token': token,
+      'platform': platform ?? (Platform.isIOS ? 'Apple iPhone' : 'Android'),
+    };
+
+    final url = Uri.parse(
+        "https://notification.plataformasocial.com.br/users/$_userID/mobile-tokens/");
+
+    final defaultUserAgent = await _getUserAgent();
+
+    return await http.post(
+      url,
+      body: params,
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'User-Agent': _userAgent ?? defaultUserAgent,
+      },
+    );
+  }
+
+  Future<http.Response> openNotification(
+      String id, String identifier, String reference) async {
+    _checkConfiguration();
+
+    final signature = _convertToSHA1(_secretKey!);
+
+    final params = {
+      'platform_api_key': _apiKey,
+      'sha1_signature': signature,
+      'encoding': 'base64',
+      'channel_type': 'mobile',
+      'data': {
+        'identifier': identifier,
+        'reference': reference,
+      }
+    };
+
+    final url = Uri.parse(
+        "https://notification.plataformasocial.com.br/notifications/$id/open");
+
+    final defaultUserAgent = await _getUserAgent();
+
+    return await http.post(
+      url,
+      body: params,
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'User-Agent': _userAgent ?? defaultUserAgent,
+      },
+    );
+  }
 }
