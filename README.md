@@ -82,6 +82,29 @@ Future<void> trackEvent({
  - **revenue** _(double, opcional)_: A receita associada ao evento.
  - **customData** _(Map<String, String>, opcional)_: Dados personalizados adicionais associados ao evento.
 
+### registryMobileToken()
+Este método permite registrar um token mobile para o usuário.
+
+```dart
+Future<void> registryMobileToken(String token, String? platform);
+```
+
+#### Parâmetros
+- **token** _(String)_: O token mobile que será registrado.
+- **platform** _(String)_: Nome da plataforma que o usuário está acessando o aplicativo. Valores válidos: 'Apple iPhone' e 'Android'.
+
+### openNotification()
+Este método permite registrar a abertura de uma notificação mobile.
+
+```dart
+Future<void> registryMobileToken(String id, String identifier, String reference);
+```
+
+#### Parâmetros
+- **id** _(String)_: Id da notificação da Dito recebida pelo aplicativo (Esse parâmetro estará presente no data da notificação).
+- **identifier** _(String)_: Parâmetro para dentificar a notificação na plataforma da Dito (Esse parâmetro estará presente no data da notificação) .
+- **reference** _(String)_: Parâmetro para identificar o usuário na plataforma da Dito (Esse parâmetro estará presente no data da notificação).
+
 ## Exemplos
 ### Uso básico da SDK:
 
