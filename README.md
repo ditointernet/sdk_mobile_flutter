@@ -47,7 +47,7 @@ void setUserId(String userId);
 ```
 
 #### Parâmetros
-- **userId** _(String)_: O ID único do usuário.
+- **userId** _(String, obrigatório)_: O ID único do usuário.
 
 ### setUserAgent()
 Este método permite definir o User-Agent que será enviado nas solicitações HTTP para a plataforma Dito.
@@ -57,7 +57,7 @@ void setUserAgent(String userAgent);
 ```
 
 #### Parâmetros
-- **userAgent** _(String)_: O User-Agent personalizado.
+- **userAgent** _(String, obrigatório)_: O User-Agent personalizado.
 
 ### identifyUser()
 Este método registra o usuário na plataforma da Dito com as informações fornecidas anteriormente usando o método `identify()`.
@@ -90,8 +90,8 @@ Future<void> registryMobileToken(String token, String? platform);
 ```
 
 #### Parâmetros
-- **token** _(String)_: O token mobile que será registrado.
-- **platform** _(String)_: Nome da plataforma que o usuário está acessando o aplicativo. Valores válidos: 'Apple iPhone' e 'Android'.
+- **token** _(String, obrigatório)_: O token mobile que será registrado.
+- **platform** _(String, opcional)_: Nome da plataforma que o usuário está acessando o aplicativo. Valores válidos: 'Apple iPhone' e 'Android'.
 
 ### openNotification()
 Este método permite registrar a abertura de uma notificação mobile.
@@ -101,9 +101,9 @@ Future<void> registryMobileToken(String id, String identifier, String reference)
 ```
 
 #### Parâmetros
-- **id** _(String)_: Id da notificação da Dito recebida pelo aplicativo (Esse parâmetro estará presente no data da notificação).
-- **identifier** _(String)_: Parâmetro para dentificar a notificação na plataforma da Dito (Esse parâmetro estará presente no data da notificação) .
-- **reference** _(String)_: Parâmetro para identificar o usuário na plataforma da Dito (Esse parâmetro estará presente no data da notificação).
+- **id** _(String, obrigatório)_: Id da notificação da Dito recebida pelo aplicativo (Esse parâmetro estará presente no data da notificação).
+- **identifier** _(String, obrigatório)_: Parâmetro para dentificar a notificação na plataforma da Dito (Esse parâmetro estará presente no data da notificação) .
+- **reference** _(String, obrigatório)_: Parâmetro para identificar o usuário na plataforma da Dito (Esse parâmetro estará presente no data da notificação).
 
 ## Exemplos
 ### Uso básico da SDK:
