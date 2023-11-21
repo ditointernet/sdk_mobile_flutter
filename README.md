@@ -92,6 +92,10 @@ Future<void> registryMobileToken(String token, String? platform);
 #### Parâmetros
 - **token** _(String, obrigatório)_: O token mobile que será registrado.
 - **platform** _(String, opcional)_: Nome da plataforma que o usuário está acessando o aplicativo. Valores válidos: 'Apple iPhone' e 'Android'.
+<br>_Caso não seja passado algum valor nessa prop, a sdk irá pegar por default o valor pelo `platform`._
+
+#### Exception
+- Caso seja passado um valor diferente de 'Apple iPhone' ou 'Android' na propriedade platform, irá ocorrer um erro no aplicativo.
 
 ### openNotification()
 Este método permite registrar a abertura de uma notificação mobile.
