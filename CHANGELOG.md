@@ -1,4 +1,4 @@
-## 0.4.0 (2023-11-20)
+## 0.4.0 (2023-11-23)
 
 ### Novos Recursos
 
@@ -8,7 +8,9 @@
 
 ### Mudanças
 
-- Nenhuma mudança nessa versão.
+- Removido atributo `encoding` de todas requisições.
+- Removido `json.encode` do atributo `data` no método `identifyUser()`.
+- Método `identifyUser()` retornando o resultado da requisição. (alterado para `Future<http.Response>`).
 
 ### Correções de Bugs
 

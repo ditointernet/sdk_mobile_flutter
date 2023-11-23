@@ -78,7 +78,6 @@ class DitoSDK {
       'id_type': 'id',
       'platform_api_key': _apiKey,
       'sha1_signature': signature,
-      'encoding': 'base64',
       'network_name': 'pt',
       'event': jsonEncode({
         'action': event.eventName,
@@ -154,7 +153,7 @@ class DitoSDK {
     _userAgent = userAgent;
   }
 
-  Future<void> identifyUser() async {
+  Future<http.Response> identifyUser() async {
     _checkConfiguration();
 
     if (_userID == null) {
@@ -173,7 +172,7 @@ class DitoSDK {
         'gender': _gender,
         'location': _location,
         'birthday': _birthday,
-        'data': json.encode(_customData)
+        'data': _customData
       }),
     };
 
@@ -182,7 +181,7 @@ class DitoSDK {
 
     final defaultUserAgent = await _getUserAgent();
 
-    await http.post(
+    return await http.post(
       url,
       body: params,
       headers: {
@@ -218,8 +217,13 @@ class DitoSDK {
   }
 
   Future<http.Response> registryMobileToken(
-      String token, String? platform) async {
+      {required String token, String? platform}) async {
     _checkConfiguration();
+
+    if (_userID == null) {
+      throw Exception(
+          'User registration is required. Please call the setUserId() method first.');
+    }
 
     if (platform != null &&
         platform != 'Apple iPhone' &&
@@ -234,7 +238,6 @@ class DitoSDK {
       'id_type': 'id',
       'platform_api_key': _apiKey,
       'sha1_signature': signature,
-      'encoding': 'base64',
       'token': token,
       'platform': platform ?? (Platform.isIOS ? 'Apple iPhone' : 'Android'),
     };
@@ -255,7 +258,9 @@ class DitoSDK {
   }
 
   Future<http.Response> openNotification(
-      String id, String identifier, String reference) async {
+      {required String notificationId,
+      required String identifier,
+      required String reference}) async {
     _checkConfiguration();
 
     final signature = _convertToSHA1(_secretKey!);
@@ -263,7 +268,6 @@ class DitoSDK {
     final params = {
       'platform_api_key': _apiKey,
       'sha1_signature': signature,
-      'encoding': 'base64',
       'channel_type': 'mobile',
       'data': {
         'identifier': identifier,
@@ -272,15 +276,15 @@ class DitoSDK {
     };
 
     final url = Uri.parse(
-        "https://notification.plataformasocial.com.br/notifications/$id/open");
+        "https://notification.plataformasocial.com.br/notifications/$notificationId/open");
 
     final defaultUserAgent = await _getUserAgent();
 
     return await http.post(
       url,
-      body: params,
+      body: jsonEncode(params),
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
+        'Content-Type': 'application/json',
         'User-Agent': _userAgent ?? defaultUserAgent,
       },
     );

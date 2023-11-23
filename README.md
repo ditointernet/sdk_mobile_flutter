@@ -17,6 +17,26 @@ void initialize({required String apiKey, required String secretKey});
 - **apiKey** _(String, obrigatório)_: A chave de API da plataforma Dito.
 - **secretKey** _(String, obrigatório)_: O segredo da chave de API da plataforma Dito.
 
+### setUserId()
+Este método define o ID do usuário que será usado para todas as operações subsequentes.
+
+```dart
+void setUserId(String userId);
+```
+
+#### Parâmetros
+- **userId** _(String, obrigatório)_: O ID único do usuário.
+
+### setUserAgent()
+Este método permite definir o User-Agent que será enviado nas solicitações HTTP para a plataforma Dito.
+
+```dart
+void setUserAgent(String userAgent);
+```
+
+#### Parâmetros
+- **userAgent** _(String, obrigatório)_: O User-Agent personalizado.
+
 ### identify()
 O método identify permite associar informações do usuário, como nome, email, gênero, data de nascimento, localização e dados personalizados à sessão do usuário.
 
@@ -39,32 +59,15 @@ void identify({
 - **location** _(String, opcional)_: Localização do usuário.
 - **customData** _(Map<String, String>, opcional)_: Dados personalizados adicionais.
 
-### setUserId()
-Este método define o ID do usuário que será usado para todas as operações subsequentes.
-
-```dart
-void setUserId(String userId);
-```
-
-#### Parâmetros
-- **userId** _(String, obrigatório)_: O ID único do usuário.
-
-### setUserAgent()
-Este método permite definir o User-Agent que será enviado nas solicitações HTTP para a plataforma Dito.
-
-```dart
-void setUserAgent(String userAgent);
-```
-
-#### Parâmetros
-- **userAgent** _(String, obrigatório)_: O User-Agent personalizado.
-
 ### identifyUser()
 Este método registra o usuário na plataforma da Dito com as informações fornecidas anteriormente usando o método `identify()`.
 
 ```dart
-Future<void> identifyUser() async;
+Future<http.Response> identifyUser() async;
 ```
+
+#### Exception
+- Caso a SDK ainda não tenha `userId` cadastrado quando esse método for chamado, irá ocorrer um erro no aplicativo. (utilize o método `setUserId()` para definir o `userId`)
 
 ### trackEvent()
 O método `trackEvent()` tem a finalidade de registrar um evento na plataforma da Dito. Caso o userID já tenha sido registrado, o evento será enviado imediatamente. No entanto, caso o userID ainda não tenha sido registrado, o evento será armazenado localmente e posteriormente enviado quando o userID for registrado por meio do método `setUserId()`.
@@ -86,7 +89,10 @@ Future<void> trackEvent({
 Este método permite registrar um token mobile para o usuário.
 
 ```dart
-Future<void> registryMobileToken(String token, String? platform);
+Future<http.Response> registryMobileToken({
+  required String token,
+  String? platform,
+});
 ```
 
 #### Parâmetros
@@ -96,18 +102,27 @@ Future<void> registryMobileToken(String token, String? platform);
 
 #### Exception
 - Caso seja passado um valor diferente de 'Apple iPhone' ou 'Android' na propriedade platform, irá ocorrer um erro no aplicativo.
+- Caso a SDK ainda não tenha `userId` cadastrado quando esse método for chamado, irá ocorrer um erro no aplicativo. (utilize o método `setUserId()` para definir o `userId`)
 
 ### openNotification()
 Este método permite registrar a abertura de uma notificação mobile.
 
 ```dart
-Future<void> registryMobileToken(String id, String identifier, String reference);
+Future<http.Response> openNotification({
+  required String notificationId,
+  required String identifier,
+  required String reference
+}) async
 ```
 
 #### Parâmetros
-- **id** _(String, obrigatório)_: Id da notificação da Dito recebida pelo aplicativo (Esse parâmetro estará presente no data da notificação).
-- **identifier** _(String, obrigatório)_: Parâmetro para dentificar a notificação na plataforma da Dito (Esse parâmetro estará presente no data da notificação) .
-- **reference** _(String, obrigatório)_: Parâmetro para identificar o usuário na plataforma da Dito (Esse parâmetro estará presente no data da notificação).
+- **notificationId** _(String, obrigatório)_: Id da notificação da Dito recebida pelo aplicativo.
+- **identifier** _(String, obrigatório)_: Parâmetro para dentificar a notificação na plataforma da Dito.
+- **reference** _(String, obrigatório)_: Parâmetro para identificar o usuário na plataforma da Dito.
+
+###### Observações
+
+- Esses parâmetros estarão presentes no data da notificação
 
 ## Exemplos
 ### Uso básico da SDK:
