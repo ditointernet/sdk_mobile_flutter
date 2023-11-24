@@ -1,3 +1,25 @@
+## 0.4.0 (2023-11-23)
+
+### Novos Recursos
+
+- Adicionados os seguintes métodos:
+  - `registryMobileToken()`: Método para cadastrar o token do mobile para o usuário.
+  - `openNotification()`: Método para notificar da abertura de uma notificação mobile.
+
+### Mudanças
+
+- Removido atributo `encoding` de todas requisições.
+- Removido `json.encode` do atributo `data` no método `identifyUser()`.
+- Método `identifyUser()` retornando o resultado da requisição. (alterado para `Future<http.Response>`).
+
+### Correções de Bugs
+
+- Nenhuma correção de bugs nessa versão.
+
+### Notas Adicionais
+
+- Nenhuma nota adicional nessa versão.
+
 ## 0.3.0 (2023-10-26)
 
 ### Novos Recursos
