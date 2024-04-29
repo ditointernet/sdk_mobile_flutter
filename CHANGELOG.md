@@ -1,3 +1,16 @@
+## 1.0.0-beta (2024-04-29)
+
+### Novos Recursos
+
+- Adicionados os seguintes métodos:
+  - `setUser()`: Método para salvar os dados do usuário antes de um identify.
+  - `initializePushService()`: Método para inicializar o serviço de mobile push notification.
+
+### Mudanças
+
+- Removido método `setUserId`.
+- Removido método `setUserAgent` que agora é gerado automaticamente.
+
 ## 0.4.0 (2023-11-23)
 
 ### Novos Recursos

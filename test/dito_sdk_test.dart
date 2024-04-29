@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:dito_sdk/dito_sdk.dart';
-import 'package:dito_sdk/entity/user.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 Future<dynamic> testEnv() async {
