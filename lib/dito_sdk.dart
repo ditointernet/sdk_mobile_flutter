@@ -6,7 +6,6 @@ import 'package:dito_sdk/entity/user.dart';
 import 'package:dito_sdk/entity/event.dart';
 import 'package:dito_sdk/database.dart';
 import 'package:dito_sdk/services/firebase_messaging_service.dart';
-import 'package:dito_sdk/services/notification_service.dart';
 import 'package:dito_sdk/utils/http.dart';
 import 'package:dito_sdk/utils/sha1.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -19,8 +18,7 @@ class DitoSDK {
   String? _userID;
   String? _signature;
   User? _user;
-  late NotificationService _notificationService;
-  late FirebaseMessagingService _firebaseMessagingService;
+  late FirebaseMessagingService _notificationService;
 
   static final DitoSDK _instance = DitoSDK._internal();
 
@@ -30,6 +28,11 @@ class DitoSDK {
 
   DitoSDK._internal();
 
+  Future<FirebaseMessagingService> get notificationService async {
+    return _notificationService;
+  }
+
+
   void initialize({required String apiKey, required String secretKey}) async {
     _apiKey = apiKey;
     _secretKey = secretKey;
@@ -38,19 +41,18 @@ class DitoSDK {
 
   Future<void> initializePushService() async {
     await Firebase.initializeApp();
-    _notificationService = NotificationService(_instance);
-    _firebaseMessagingService = FirebaseMessagingService(_notificationService);
-    await _firebaseMessagingService.initialize();
+    _notificationService = FirebaseMessagingService(this);
+    await _notificationService.initialize();
 
     RemoteMessage? initialMessage =
         await FirebaseMessaging.instance.getInitialMessage();
 
     if (initialMessage != null) {
-      _firebaseMessagingService.handleMessage(initialMessage);
+      _notificationService.handleMessage(initialMessage);
     }
 
     FirebaseMessaging.onMessageOpenedApp
-        .listen(_firebaseMessagingService.handleMessage);
+        .listen(_notificationService.handleMessage);
   }
 
   void _checkConfiguration() {
