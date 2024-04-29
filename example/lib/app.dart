@@ -5,7 +5,6 @@ import 'package:flutter_sdk_test/app_form.dart';
 import 'package:provider/provider.dart';
 
 import 'services/firebase_messaging_service.dart';
-import 'services/notification_service.dart';
 
 class App extends StatefulWidget {
   const App({super.key});

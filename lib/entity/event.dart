@@ -4,7 +4,7 @@ class Event {
   final String eventName;
   final String eventMoment;
   final double? revenue;
-  final Map<String, String>? customData;
+  final Map<String, dynamic>? customData;
 
   Event({
     required this.eventName,
@@ -33,4 +33,11 @@ class Event {
       'customData': customData != null ? json.encode(customData) : null,
     };
   }
+
+  Map<String, dynamic> toJson() => {
+        'action': eventName,
+        'revenue': revenue,
+        'data': customData,
+        'created_at': eventMoment
+      };
 }

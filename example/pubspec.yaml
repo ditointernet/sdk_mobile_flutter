@@ -38,7 +38,7 @@ dependencies:
   firebase_messaging: ^14.8.2
   firebase_core: ^2.30.0
   flutter_local_notifications: ^17.1.0
-  dito_sdk: ^0.4.0
+  dito_sdk: 1.0.0-beta
   provider: ^6.1.2
   package_info_plus: ^4.2.0
 
