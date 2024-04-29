@@ -18,7 +18,7 @@ class DitoSDK {
   String? _userID;
   String? _signature;
   User? _user;
-  late FirebaseMessagingService _notificationService;
+  late NotificationService _notificationService;
 
   static final DitoSDK _instance = DitoSDK._internal();
 
@@ -28,7 +28,7 @@ class DitoSDK {
 
   DitoSDK._internal();
 
-  Future<FirebaseMessagingService> get notificationService async {
+  Future<NotificationService> get notificationService async {
     return _notificationService;
   }
 
@@ -37,11 +37,11 @@ class DitoSDK {
     _apiKey = apiKey;
     _secretKey = secretKey;
     _signature = convertToSHA1(_secretKey!);
+    _notificationService = NotificationService(this);
   }
 
   Future<void> initializePushService() async {
     await Firebase.initializeApp();
-    _notificationService = FirebaseMessagingService(this);
     await _notificationService.initialize();
 
     RemoteMessage? initialMessage =

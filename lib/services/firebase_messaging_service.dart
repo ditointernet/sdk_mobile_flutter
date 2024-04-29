@@ -10,7 +10,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:dito_sdk/dito_sdk.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
-class FirebaseMessagingService {
+class NotificationService {
   bool _messagingAllowed = false;
   late String _appName;
   late DitoSDK _dito;
@@ -36,7 +36,7 @@ class FirebaseMessagingService {
       presentSound: true,
       presentBanner: true);
 
-  FirebaseMessagingService(DitoSDK dito) {
+  NotificationService(DitoSDK dito) {
     _dito = dito;
   }
 
