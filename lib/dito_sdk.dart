@@ -28,7 +28,7 @@ class DitoSDK {
 
   DitoSDK._internal();
 
-  Future<NotificationService> get notificationService async {
+  NotificationService notificationService() {
     return _notificationService;
   }
 
@@ -93,7 +93,12 @@ class DitoSDK {
     }
   }
 
+  @Deprecated('migration')
   Future<void> setUserId(String userId) async {
+    _setUserId(userId);
+  }
+
+  Future<void> _setUserId(String userId) async {
     _userID = userId;
     _verifyPendingEvents();
   }
@@ -112,6 +117,20 @@ class DitoSDK {
     String? location,
     Map<String, String>? customData,
   }) {
+    if (_user == null) {
+      _user = User(
+          userID: userID,
+          name: name,
+          email: email,
+          gender: gender,
+          birthday: birthday,
+          location: location,
+          cpf: cpf,
+          customData: customData);
+
+      return;
+    }
+
     if (name != null) {
       _user?.name = name;
     }
@@ -136,26 +155,26 @@ class DitoSDK {
       _user?.customData = customData;
     }
 
-    setUserId(userID);
+    _setUserId(userID);
   }
 
   Future<void> setUser(User user) async {
     _user = user;
 
-    if (!user.validate()) {
-      throw Exception(
-          'User registration is required. Please call the setUserId() method first.');
+    if (_user!.valid) {
+      await _setUserId(_user!.id);
     } else {
-      await setUserId(user.getUserID());
+      throw Exception(
+          'User registration is required. Please call the identify() method first.');
     }
   }
 
   Future<http.Response> identifyUser() async {
     _checkConfiguration();
 
-    if (_user?.validate()) {
+    if (!_user!.valid) {
       throw Exception(
-          'User registration is required. Please call the setUserId() method first.');
+          'User registration is required. Please call the identify() method first.');
     }
 
     final params = {
@@ -166,7 +185,7 @@ class DitoSDK {
 
     final url = Uri.parse(
       Constants.endpoints
-        .replace(value: _userID!, endpoint: Endpoint.identify));
+        .replace(value: _user!.id, endpoint: Endpoint.identify));
 
     return await Api().post(
       url,

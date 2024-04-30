@@ -20,13 +20,8 @@ class User {
       this.location,
       this.customData});
 
-  validate() {
-    return userID.isNotEmpty;
-  }
-
-  getUserID() {
-    return userID;
-  }
+  String get id => userID;
+  bool get valid => userID.isNotEmpty;
 
   factory User.fromMap(Map<String, dynamic> map) {
     return User(

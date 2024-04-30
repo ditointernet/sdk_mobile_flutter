@@ -1,4 +1,4 @@
-## 1.0.0-beta-2 (2024-04-29)
+## 1.0.0-beta-4 (2024-04-29)
 
 ### Novos Recursos
 
@@ -8,7 +8,7 @@
 
 ### Mudanças
 
-- Removido método `setUserId`.
+- Depreciado método `setUserId`.
 - Removido método `setUserAgent` que agora é gerado automaticamente.
 
 ## 0.4.0 (2023-11-23)

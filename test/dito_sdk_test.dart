@@ -19,12 +19,14 @@ void main() {
     dito.initialize(apiKey: env["apiKey"], secretKey: env["secret"]);
   }
 
-  group('Dito SDK', () {
+  group('Dito SDK: ', () {
     test('Send identify', () async {
       await setUp();
 
-      dito.identify(userID: id);
+      dito.identify(userID: id, email: "teste@teste.com");
+      expect(dito.user, isNotNull);
       expect(dito.user?.userID, id);
+      expect(dito.user?.email, "teste@teste.com");
 
       final response = await dito.identifyUser();
       expect(response.statusCode, 201);
