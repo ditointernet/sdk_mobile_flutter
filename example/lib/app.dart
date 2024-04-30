@@ -1,11 +1,7 @@
 import 'package:dito_sdk/dito_sdk.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sdk_test/app_form.dart';
 import 'package:provider/provider.dart';
-
-import 'services/firebase_messaging_service.dart';
-import 'services/notification_service.dart';
 
 class App extends StatefulWidget {
   const App({super.key});
@@ -19,33 +15,11 @@ class _AppState extends State<App> {
 
   void initState() {
     super.initState();
-    initializeFirebaseMessaging();
     initializeDito();
-    init();
-  }
-
-  initializeFirebaseMessaging() async {
-    await Provider.of<FirebaseMessagingService>(context, listen: false)
-        .initialize();
   }
 
   initializeDito() {
     Provider.of<DitoSDK>(context, listen: false);
-  }
-
-  init() async {
-    RemoteMessage? initialMessage =
-        await FirebaseMessaging.instance.getInitialMessage();
-
-    if (initialMessage != null) {
-      _handleMessage(initialMessage);
-    }
-
-    FirebaseMessaging.onMessageOpenedApp.listen(_handleMessage);
-  }
-
-  void _handleMessage(RemoteMessage message) {
-    print(message);
   }
 
   @override

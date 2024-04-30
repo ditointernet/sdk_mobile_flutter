@@ -1,3 +1,19 @@
+## 0.5.0 (2024-04-30)
+
+### Novos Recursos
+
+- Adicionados os seguintes métodos:
+  - `setUser()`: Método para salvar os dados do usuário antes de um identify.
+  - `removeMobileToken()`: Método para remover o token de um usuário.
+  - `initializePushNotificationService()`: Método para inicializar o serviço de mobile push notification.
+  - `setAndroidDetails()`: Método para personalizar o serviço de mobile push notification no Android.
+  - `setIosDetails()`: Método para personalizar o serviço de mobile push notification no iOS.
+
+### Mudanças
+
+- Depreciado método `setUserId`.
+- Removido método `setUserAgent` que agora é gerado automaticamente.
+
 ## 0.4.0 (2023-11-23)
 
 ### Novos Recursos

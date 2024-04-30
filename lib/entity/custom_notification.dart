@@ -1,5 +1,6 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter_sdk_test/services/data_payload.dart';
+
+import 'data_payload.dart';
 
 class CustomNotification {
   final int id;

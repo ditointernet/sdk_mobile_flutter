@@ -1,25 +1,24 @@
 library dito_sdk;
 
-import 'dart:io';
 import 'dart:convert';
-import 'package:crypto/crypto.dart';
-import 'package:dito_sdk/event.dart';
-import 'package:dito_sdk/database.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:http/http.dart' as http;
-import 'package:device_info_plus/device_info_plus.dart';
-import 'package:package_info_plus/package_info_plus.dart';
+
+import './constants.dart';
+import './utils/http.dart';
+import './utils/sha1.dart';
+import './services/notification_service.dart';
+import './database.dart';
+import './entity/event.dart';
+import './entity/user.dart';
 
 class DitoSDK {
-  String? _userAgent;
   String? _apiKey;
   String? _secretKey;
-  String? _userID;
-  String? _name;
-  String? _email;
-  String? _gender;
-  String? _birthday;
-  String? _location;
-  Map<String, String>? _customData;
+  late Map<String, String> _assign;
+  late NotificationService _notificationService;
+  User _user = User();
 
   static final DitoSDK _instance = DitoSDK._internal();
 
@@ -29,16 +28,37 @@ class DitoSDK {
 
   DitoSDK._internal();
 
-  void initialize({required String apiKey, required String secretKey}) {
-    _apiKey = apiKey;
-    _secretKey = secretKey;
+  NotificationService notificationService() {
+    return _notificationService;
   }
 
-  String _convertToSHA1(String input) {
-    final bytes = utf8.encode(input);
-    final digest = sha1.convert(bytes);
+  User get user {
+    return _user;
+  }
 
-    return digest.toString();
+  void initialize({required String apiKey, required String secretKey}) async {
+    _apiKey = apiKey;
+    _secretKey = secretKey;
+    _notificationService = NotificationService(_instance);
+    _assign = {
+      'platform_api_key': apiKey,
+      'sha1_signature': convertToSHA1(_secretKey!),
+    };
+  }
+
+  Future<void> initializePushNotificationService() async {
+    await Firebase.initializeApp();
+    await _notificationService.initialize();
+
+    RemoteMessage? initialMessage =
+        await FirebaseMessaging.instance.getInitialMessage();
+
+    if (initialMessage != null) {
+      _notificationService.handleMessage(initialMessage);
+    }
+
+    FirebaseMessaging.onMessageOpenedApp
+        .listen(_notificationService.handleMessage);
   }
 
   void _checkConfiguration() {
@@ -48,58 +68,20 @@ class DitoSDK {
     }
   }
 
-  Future<String> _getUserAgent() async {
-    final deviceInfo = DeviceInfoPlugin();
-    final PackageInfo packageInfo = await PackageInfo.fromPlatform();
-    final String version = packageInfo.version;
-    final String appName = packageInfo.appName;
-    String system;
-    String model;
-
-    if (Platform.isIOS) {
-      final ios = await deviceInfo.iosInfo;
-      system = 'iOS ${ios.systemVersion}';
-      model = ios.model;
-    } else {
-      final android = await deviceInfo.androidInfo;
-      system = 'Android ${android.version}';
-      model = android.model;
-    }
-
-    return '$appName/$version ($system; $model)';
-  }
-
   Future<http.Response> _postEvent(Event event) async {
     _checkConfiguration();
 
-    final signature = _convertToSHA1(_secretKey!);
-
     final params = {
       'id_type': 'id',
-      'platform_api_key': _apiKey,
-      'sha1_signature': signature,
       'network_name': 'pt',
-      'event': jsonEncode({
-        'action': event.eventName,
-        'revenue': event.revenue,
-        'data': event.customData,
-        'created_at': event.eventMoment
-      })
+      'event': jsonEncode(event.toJson())
     };
 
-    final url =
-        Uri.parse("http://events.plataformasocial.com.br/users/$_userID");
+    params.addAll(_assign);
 
-    final defaultUserAgent = await _getUserAgent();
+    final url = Uri.parse(Endpoint.events.replace(_user.id!));
 
-    return await http.post(
-      url,
-      body: params,
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'User-Agent': _userAgent ?? defaultUserAgent,
-      },
-    );
+    return await Api().post(url, params);
   }
 
   Future<void> _verifyPendingEvents() async {
@@ -114,7 +96,19 @@ class DitoSDK {
     }
   }
 
+  @Deprecated('migration')
+  Future<void> setUserId(String userId) async {
+    _setUserId(userId);
+  }
+
+  Future<void> _setUserId(String userId) async {
+    if (_user.isValid) {
+      _verifyPendingEvents();
+    }
+  }
+
   void identify({
+    required String userID,
     String? cpf,
     String? name,
     String? email,
@@ -123,75 +117,73 @@ class DitoSDK {
     String? location,
     Map<String, String>? customData,
   }) {
+    _user.userID = userID;
+
+    if (cpf != null) {
+      _user.cpf = cpf;
+    }
+
     if (name != null) {
-      _name = name;
+      _user.name = name;
     }
+
     if (email != null) {
-      _email = email;
+      _user.email = email;
     }
+
     if (gender != null) {
-      _gender = gender;
+      _user.gender = gender;
     }
+
     if (birthday != null) {
-      _birthday = birthday;
+      _user.birthday = birthday;
     }
+
     if (location != null) {
-      _location = location;
+      _user.location = location;
     }
+
     if (customData != null) {
-      _customData = customData;
+      _user.customData = customData;
     }
+
+    _setUserId(userID);
   }
 
-  Future<void> setUserId(String userId) async {
-    _userID = userId;
+  Future<void> setUser(User user) async {
+    _user = user;
 
-    _verifyPendingEvents();
-  }
-
-  void setUserAgent(String userAgent) {
-    _userAgent = userAgent;
+    if (_user.isValid) {
+      await _setUserId(_user.id!);
+    } else {
+      throw Exception(
+          'User registration is required. Please call the identify() method first.');
+    }
   }
 
   Future<http.Response> identifyUser() async {
     _checkConfiguration();
 
-    if (_userID == null) {
+    if (_user.isNotValid) {
       throw Exception(
-          'User registration is required. Please call the setUserId() method first.');
+          'User registration is required. Please call the identify() method first.');
     }
 
-    final signature = _convertToSHA1(_secretKey!);
-
     final params = {
-      'platform_api_key': _apiKey,
-      'sha1_signature': signature,
-      'user_data': jsonEncode({
-        'name': _name,
-        'email': _email,
-        'gender': _gender,
-        'location': _location,
-        'birthday': _birthday,
-        'data': _customData
-      }),
+      'user_data': jsonEncode(_user.toJson()),
     };
 
-    final url = Uri.parse(
-        "https://login.plataformasocial.com.br/users/portal/$_userID/signup");
+    params.addAll(_assign);
 
-    final defaultUserAgent = await _getUserAgent();
+    final url = Uri.parse(Endpoint.identify.replace(_user.id!));
 
-    return await http.post(
+    return await Api().post(
       url,
-      body: params,
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'User-Agent': _userAgent ?? defaultUserAgent,
-      },
+      params,
     );
   }
 
-  Future<void> trackEvent({
+  Future<http.Response> trackEvent({
     required String eventName,
     double? revenue,
     Map<String, String>? customData,
@@ -207,53 +199,60 @@ class DitoSDK {
       customData: customData,
     );
 
-    if (_userID == null) {
+    if (_user.isNotValid) {
       final database = LocalDatabase.instance;
       await database.createEvent(event);
-      return;
+      return http.Response("", 200);
     }
 
-    await _postEvent(event);
+    return await _postEvent(event);
   }
 
-  Future<http.Response> registryMobileToken(
-      {required String token, String? platform}) async {
+  Future<http.Response> registryMobileToken({required String token}) async {
     _checkConfiguration();
 
-    if (_userID == null) {
+    if (_user.isNotValid) {
       throw Exception(
-          'User registration is required. Please call the setUserId() method first.');
+          'User registration is required. Please call the identify() method first.');
     }
-
-    if (platform != null &&
-        platform != 'Apple iPhone' &&
-        platform != 'Android') {
-      throw Exception(
-          'The platform property in the registryMobileToken method must be "Apple Iphone" or "Android"');
-    }
-
-    final signature = _convertToSHA1(_secretKey!);
 
     final params = {
       'id_type': 'id',
-      'platform_api_key': _apiKey,
-      'sha1_signature': signature,
       'token': token,
-      'platform': platform ?? (Platform.isIOS ? 'Apple iPhone' : 'Android'),
+      'platform': Constants.platform,
     };
 
-    final url = Uri.parse(
-        "https://notification.plataformasocial.com.br/users/$_userID/mobile-tokens/");
+    params.addAll(_assign);
 
-    final defaultUserAgent = await _getUserAgent();
+    final url = Uri.parse(Endpoint.registryMobileTokens.replace(_user.id!));
 
-    return await http.post(
+    return await Api().post(
       url,
-      body: params,
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'User-Agent': _userAgent ?? defaultUserAgent,
-      },
+      params,
+    );
+  }
+
+  Future<http.Response> removeMobileToken({required String token}) async {
+    _checkConfiguration();
+
+    if (_user.isNotValid) {
+      throw Exception(
+          'User registration is required. Please call the identify() method first.');
+    }
+
+    final params = {
+      'id_type': 'id',
+      'token': token,
+      'platform': Constants.platform,
+    };
+
+    params.addAll(_assign);
+
+    final url = Uri.parse(Endpoint.removeMobileTokens.replace(_user.id!));
+
+    return await Api().post(
+      url,
+      params,
     );
   }
 
@@ -263,30 +262,21 @@ class DitoSDK {
       required String reference}) async {
     _checkConfiguration();
 
-    final signature = _convertToSHA1(_secretKey!);
-
     final params = {
-      'platform_api_key': _apiKey,
-      'sha1_signature': signature,
       'channel_type': 'mobile',
-      'data': {
+      'data': jsonEncode({
         'identifier': identifier,
         'reference': reference,
-      }
+      })
     };
 
-    final url = Uri.parse(
-        "https://notification.plataformasocial.com.br/notifications/$notificationId/open");
+    params.addAll(_assign);
 
-    final defaultUserAgent = await _getUserAgent();
+    final url = Uri.parse(Endpoint.openNotification.replace(identifier));
 
-    return await http.post(
+    return await Api().post(
       url,
-      body: jsonEncode(params),
-      headers: {
-        'Content-Type': 'application/json',
-        'User-Agent': _userAgent ?? defaultUserAgent,
-      },
+      params,
     );
   }
 }

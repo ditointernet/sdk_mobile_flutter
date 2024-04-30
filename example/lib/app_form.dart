@@ -1,9 +1,7 @@
 import 'package:dito_sdk/dito_sdk.dart';
+import 'package:dito_sdk/entity/custom_notification.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_sdk_test/services/custom_notification.dart';
 import 'package:provider/provider.dart';
-
-import 'services/firebase_messaging_service.dart';
 
 class AppForm extends StatefulWidget {
   const AppForm({super.key});
@@ -20,17 +18,16 @@ class AppFormState extends State<AppForm> {
   @override
   Widget build(BuildContext context) {
     final dito = Provider.of<DitoSDK>(context);
-    final fcm = Provider.of<FirebaseMessagingService>(context);
 
     String cpf = "22222222222";
     String email = "teste@dito.com.br";
 
     identify() async {
-      dito.setUserId(cpf);
-      dito.identify(cpf: cpf, name: 'Teste SDK Flutter', email: email);
+      dito.identify(
+          userID: cpf, cpf: cpf, name: 'Teste SDK Flutter', email: email);
       await dito.identifyUser();
 
-      final token = await fcm.getDeviceFirebaseToken();
+      final token = await dito.notificationService().getDeviceFirebaseToken();
       if (token != null && token.isNotEmpty) {
         dito.registryMobileToken(token: token);
       }
@@ -58,9 +55,9 @@ class AppFormState extends State<AppForm> {
     }
 
     handleLocalNotification() {
-      fcm.addNotificationToStream(CustomNotification(
+      dito.notificationService().addNotificationToStream(CustomNotification(
           id: 123,
-          title: "NOtificação local",
+          title: "Notificação local",
           body:
               "Está é uma mensagem de teste, validando o stream de dados das notificações locais"));
 
@@ -78,7 +75,7 @@ class AppFormState extends State<AppForm> {
             onSaved: (value) {
               cpf = value!;
             },
-            initialValue: '22222222222',
+            initialValue: cpf,
             validator: (value) {
               if (value == null || value.isEmpty) {
                 return 'Please enter some text';
@@ -90,7 +87,7 @@ class AppFormState extends State<AppForm> {
             onSaved: (value) {
               email = value!;
             },
-            initialValue: 'teste@dito.com.br',
+            initialValue: email,
             validator: (value) {
               if (value == null || value.isEmpty) {
                 return 'Please enter some text';
