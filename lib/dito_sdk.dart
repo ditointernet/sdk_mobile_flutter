@@ -262,8 +262,12 @@ class DitoSDK {
       required String reference}) async {
     _checkConfiguration();
 
+final userAgent = await Constants.userAgent;
+
     final params = {
       'channel_type': 'mobile',
+      'sistema_operacional': Constants.platform,
+      'raw_user_agent': userAgent,
       'data': jsonEncode({
         'identifier': identifier,
         'reference': reference,
