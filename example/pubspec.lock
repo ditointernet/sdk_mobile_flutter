@@ -100,11 +100,12 @@ packages:
   dito_sdk:
     dependency: "direct main"
     description:
-      name: dito_sdk
-      sha256: "9dffaaa7266eb08921144ae6df45847a0713c0988bcf66d8212594447d393757"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.0-beta-5"
+      path: "."
+      ref: change-architecture
+      resolved-ref: a024ee9575191d798f1443d04606348e1b07f467
+      url: "https://github.com/ditointernet/sdk_mobile_flutter.git"
+    source: git
+    version: "0.5.0"
   fake_async:
     dependency: transitive
     description:
@@ -191,7 +192,7 @@ packages:
     source: hosted
     version: "3.0.2"
   flutter_local_notifications:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: flutter_local_notifications
       sha256: "8cdc719114ab1c86c64bb7a86d3a679674c3637edd229e3a994797d4a1504ce4"
@@ -225,7 +226,7 @@ packages:
     source: sdk
     version: "0.0.0"
   http:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: http
       sha256: "5895291c13fa8a3bd82e76d5627f69e0d85ca6a30dcac95c4ea19a5d555879c2"
@@ -374,7 +375,7 @@ packages:
     source: hosted
     version: "1.10.0"
   sqflite:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: sqflite
       sha256: "5ce2e1a15e822c3b4bfb5400455775e421da7098eed8adc8f26298ada7c9308c"
@@ -390,7 +391,7 @@ packages:
     source: hosted
     version: "2.5.4"
   sqflite_common_ffi:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: sqflite_common_ffi
       sha256: "4d6137c29e930d6e4a8ff373989dd9de7bac12e3bc87bce950f6e844e8ad3bb5"
@@ -457,10 +458,10 @@ packages:
     dependency: transitive
     description:
       name: timezone
-      sha256: "1cfd8ddc2d1cfd836bc93e67b9be88c3adaeca6f40a00ca999104c30693cdca0"
+      sha256: a6ccda4a69a442098b602c44e61a1e2b4bf6f5516e875bbf0f427d5df14745d5
       url: "https://pub.dev"
     source: hosted
-    version: "0.9.2"
+    version: "0.9.3"
   typed_data:
     dependency: transitive
     description:

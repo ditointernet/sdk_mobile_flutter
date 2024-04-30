@@ -40,7 +40,7 @@ void main() async {
   DitoSDK dito = DitoSDK();
   dito.initialize(
       apiKey: Constants.ditoApiKey, secretKey: Constants.ditoSecretKey);
-  await dito.initializePushService();
+  await dito.initializePushNotificationService();
 
   runApp(MultiProvider(providers: [
     Provider<DitoSDK>(

@@ -2,15 +2,18 @@
   "name": "dito-sdk-flutter",
   "scripts": {
     "cz": "git-cz",
-    "commitlint": "commitlint --edit"
+    "commitlint": "commitlint --edit",
+    "sr": "semantic-release -d"
   },
   "devDependencies": {
     "@commitlint/cli": "13.1.0",
     "@commitlint/config-conventional": "17.6.7",
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/commit-analyzer": "^12.0.0",
+    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/release-notes-generator": "^13.0.0",
     "commitizen": "4.3.0",
-    "cz-conventional-changelog": "^3.3.0",
-    "husky": "^9.0.11",
-    "semantic-release-pub": "^0.8.11"
+    "cz-conventional-changelog": "^3.3.0"
   },
   "release": {
     "branches": [
@@ -22,10 +25,11 @@
     ],
     "plugins": [
       "@semantic-release/commit-analyzer",
+      "@semantic-release/release-notes-generator",
       [
-        "semantic-release-pub",
+        "@semantic-release/changelog",
         {
-          "cli": "flutter"
+          "changelogFile": "docs/CHANGELOG.md"
         }
       ],
       [
@@ -41,5 +45,8 @@
     "commitizen": {
       "path": "./node_modules/cz-conventional-changelog"
     }
+  },
+  "dependencies": {
+    "semantic-release": "^23.0.8"
   }
 }
