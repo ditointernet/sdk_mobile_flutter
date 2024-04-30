@@ -8,6 +8,7 @@ class Constants {
 enum Endpoint {
   identify,
   registryMobileTokens,
+  removeMobileTokens,
   events,
   openNotification;
 
@@ -16,12 +17,18 @@ enum Endpoint {
 
     switch (toString()) {
       case "Endpoint.registryMobileTokens":
-        value = "https://login.plataformasocial.com.br/users/portal/{}/signup"
+        value =
+            "https://notification.plataformasocial.com.br/users/{}/mobile-tokens/"
+                .replaceFirst(from, to);
+        break;
+      case "Endpoint.removeMobileTokens":
+        value =
+            "https://notification.plataformasocial.com.br/users/{}/mobile-tokens/disable/"
             .replaceFirst(from, to);
         break;
       case "Endpoint.events":
         value =
-            "https://notification.plataformasocial.com.br/users/{}/mobile-tokens/"
+            "http://events.plataformasocial.com.br/users/{}"
                 .replaceFirst(from, to);
         break;
       case "Endpoint.openNotification":

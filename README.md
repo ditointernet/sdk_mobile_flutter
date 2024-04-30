@@ -12,8 +12,21 @@ Para instalar a biblioteca DitoSDK em seu aplicativo Flutter, você deve seguir 
 
 Este método deve ser chamado antes de qualquer outra operação com o SDK. Ele inicializa as chaves de API e SECRET necessárias para a autenticação na plataforma Dito.
 
-```
+```dart
 void initialize({required String apiKey, required String secretKey});
+```
+
+#### Parâmetros
+
+- **apiKey** _(String, obrigatório)_: A chave de API da plataforma Dito.
+- **secretKey** _(String, obrigatório)_: O segredo da chave de API da plataforma Dito.
+
+### initializePushNotificationService()
+
+Este método deve ser chamado após a inicialização da SDK. Ele inicializa as configurações e serviços necessários para o funcionamento de push notifications da plataforma Dito.
+
+```dart
+void initializePushNotificationService();
 ```
 
 #### Parâmetros
@@ -82,13 +95,35 @@ Future<http.Response> registryMobileToken({
 #### Parâmetros
 
 - **token** _(String, obrigatório)_: O token mobile que será registrado.
-- **platform** _(String, opcional)_: Nome da plataforma que o usuário está acessando o aplicativo. Valores válidos: 'Apple iPhone' e 'Android'.
+- **platform** _(String, opcional)_: Nome da plataforma que o usuário está acessando o aplicativo. Valores válidos: 'iPhone' e 'Android'.
   `<br>`_Caso não seja passado algum valor nessa prop, a sdk irá pegar por default o valor pelo `platform`._
 
 #### Exception
 
-- Caso seja passado um valor diferente de 'Apple iPhone' ou 'Android' na propriedade platform, irá ocorrer um erro no aplicativo.
-- Caso a SDK ainda não tenha `userId` cadastrado quando esse método for chamado, irá ocorrer um erro no aplicativo. (utilize o método `setUserId()` para definir o `userId`)
+- Caso seja passado um valor diferente de 'iPhone' ou 'Android' na propriedade platform, irá ocorrer um erro no aplicativo.
+- Caso a SDK ainda não tenha `identify` cadastrado quando esse método for chamado, irá ocorrer um erro no aplicativo. (utilize o método `identify()` para definir o id do usuário)
+
+### removeMobileToken()
+
+Este método permite remover um token mobile para o usuário.
+
+```dart
+Future<http.Response> removeMobileToken({
+  required String token,
+  String? platform,
+});
+```
+
+#### Parâmetros
+
+- **token** _(String, obrigatório)_: O token mobile que será removido.
+- **platform** _(String, opcional)_: Nome da plataforma que o usuário está acessando o aplicativo. Valores válidos: 'iPhone' e 'Android'.
+  `<br>`_Caso não seja passado algum valor nessa prop, a sdk irá pegar por default o valor pelo `platform`._
+
+#### Exception
+
+- Caso seja passado um valor diferente de 'iPhone' ou 'Android' na propriedade platform, irá ocorrer um erro no aplicativo.
+- Caso a SDK ainda não tenha `identify` cadastrado quando esse método for chamado, irá ocorrer um erro no aplicativo. (utilize o método `identify()` para definir o id do usuário)
 
 ### openNotification()
 
@@ -242,6 +277,49 @@ dito.trackEvent(
     'metodo_pagamento': 'Visa',
   },
 );
+```
+
+### Uso da SDK com push notification:
+
+Para o funcionamento é necessário configurar a lib do Firebase Cloud Message (FCM), seguindo os seguintes passos:
+
+```shell
+dart pub global activate flutterfire_cli
+flutter pub add firebase_core firebase_messaging
+```
+
+```shell
+flutterfire configure
+```
+
+Siga os passos que irá aparecer na CLI, assim terá as chaves de acesso do Firebase configuradas dentro dos App's Android e iOS.
+
+#### main.dart
+```dart
+import 'package:dito_sdk/dito_sdk.dart';
+
+// Método para registrar um serviço que irá receber os push quando o app estiver totalmente fechado
+@pragma('vm:entry-point')
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  final notification = DataPayload.fromJson(jsonDecode(message.data["data"]));
+
+  dito.notificationService().showLocalNotification(CustomNotification(
+      id: message.hashCode,
+      title: notification.details.title || "O nome do aplicativo",
+      body: notification.details.message,
+      payload: notification));
+}
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Firebase.initializeApp();
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
+  DitoSDK dito = DitoSDK();
+  dito.initialize(apiKey: 'sua_api_key', secretKey: 'sua_secret_key');
+  await dito.initializePushService();
+}
 ```
 
 > Lembre-se de substituir 'sua_api_key', 'sua_secret_key' e 'id_do_usuario' pelos valores corretos em seu ambiente.

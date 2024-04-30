@@ -1,8 +1,8 @@
 import 'dart:io';
 
-import 'package:dito_sdk/entity/event.dart';
-import 'package:sqflite/sqflite.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+
+import 'entity/event.dart';
 
 class LocalDatabase {
   static final LocalDatabase instance = LocalDatabase._privateConstructor();
@@ -12,6 +12,7 @@ class LocalDatabase {
 
   Future<Database> get database async {
     if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+      databaseFactoryOrNull = null;
       sqfliteFfiInit();
       databaseFactory = databaseFactoryFfi;
     }

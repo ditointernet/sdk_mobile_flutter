@@ -1,5 +1,6 @@
-import 'package:dito_sdk/constants.dart';
 import 'package:http/http.dart' as http;
+
+import '../constants.dart';
 
 class Api {
   final Map<String, String> _headers = {

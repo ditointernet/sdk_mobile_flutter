@@ -1,14 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'package:dito_sdk/entity/custom_notification.dart';
-import 'package:dito_sdk/entity/data_payload.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
-
-import 'package:dito_sdk/dito_sdk.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import '../dito_sdk.dart';
+import '../entity/custom_notification.dart';
+import '../entity/data_payload.dart';
 
 class NotificationService {
   bool _messagingAllowed = false;
@@ -20,8 +19,7 @@ class NotificationService {
   final StreamController<String?> selectNotificationStream =
       StreamController<String?>.broadcast();
 
-  final AndroidNotificationDetails androidDetails =
-      const AndroidNotificationDetails(
+  AndroidNotificationDetails androidDetails = const AndroidNotificationDetails(
     'dito_notifications',
     'Notifications sended by Dito',
     channelDescription: 'Notifications sended by Dito',
@@ -30,7 +28,7 @@ class NotificationService {
     enableVibration: true,
   );
 
-  final DarwinNotificationDetails iosDetails = const DarwinNotificationDetails(
+  DarwinNotificationDetails iosDetails = const DarwinNotificationDetails(
       presentAlert: true,
       presentBadge: true,
       presentSound: true,
@@ -76,12 +74,11 @@ class NotificationService {
     final notification = DataPayload.fromJson(jsonDecode(message.data["data"]));
 
     if (_messagingAllowed && notification.details.message.isNotEmpty) {
-      didReceiveLocalNotificationStream.add(
-          CustomNotification(
-              id: message.hashCode,
-              title: _appName,
-              body: notification.details.message,
-              payload: notification));
+      didReceiveLocalNotificationStream.add(CustomNotification(
+          id: message.hashCode,
+          title: _appName,
+          body: notification.details.message,
+          payload: notification));
     }
   }
 
@@ -151,6 +148,14 @@ class NotificationService {
             reference: data.reference.toString());
       }
     });
+  }
+
+  setAndroidDetails(AndroidNotificationDetails details) {
+    androidDetails = details;
+  }
+
+  setIosDetails(DarwinNotificationDetails details) {
+    iosDetails = details;
   }
 
   showLocalNotification(CustomNotification notification) {

@@ -24,9 +24,8 @@ void main() {
       await setUp();
 
       dito.identify(userID: id, email: "teste@teste.com");
-      expect(dito.user, isNotNull);
-      expect(dito.user?.userID, id);
-      expect(dito.user?.email, "teste@teste.com");
+      expect(dito.user.id, id);
+      expect(dito.user.email, "teste@teste.com");
 
       final response = await dito.identifyUser();
       expect(response.statusCode, 201);
@@ -49,7 +48,7 @@ void main() {
           token:
               "eXb4Y_piSZS2RKv7WeqjW0:APA91bHJUQ6kL8ZrevvO8zAgYIEdtCWSa7RkmszRFdYz32jYblJvOkIiDcpDdqVqZvOm8CSiEHTzljHajvMO66FFxiqteB6od2sMe01UIOwvKrpUOFXz-L4Slif9jSY9pUaMxyqCtoxR");
 
-      expect(response.statusCode, 201);
+      expect(response.statusCode, 200);
     });
   });
 }

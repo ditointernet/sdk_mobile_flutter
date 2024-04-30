@@ -1,17 +1,17 @@
 import 'dart:convert';
 
 class User {
-  late final String userID;
-  late final String? name;
-  late final String? cpf;
-  late final String? email;
-  late final String? gender;
-  late final String? birthday;
-  late final String? location;
-  late final Map<String, dynamic>? customData;
+  String? userID;
+  String? name;
+  String? cpf;
+  String? email;
+  String? gender;
+  String? birthday;
+  String? location;
+  Map<String, dynamic>? customData;
 
   User(
-      {required this.userID,
+      {this.userID,
       this.name,
       this.cpf,
       this.email,
@@ -20,8 +20,9 @@ class User {
       this.location,
       this.customData});
 
-  String get id => userID;
-  bool get valid => userID.isNotEmpty;
+  String? get id => userID;
+  bool get isValid => userID != null && userID!.isNotEmpty;
+  bool get isNotValid => !isValid;
 
   factory User.fromMap(Map<String, dynamic> map) {
     return User(
@@ -40,9 +41,8 @@ class User {
 
   Map<String, dynamic> toJson() {
     return {
-      'userID': userID,
       'name': name,
-      'cpf': name,
+      'cpf': cpf,
       'email': email,
       'gender': gender,
       'birthday': birthday,
