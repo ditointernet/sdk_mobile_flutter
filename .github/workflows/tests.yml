@@ -1,0 +1,17 @@
+name: Lib test
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: debian-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - run: flutter pub get
+
+      - run: flutter test

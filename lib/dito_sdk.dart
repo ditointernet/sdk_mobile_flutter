@@ -79,8 +79,7 @@ class DitoSDK {
 
     params.addAll(_assign);
 
-    final url = Uri.parse(Constants.endpoints
-        .replace(value: _user.id!, endpoint: Endpoint.events));
+    final url = Uri.parse(Endpoint.events.replace(_user.id!));
 
     return await Api().post(url, params);
   }
@@ -176,8 +175,7 @@ class DitoSDK {
 
     params.addAll(_assign);
 
-    final url = Uri.parse(Constants.endpoints
-        .replace(value: _user.id!, endpoint: Endpoint.identify));
+    final url = Uri.parse(Endpoint.identify.replace(_user.id!));
 
     return await Api().post(
       url,
@@ -226,8 +224,7 @@ class DitoSDK {
 
     params.addAll(_assign);
 
-    final url = Uri.parse(Constants.endpoints
-        .replace(value: _user.id!, endpoint: Endpoint.registryMobileTokens));
+    final url = Uri.parse(Endpoint.registryMobileTokens.replace(_user.id!));
 
     return await Api().post(
       url,
@@ -251,8 +248,7 @@ class DitoSDK {
 
     params.addAll(_assign);
 
-    final url = Uri.parse(Constants.endpoints
-        .replace(value: _user.id!, endpoint: Endpoint.removeMobileTokens));
+    final url = Uri.parse(Endpoint.removeMobileTokens.replace(_user.id!));
 
     return await Api().post(
       url,
@@ -276,8 +272,7 @@ class DitoSDK {
 
     params.addAll(_assign);
 
-    final url = Uri.parse(Constants.endpoints
-        .replace(value: _user.id!, endpoint: Endpoint.openNotification));
+    final url = Uri.parse(Endpoint.openNotification.replace(identifier));
 
     return await Api().post(
       url,

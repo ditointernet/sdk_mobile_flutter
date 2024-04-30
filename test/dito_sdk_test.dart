@@ -37,7 +37,7 @@ void main() {
 
       final response = await dito.trackEvent(eventName: 'sdk-test-flutter');
 
-      expect(response.statusCode, 422);
+      expect(response.statusCode, 201);
     });
 
     test('Send mobile token', () async {
