@@ -1,6 +1,7 @@
 library dito_sdk;
 
 import 'dart:convert';
+import 'package:dito_sdk/entity/domain.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:http/http.dart' as http;
@@ -19,6 +20,7 @@ class DitoSDK {
   late Map<String, String> _assign;
   late NotificationService _notificationService;
   User _user = User();
+  Constants constants = Constants();
 
   static final DitoSDK _instance = DitoSDK._internal();
 
@@ -66,22 +68,6 @@ class DitoSDK {
       throw Exception(
           'API key and Secret Key must be initialized before using. Please call the initialize() method first.');
     }
-  }
-
-  Future<http.Response> _postEvent(Event event) async {
-    _checkConfiguration();
-
-    final params = {
-      'id_type': 'id',
-      'network_name': 'pt',
-      'event': jsonEncode(event.toJson())
-    };
-
-    params.addAll(_assign);
-
-    final url = Uri.parse(Endpoint.events.replace(_user.id!));
-
-    return await Api().post(url, params);
   }
 
   Future<void> _verifyPendingEvents() async {
@@ -169,17 +155,34 @@ class DitoSDK {
           'User registration is required. Please call the identify() method first.');
     }
 
-    final params = {
+    final queryParameters = {
       'user_data': jsonEncode(_user.toJson()),
     };
 
-    params.addAll(_assign);
-
-    final url = Uri.parse(Endpoint.identify.replace(_user.id!));
+    queryParameters.addAll(_assign);
+    final url = Domain(Endpoint.identify.replace(_user.id!)).spited;
+    final uri = Uri.https(url[0], url[1], queryParameters);
 
     return await Api().post(
-      url,
-      params,
+      url: uri,
+    );
+  }
+
+  Future<http.Response> _postEvent(Event event) async {
+    _checkConfiguration();
+
+    final body = {
+      'id_type': 'id',
+      'network_name': 'pt',
+      'event': jsonEncode(event.toJson())
+    };
+
+    final url = Domain(Endpoint.events.replace(_user.id!)).spited;
+    final uri = Uri.https(url[0], url[1], _assign);
+
+    body.addAll(_assign);
+    return await Api().post(
+      url: uri, body: body
     );
   }
 
@@ -216,19 +219,18 @@ class DitoSDK {
           'User registration is required. Please call the identify() method first.');
     }
 
-    final params = {
+    final queryParameters = {
       'id_type': 'id',
       'token': token,
-      'platform': Constants.platform,
+      'platform': constants.platform,
     };
 
-    params.addAll(_assign);
-
-    final url = Uri.parse(Endpoint.registryMobileTokens.replace(_user.id!));
+    queryParameters.addAll(_assign);
+    final url = Domain(Endpoint.registryMobileTokens.replace(_user.id!)).spited;
+    final uri = Uri.https(url[0], url[1], queryParameters);
 
     return await Api().post(
-      url,
-      params,
+      url: uri,
     );
   }
 
@@ -240,19 +242,18 @@ class DitoSDK {
           'User registration is required. Please call the identify() method first.');
     }
 
-    final params = {
+    final queryParameters = {
       'id_type': 'id',
       'token': token,
-      'platform': Constants.platform,
+      'platform': constants.platform,
     };
 
-    params.addAll(_assign);
-
-    final url = Uri.parse(Endpoint.removeMobileTokens.replace(_user.id!));
+    queryParameters.addAll(_assign);
+    final url = Domain(Endpoint.removeMobileTokens.replace(_user.id!)).spited;
+    final uri = Uri.https(url[0], url[1], queryParameters);
 
     return await Api().post(
-      url,
-      params,
+      url: uri,
     );
   }
 
@@ -260,23 +261,23 @@ class DitoSDK {
       {required String notificationId,
       required String identifier,
       required String reference}) async {
+
     _checkConfiguration();
 
-    final params = {
+    final queryParameters = {
       'channel_type': 'mobile',
-      'data': jsonEncode({
-        'identifier': identifier,
-        'reference': reference,
-      })
     };
 
-    params.addAll(_assign);
+    final body = {
+      'identifier': identifier,
+      'reference': reference,
+    };
 
-    final url = Uri.parse(Endpoint.openNotification.replace(identifier));
+    queryParameters.addAll(_assign);
 
-    return await Api().post(
-      url,
-      params,
-    );
+    final url = Domain(Endpoint.openNotification.replace(_user.id!)).spited;
+    final uri = Uri.https(url[0], url[1], queryParameters);
+
+    return await Api().post(url: uri, body: body);
   }
 }
