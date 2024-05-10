@@ -4,9 +4,9 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 class Constants {
-  static String platform = Platform.isIOS ? 'iPhone' : 'Android';
+  String platform = Platform.isIOS ? 'iPhone' : 'Android';
 
-  static Future<String> get userAgent async {
+  Future<String> getUserAgent() async {
     final deviceInfo = DeviceInfoPlugin();
     final PackageInfo packageInfo = await PackageInfo.fromPlatform();
     final String version = packageInfo.version;
@@ -40,26 +40,26 @@ enum Endpoint {
     switch (toString()) {
       case "Endpoint.registryMobileTokens":
         value =
-            "https://notification.plataformasocial.com.br/users/{}/mobile-tokens/"
+            "notification.plataformasocial.com.br/users/{}/mobile-tokens/"
                 .replaceFirst("{}", id);
         break;
       case "Endpoint.removeMobileTokens":
         value =
-            "https://notification.plataformasocial.com.br/users/{}/mobile-tokens/disable/"
+            "notification.plataformasocial.com.br/users/{}/mobile-tokens/disable/"
                 .replaceFirst("{}", id);
         break;
       case "Endpoint.events":
         value =
-            "http://events.plataformasocial.com.br/users/{}"
+            "events.plataformasocial.com.br/users/{}"
             .replaceFirst("{}", id);
         break;
       case "Endpoint.openNotification":
         value =
-            "https://notification.plataformasocial.com.br/notifications/{}/open"
+            "notification.plataformasocial.com.br/notifications/{}/open"
                 .replaceFirst("{}", id);
         break;
       default:
-        value = "https://login.plataformasocial.com.br/users/portal/{}/signup"
+        value = "login.plataformasocial.com.br/users/portal/{}/signup"
             .replaceFirst("{}", id);
         break;
     }
@@ -67,5 +67,3 @@ enum Endpoint {
     return value;
   }
 }
-
-
