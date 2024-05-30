@@ -1,18 +1,19 @@
 library dito_sdk;
 
 import 'dart:convert';
+
 import 'package:dito_sdk/entity/domain.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:http/http.dart' as http;
 
 import 'constants.dart';
-import 'utils/http.dart';
-import 'utils/sha1.dart';
-import 'services/notification_service.dart';
 import 'database.dart';
 import 'entity/event.dart';
 import 'entity/user.dart';
+import 'services/notification_service.dart';
+import 'utils/http.dart';
+import 'utils/sha1.dart';
 
 class DitoSDK {
   String? _apiKey;
@@ -181,9 +182,7 @@ class DitoSDK {
     final uri = Uri.https(url[0], url[1], _assign);
 
     body.addAll(_assign);
-    return await Api().post(
-      url: uri, body: body
-    );
+    return await Api().post(url: uri, body: body);
   }
 
   Future<http.Response> trackEvent({
@@ -196,17 +195,10 @@ class DitoSDK {
     String eventMoment = utcDateTime.toIso8601String();
 
     final event = Event(
-      eventName: eventName,
-      eventMoment: eventMoment,
-    );
-
-    if (customData != null) {
-      event.customData = customData;
-    }
-
-    if (revenue != null) {
-      event.revenue = revenue;
-    }
+        eventName: eventName,
+        eventMoment: eventMoment,
+        customData: customData,
+        revenue: revenue);
 
     if (_user.isNotValid) {
       final database = LocalDatabase.instance;
@@ -267,7 +259,6 @@ class DitoSDK {
       {required String notificationId,
       required String identifier,
       required String reference}) async {
-
     _checkConfiguration();
 
     final queryParameters = {
