@@ -1,0 +1,13 @@
+name: sdk_monorepo
+
+packages:
+  - package
+  - example
+
+scripts:
+  analyze:
+    exec: dart analyze .
+
+command:
+  bootstrap:
+    runPubGetInParallel: false

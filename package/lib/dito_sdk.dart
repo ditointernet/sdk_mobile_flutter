@@ -6,13 +6,13 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:http/http.dart' as http;
 
-import './constants.dart';
-import './utils/http.dart';
-import './utils/sha1.dart';
-import './services/notification_service.dart';
-import './database.dart';
-import './entity/event.dart';
-import './entity/user.dart';
+import 'constants.dart';
+import 'utils/http.dart';
+import 'utils/sha1.dart';
+import 'services/notification_service.dart';
+import 'database.dart';
+import 'entity/event.dart';
+import 'entity/user.dart';
 
 class DitoSDK {
   String? _apiKey;
@@ -198,9 +198,15 @@ class DitoSDK {
     final event = Event(
       eventName: eventName,
       eventMoment: eventMoment,
-      revenue: revenue,
-      customData: customData,
     );
+
+    if (customData != null) {
+      event.customData = customData;
+    }
+
+    if (revenue != null) {
+      event.revenue = revenue;
+    }
 
     if (_user.isNotValid) {
       final database = LocalDatabase.instance;

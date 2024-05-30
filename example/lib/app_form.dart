@@ -27,10 +27,11 @@ class AppFormState extends State<AppForm> {
           userID: cpf, cpf: cpf, name: 'Teste SDK Flutter', email: email);
       await dito.identifyUser();
 
-      final token = await dito.notificationService().getDeviceFirebaseToken();
-      if (token != null && token.isNotEmpty) {
-        dito.registryMobileToken(token: token);
-      }
+      // final token = await dito.notificationService().getDeviceFirebaseToken();
+      //
+      // if (token != null && token.isNotEmpty) {
+      //   dito.registryMobileToken(token: token);
+      // }
     }
 
     handleIdentify() async {

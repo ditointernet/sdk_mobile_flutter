@@ -1,4 +1,4 @@
-name: flutter_sdk_test
+name: dito_sdk_example
 description: "A new Flutter project."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
@@ -39,10 +39,7 @@ dependencies:
   package_info_plus: ^4.2.0
   firebase_core: ^2.30.1
   firebase_messaging: ^14.9.1
-  dito_sdk:
-    git:
-      url: https://github.com/ditointernet/sdk_mobile_flutter.git
-      ref: main
+  dito_sdk: ^0.5.1
 
 dev_dependencies:
   flutter_test:

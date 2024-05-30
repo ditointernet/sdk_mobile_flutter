@@ -1,7 +1,8 @@
 import 'package:dito_sdk/dito_sdk.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_sdk_test/app_form.dart';
 import 'package:provider/provider.dart';
+
+import './app_form.dart';
 
 class App extends StatefulWidget {
   const App({super.key});
@@ -12,7 +13,6 @@ class App extends StatefulWidget {
 
 class _AppState extends State<App> {
   @override
-
   void initState() {
     super.initState();
     initializeDito();
@@ -32,15 +32,12 @@ class _AppState extends State<App> {
           useMaterial3: true,
         ),
         home: Scaffold(
-          appBar: AppBar(
-            title: const Text('Test SDK Flutter'),
-          ),
-          body: SingleChildScrollView(
-            child: Container(
-              margin: const EdgeInsets.all(15.0),
-              child: const AppForm(),
+            appBar: AppBar(
+              title: const Text('Test SDK Flutter'),
             ),
-          ),
-        ));
+            body: const Center(
+              child: AppForm(),
+            ))
+    );
   }
 }

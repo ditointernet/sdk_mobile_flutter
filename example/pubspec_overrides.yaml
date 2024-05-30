@@ -1,0 +1,4 @@
+# melos_managed_dependency_overrides: dito_sdk
+dependency_overrides:
+  dito_sdk:
+    path: ../package
