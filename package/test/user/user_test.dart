@@ -28,7 +28,7 @@ void main() {
       final result = await dito.user.identify(
           UserEntity(userID: "11111111111", email: "teste@teste.com"));
       expect(result, true);
-      expect(dito.user.data.id, "11111111111");
+      expect(dito.user.id, "11111111111");
     });
   });
 }

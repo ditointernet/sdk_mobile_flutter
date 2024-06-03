@@ -1,16 +1,15 @@
 library dito_sdk;
 
-import 'package:dito_sdk/user/user_entity.dart';
-import 'package:dito_sdk/user/user_interface.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:http'
-    '/http.dart' as http;
+import 'package:http/http.dart' as http;
 
 import 'data/dito_api.dart';
 import 'database.dart';
 import 'entity/event.dart';
 import 'services/notification_service.dart';
+import 'user/user_interface.dart';
+import 'user/user_entity.dart';
 
 /// DitoSDK is a singleton class that provides various methods to interact with Dito API
 /// and manage user data, events, and push notifications.
