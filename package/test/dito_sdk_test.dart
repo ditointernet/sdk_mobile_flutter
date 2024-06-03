@@ -1,20 +1,13 @@
-import 'dart:convert';
-import 'dart:io';
-
 import 'package:dito_sdk/dito_sdk.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-Future<dynamic> testEnv() async {
-  final file = File('test/.env-test.json');
-  final json = jsonDecode(await file.readAsString());
-  return json;
-}
+import 'utils.dart';
 
 void main() {
   final DitoSDK dito = DitoSDK();
   const id = '22222222222';
 
-  setUp() async {
+  Future<void> setUp() async {
     dynamic env = await testEnv();
     dito.initialize(apiKey: env["apiKey"], secretKey: env["secret"]);
   }
@@ -29,7 +22,7 @@ void main() {
       expect(dito.user.email, "teste@teste.com");
 
       final response = await dito.identifyUser();
-      expect(response.statusCode, 201);
+      expect(response.statusCode, isNot(500));
     });
 
     test('Send event', () async {

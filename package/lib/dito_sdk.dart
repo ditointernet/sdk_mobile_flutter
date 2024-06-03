@@ -1,5 +1,6 @@
 library dito_sdk;
 
+import 'package:dito_sdk/user/user.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:http/http.dart' as http;
@@ -12,8 +13,9 @@ import 'services/notification_service.dart';
 import 'data/dito_api.dart';
 
 class DitoSDK {
-  late NotificationService _notificationService;
+  final _userInterface = UserInterface();
   User _user = User();
+  late NotificationService _notificationService;
   Constants constants = Constants();
 
   late DitoApi ditoApi;
@@ -26,12 +28,10 @@ class DitoSDK {
 
   DitoSDK._internal();
 
+  UserInterface get user => _userInterface;
+
   NotificationService notificationService() {
     return _notificationService;
-  }
-
-  User get user {
-    return _user;
   }
 
   void initialize({required String apiKey, required String secretKey}) async {
@@ -60,23 +60,18 @@ class DitoSDK {
 
     if (events.isNotEmpty) {
       for (final event in events) {
-        await ditoApi.trackEvent(event, _user);
+        await _postEvent(event);
       }
       database.deleteEvents();
     }
   }
 
-  @Deprecated('migration')
+  @Deprecated('Use user.set(User user) to set all user information\'s')
   Future<void> setUserId(String userId) async {
-    _setUserId(userId);
+    _verifyPendingEvents();
   }
 
-  Future<void> _setUserId(String userId) async {
-    if (_user.isValid) {
-      _verifyPendingEvents();
-    }
-  }
-
+  @Deprecated('Use user.set(User user) to set all user information\'s')
   void identify({
     required String userID,
     String? cpf,
@@ -87,57 +82,46 @@ class DitoSDK {
     String? location,
     Map<String, String>? customData,
   }) {
-    _user.userID = userID;
-
-    if (cpf != null) {
-      _user.cpf = cpf;
-    }
-
-    if (name != null) {
-      _user.name = name;
-    }
-
-    if (email != null) {
-      _user.email = email;
-    }
-
-    if (gender != null) {
-      _user.gender = gender;
-    }
-
-    if (birthday != null) {
-      _user.birthday = birthday;
-    }
-
-    if (location != null) {
-      _user.location = location;
-    }
-
-    if (customData != null) {
-      _user.customData = customData;
-    }
-
-    _setUserId(userID);
+    _userInterface.set(UserEntity(
+        userID: userID,
+        cpf: cpf,
+        name: name,
+        email: email,
+        gender: gender,
+        birthday: birthday,
+        location: location,
+        customData: customData));
   }
 
+  @Deprecated('Use user.set(User user) to set all user information\'s')
   Future<void> setUser(User user) async {
-    _user = user;
-
-    if (_user.isValid) {
-      await _setUserId(_user.id!);
-    } else {
-      throw Exception(
-          'User registration is required. Please call the identify() method first.');
-    }
+    _userInterface.set(user);
   }
 
+  @Deprecated(
+      'Use user.identify(User user) to set all user information\'s and create a login event on platform')
   Future<http.Response> identifyUser() async {
-    if (_user.isNotValid) {
-      throw Exception(
-          'User registration is required. Please call the identify() method first.');
-    }
+    _checkConfiguration();
 
-    return await ditoApi.identify(_user);
+    final result = await _userInterface.identify(null);
+    if (result) return http.Response('', 200);
+    return http.Response('', 500);
+  }
+
+  Future<http.Response> _postEvent(Event event) async {
+    _checkConfiguration();
+
+    final body = {
+      'id_type': 'id',
+      'network_name': 'pt',
+      'event': jsonEncode(event.toJson())
+    };
+
+    final url = Domain(Endpoint.events.replace(_userInterface.id!)).spited;
+    final uri = Uri.https(url[0], url[1], _assign);
+
+    body.addAll(_assign);
+    return await Api().post(url: uri, body: body);
   }
 
   Future<http.Response> trackEvent({
@@ -155,7 +139,7 @@ class DitoSDK {
         customData: customData,
         revenue: revenue);
 
-    if (_user.isNotValid) {
+    if (_userInterface.isNotValid) {
       final database = LocalDatabase.instance;
       await database.createEvent(event);
       return http.Response("", 200);
