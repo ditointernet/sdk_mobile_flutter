@@ -155,7 +155,7 @@ class DitoSDK {
         customData: customData,
         revenue: revenue);
 
-    if (user.isNotValid) {
+    if (_user.isNotValid) {
       final database = LocalDatabase.instance;
       await database.createEvent(event);
       return http.Response("", 200);
