@@ -103,16 +103,16 @@ class AppFormState extends State<AppForm> {
                   padding: const EdgeInsets.all(15.0),
                   child: Column(children: [
                     FilledButton(
-                      onPressed: handleIdentify,
                       child: const Text('Registrar Identify'),
+                      onPressed: handleIdentify,
                     ),
                     OutlinedButton(
-                      onPressed: handleNotification,
                       child: const Text('Receber Notification'),
+                      onPressed: handleNotification,
                     ),
                     TextButton(
-                      onPressed: handleLocalNotification,
                       child: const Text('Criar notificação local'),
+                      onPressed: handleLocalNotification,
                     )
                   ])))
         ],
