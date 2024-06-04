@@ -1,14 +1,14 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'dart:io';
 
 import '../database.dart';
-import '../constants.dart';
 import '../entity/user.dart';
 import '../entity/event.dart';
 import '../entity/domain.dart';
 import '../utils/sha1.dart';
 
-enum Endpoints {
+enum Endpoint {
   identify,
   registryMobileTokens,
   removeMobileTokens,
@@ -47,7 +47,7 @@ enum Endpoints {
 }
 
 class DitoApi {
-  Constants constants = Constants();
+  String _platform = Platform.isIOS ? 'iPhone' : 'Android';
   String? _apiKey;
   String? _secretKey;
   late Map<String, String> _assign;
@@ -75,7 +75,7 @@ class DitoApi {
       body: body,
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
-        'User-Agent': constants.platform,
+        'User-Agent': _platform,
       },
     );
   }
@@ -95,7 +95,7 @@ class DitoApi {
     };
 
     queryParameters.addAll(_assign);
-    final url = Domain(Endpoints.identify.replace(user.id!)).spited;
+    final url = Domain(Endpoint.identify.replace(user.id!)).spited;
     final uri = Uri.https(url[0], url[1], queryParameters);
 
     return await _post(
@@ -116,7 +116,7 @@ class DitoApi {
       'event': jsonEncode(event.toJson())
     };
 
-    final url = Domain(Endpoints.events.replace(user.id!)).spited;
+    final url = Domain(Endpoint.events.replace(user.id!)).spited;
     final uri = Uri.https(url[0], url[1], _assign);
 
     body.addAll(_assign);
@@ -152,7 +152,7 @@ class DitoApi {
     final queryParameters = {
       'id_type': 'id',
       'token': token,
-      'platform': constants.platform,
+      'platform': _platform,
     };
 
     queryParameters.addAll(_assign);
@@ -173,7 +173,7 @@ class DitoApi {
     final queryParameters = {
       'id_type': 'id',
       'token': token,
-      'platform': constants.platform,
+      'platform': _platform,
     };
 
     queryParameters.addAll(_assign);
