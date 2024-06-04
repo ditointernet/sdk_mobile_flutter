@@ -9,11 +9,14 @@ import 'database.dart';
 import 'entity/event.dart';
 import 'entity/user.dart';
 import 'services/notification_service.dart';
+import 'data/dito_api.dart';
 
 class DitoSDK {
   late NotificationService _notificationService;
   User _user = User();
   Constants constants = Constants();
+
+  late DitoApi ditoApi;
 
   static final DitoSDK _instance = DitoSDK._internal();
 
@@ -33,7 +36,7 @@ class DitoSDK {
 
   void initialize({required String apiKey, required String secretKey}) async {
     _notificationService = NotificationService(_instance);
-    DitoApi().initialize(apiKey, secretKey);
+    ditoApi = DitoApi(apiKey, secretKey);
   }
 
   Future<void> initializePushNotificationService() async {
@@ -57,7 +60,7 @@ class DitoSDK {
 
     if (events.isNotEmpty) {
       for (final event in events) {
-        await DitoApi().trackEvent(event, _user);
+        await ditoApi.trackEvent(event, _user);
       }
       database.deleteEvents();
     }
@@ -134,7 +137,7 @@ class DitoSDK {
           'User registration is required. Please call the identify() method first.');
     }
 
-    return await DitoApi().identify(_user);
+    return await ditoApi.identify(_user);
   }
 
   Future<http.Response> trackEvent({
@@ -152,22 +155,28 @@ class DitoSDK {
         customData: customData,
         revenue: revenue);
 
-    return await DitoApi().trackEvent(event, _user);
+    if (user.isNotValid) {
+      final database = LocalDatabase.instance;
+      await database.createEvent(event);
+      return http.Response("", 200);
+    }
+
+    return await ditoApi.trackEvent(event, _user);
   }
 
   Future<http.Response> registryMobileToken({required String token}) async {
-    return await DitoApi().registryMobileToken(token, _user);
+    return await ditoApi.registryMobileToken(token, _user);
   }
 
   Future<http.Response> removeMobileToken({required String token}) async {
-    return await DitoApi().removeMobileToken(token, _user);
+    return await ditoApi.removeMobileToken(token, _user);
   }
 
   Future<http.Response> openNotification(
       {required String notificationId,
       required String identifier,
       required String reference}) async {
-    return await DitoApi()
-        .openNotification(notificationId, identifier, reference);
+    return await ditoApi.openNotification(
+        notificationId, identifier, reference);
   }
 }
