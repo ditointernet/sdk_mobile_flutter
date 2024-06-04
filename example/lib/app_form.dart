@@ -1,5 +1,6 @@
 import 'package:dito_sdk/dito_sdk.dart';
 import 'package:dito_sdk/entity/custom_notification.dart';
+import 'package:dito_sdk/user/user_entity.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -23,9 +24,10 @@ class AppFormState extends State<AppForm> {
     String email = "teste@dito.com.br";
 
     identify() async {
-      dito.identify(
+      final user = UserEntity(
           userID: cpf, cpf: cpf, name: 'Teste SDK Flutter', email: email);
-      await dito.identifyUser();
+
+      await dito.user.identify(user);
 
       final token = await dito.notificationService().getDeviceFirebaseToken();
 
@@ -101,16 +103,16 @@ class AppFormState extends State<AppForm> {
                   padding: const EdgeInsets.all(15.0),
                   child: Column(children: [
                     FilledButton(
-                      onPressed: handleIdentify,
                       child: const Text('Registrar Identify'),
+                      onPressed: handleIdentify,
                     ),
                     OutlinedButton(
-                      onPressed: handleNotification,
                       child: const Text('Receber Notification'),
+                      onPressed: handleNotification,
                     ),
                     TextButton(
-                      onPressed: handleLocalNotification,
                       child: const Text('Criar notificação local'),
+                      onPressed: handleLocalNotification,
                     )
                   ])))
         ],
