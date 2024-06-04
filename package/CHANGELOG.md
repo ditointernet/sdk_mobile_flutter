@@ -1,3 +1,12 @@
+## 0.5.3 (Jun 04, 2024)
+
+### Bug Fixes
+
+- Bug Fixes
+    - Fixing url from open notification event
+- Additional Notes
+    - No additional notes in this version.
+
 ## 0.5.2 (Jun 04, 2024)
 
 ### Bug Fixes

@@ -55,13 +55,10 @@ void main() {
     test('Send open notification', () async {
       await setUp();
 
-      dito.identify(userID: id);
-      expect(dito.user.id, id);
-
       final response = await dito.openNotification(
           notificationId: '723422', identifier: '1713466024', reference: id);
 
-      expect(response.statusCode, 422);
+      expect(response.statusCode, 200);
     });
   });
 }

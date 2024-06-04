@@ -272,7 +272,8 @@ class DitoSDK {
 
     queryParameters.addAll(_assign);
 
-    final url = Domain(Endpoint.openNotification.replace(_user.id!)).spited;
+    final url =
+        Domain(Endpoint.openNotification.replace(notificationId)).spited;
     final uri = Uri.https(url[0], url[1], queryParameters);
 
     return await Api().post(url: uri, body: body);
