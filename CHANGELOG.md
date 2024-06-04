@@ -1,5 +1,13 @@
+## 0.5.1 (Jun 04, 2024)
 
-## 0.5.1 (October 10, 2024)
+### Bug Fixes
+
+- Bug Fixes
+    - Identify user custom data encoder
+- Additional Notes
+    - No additional notes in this version.
+
+## 0.5.1 (May 03, 2024)
 
 ### Bug Fixes
 

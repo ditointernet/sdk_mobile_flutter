@@ -47,7 +47,7 @@ class User {
       'gender': gender,
       'birthday': birthday,
       'location': location,
-      'customData': customData != null ? json.encode(customData) : null,
+      'data': customData != null ? jsonEncode(customData) : null,
     };
   }
 }

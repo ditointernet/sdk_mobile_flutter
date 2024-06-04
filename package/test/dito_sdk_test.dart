@@ -23,7 +23,8 @@ void main() {
     test('Send identify', () async {
       await setUp();
 
-      dito.identify(userID: id, email: "teste@teste.com");
+      dito.identify(
+          userID: id, email: "teste@teste.com", customData: {"teste": "Teste"});
       expect(dito.user.id, id);
       expect(dito.user.email, "teste@teste.com");
 
