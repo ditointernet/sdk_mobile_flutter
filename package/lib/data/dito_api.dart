@@ -5,49 +5,10 @@ import 'dart:io';
 import '../database.dart';
 import '../entity/user.dart';
 import '../entity/event.dart';
-import '../entity/domain.dart';
 import '../utils/sha1.dart';
 
-enum Endpoint {
-  identify,
-  registryMobileTokens,
-  removeMobileTokens,
-  events,
-  openNotification;
-
-  replace(String id) {
-    String? value;
-
-    switch (toString()) {
-      case "Endpoint.registryMobileTokens":
-        value = "notification.plataformasocial.com.br/users/{}/mobile-tokens/"
-            .replaceFirst("{}", id);
-        break;
-      case "Endpoint.removeMobileTokens":
-        value =
-            "notification.plataformasocial.com.br/users/{}/mobile-tokens/disable/"
-                .replaceFirst("{}", id);
-        break;
-      case "Endpoint.events":
-        value =
-            "events.plataformasocial.com.br/users/{}".replaceFirst("{}", id);
-        break;
-      case "Endpoint.openNotification":
-        value = "notification.plataformasocial.com.br/notifications/{}/open"
-            .replaceFirst("{}", id);
-        break;
-      default:
-        value = "login.plataformasocial.com.br/users/portal/{}/signup"
-            .replaceFirst("{}", id);
-        break;
-    }
-
-    return value;
-  }
-}
-
 class DitoApi {
-  String _platform = Platform.isIOS ? 'iPhone' : 'Android';
+  final String _platform = Platform.isIOS ? 'iPhone' : 'Android';
   String? _apiKey;
   String? _secretKey;
   late Map<String, String> _assign;
@@ -67,11 +28,14 @@ class DitoApi {
     }
   }
 
-  Future<http.Response> _post({required url, Map<String, Object?>? body}) {
+  Future<http.Response> _post(String url, String path,
+      {Map<String, Object?>? queryParameters, Map<String, Object?>? body}) {
     _checkConfiguration();
 
+    final uri = Uri.https(url, path, queryParameters);
+
     return http.post(
-      url,
+      uri,
       body: body,
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
@@ -95,12 +59,11 @@ class DitoApi {
     };
 
     queryParameters.addAll(_assign);
-    final url = Domain(Endpoint.identify.replace(user.id!)).spited;
-    final uri = Uri.https(url[0], url[1], queryParameters);
 
-    return await _post(
-      url: uri,
-    );
+    const url = 'login.plataformasocial.com.br';
+    final path = 'users/portal/${user.id}/signup';
+
+    return await _post(url, path, queryParameters: queryParameters);
   }
 
   Future<http.Response> trackEvent(Event event, User user) async {
@@ -116,11 +79,12 @@ class DitoApi {
       'event': jsonEncode(event.toJson())
     };
 
-    final url = Domain(Endpoint.events.replace(user.id!)).spited;
-    final uri = Uri.https(url[0], url[1], _assign);
+    const url = 'events.plataformasocial.com.br';
+    final path = 'users/${user.id}';
 
     body.addAll(_assign);
-    return await _post(url: uri, body: body);
+
+    return await _post(url, path, body: body);
   }
 
   Future<http.Response> openNotification(
@@ -136,11 +100,10 @@ class DitoApi {
 
     queryParameters.addAll(_assign);
 
-    final url =
-        Domain(Endpoint.openNotification.replace(notificationId)).spited;
-    final uri = Uri.https(url[0], url[1], queryParameters);
+    const url = 'notification.plataformasocial.com.br';
+    final path = 'notifications/${notificationId}/open';
 
-    return await _post(url: uri, body: body);
+    return await _post(url, path, body: body);
   }
 
   Future<http.Response> registryMobileToken(String token, User user) async {
@@ -156,12 +119,11 @@ class DitoApi {
     };
 
     queryParameters.addAll(_assign);
-    final url = Domain(Endpoint.registryMobileTokens.replace(user.id!)).spited;
-    final uri = Uri.https(url[0], url[1], queryParameters);
 
-    return await _post(
-      url: uri,
-    );
+    const url = 'notification.plataformasocial.com.br';
+    final path = 'users/${user.id}/mobile-tokens/';
+
+    return await _post(url, path, queryParameters: queryParameters);
   }
 
   Future<http.Response> removeMobileToken(String token, User user) async {
@@ -177,11 +139,10 @@ class DitoApi {
     };
 
     queryParameters.addAll(_assign);
-    final url = Domain(Endpoint.removeMobileTokens.replace(user.id!)).spited;
-    final uri = Uri.https(url[0], url[1], queryParameters);
 
-    return await _post(
-      url: uri,
-    );
+    const url = 'notification.plataformasocial.com.br';
+    final path = 'users/${user.id}/mobile-tokens/disable';
+
+    return await _post(url, path, queryParameters: queryParameters);
   }
 }
