@@ -1,7 +1,6 @@
 library dito_sdk;
 
-import 'dart:convert';
-
+import 'package:dito_sdk/data/dito_api.dart';
 import 'package:dito_sdk/entity/domain.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -12,13 +11,8 @@ import 'database.dart';
 import 'entity/event.dart';
 import 'entity/user.dart';
 import 'services/notification_service.dart';
-import 'utils/http.dart';
-import 'utils/sha1.dart';
 
 class DitoSDK {
-  String? _apiKey;
-  String? _secretKey;
-  late Map<String, String> _assign;
   late NotificationService _notificationService;
   User _user = User();
   Constants constants = Constants();
@@ -40,13 +34,8 @@ class DitoSDK {
   }
 
   void initialize({required String apiKey, required String secretKey}) async {
-    _apiKey = apiKey;
-    _secretKey = secretKey;
     _notificationService = NotificationService(_instance);
-    _assign = {
-      'platform_api_key': apiKey,
-      'sha1_signature': convertToSHA1(_secretKey!),
-    };
+    DitoApi().initialize(apiKey, secretKey);
   }
 
   Future<void> initializePushNotificationService() async {
@@ -64,20 +53,13 @@ class DitoSDK {
         .listen(_notificationService.handleMessage);
   }
 
-  void _checkConfiguration() {
-    if (_apiKey == null || _secretKey == null) {
-      throw Exception(
-          'API key and Secret Key must be initialized before using. Please call the initialize() method first.');
-    }
-  }
-
   Future<void> _verifyPendingEvents() async {
     final database = LocalDatabase.instance;
     final events = await database.getEvents();
 
     if (events.isNotEmpty) {
       for (final event in events) {
-        await _postEvent(event);
+        await DitoApi().trackEvent(event, _user);
       }
       database.deleteEvents();
     }
@@ -149,40 +131,12 @@ class DitoSDK {
   }
 
   Future<http.Response> identifyUser() async {
-    _checkConfiguration();
-
     if (_user.isNotValid) {
       throw Exception(
           'User registration is required. Please call the identify() method first.');
     }
 
-    final queryParameters = {
-      'user_data': jsonEncode(_user.toJson()),
-    };
-
-    queryParameters.addAll(_assign);
-    final url = Domain(Endpoint.identify.replace(_user.id!)).spited;
-    final uri = Uri.https(url[0], url[1], queryParameters);
-
-    return await Api().post(
-      url: uri,
-    );
-  }
-
-  Future<http.Response> _postEvent(Event event) async {
-    _checkConfiguration();
-
-    final body = {
-      'id_type': 'id',
-      'network_name': 'pt',
-      'event': jsonEncode(event.toJson())
-    };
-
-    final url = Domain(Endpoint.events.replace(_user.id!)).spited;
-    final uri = Uri.https(url[0], url[1], _assign);
-
-    body.addAll(_assign);
-    return await Api().post(url: uri, body: body);
+    return await DitoApi().identify(_user);
   }
 
   Future<http.Response> trackEvent({
@@ -200,82 +154,22 @@ class DitoSDK {
         customData: customData,
         revenue: revenue);
 
-    if (_user.isNotValid) {
-      final database = LocalDatabase.instance;
-      await database.createEvent(event);
-      return http.Response("", 200);
-    }
-
-    return await _postEvent(event);
+    return await DitoApi().trackEvent(event, _user);
   }
 
   Future<http.Response> registryMobileToken({required String token}) async {
-    _checkConfiguration();
-
-    if (_user.isNotValid) {
-      throw Exception(
-          'User registration is required. Please call the identify() method first.');
-    }
-
-    final queryParameters = {
-      'id_type': 'id',
-      'token': token,
-      'platform': constants.platform,
-    };
-
-    queryParameters.addAll(_assign);
-    final url = Domain(Endpoint.registryMobileTokens.replace(_user.id!)).spited;
-    final uri = Uri.https(url[0], url[1], queryParameters);
-
-    return await Api().post(
-      url: uri,
-    );
+    return await DitoApi().registryMobileToken(token, _user);
   }
 
   Future<http.Response> removeMobileToken({required String token}) async {
-    _checkConfiguration();
-
-    if (_user.isNotValid) {
-      throw Exception(
-          'User registration is required. Please call the identify() method first.');
-    }
-
-    final queryParameters = {
-      'id_type': 'id',
-      'token': token,
-      'platform': constants.platform,
-    };
-
-    queryParameters.addAll(_assign);
-    final url = Domain(Endpoint.removeMobileTokens.replace(_user.id!)).spited;
-    final uri = Uri.https(url[0], url[1], queryParameters);
-
-    return await Api().post(
-      url: uri,
-    );
+    return await DitoApi().removeMobileToken(token, _user);
   }
 
   Future<http.Response> openNotification(
       {required String notificationId,
       required String identifier,
       required String reference}) async {
-    _checkConfiguration();
-
-    final queryParameters = {
-      'channel_type': 'mobile',
-    };
-
-    final body = {
-      'identifier': identifier,
-      'reference': reference,
-    };
-
-    queryParameters.addAll(_assign);
-
-    final url =
-        Domain(Endpoint.openNotification.replace(notificationId)).spited;
-    final uri = Uri.https(url[0], url[1], queryParameters);
-
-    return await Api().post(url: uri, body: body);
+    return await DitoApi()
+        .openNotification(notificationId, identifier, reference);
   }
 }
