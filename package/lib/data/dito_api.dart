@@ -2,7 +2,6 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:io';
 
-import '../database.dart';
 import '../entity/user.dart';
 import '../entity/event.dart';
 import '../utils/sha1.dart';
@@ -15,7 +14,14 @@ class DitoApi {
 
   static final DitoApi _instance = DitoApi._internal();
 
-  factory DitoApi() {
+  factory DitoApi(String apiKey, String secretKey) {
+    _instance._apiKey = apiKey;
+    _instance._secretKey = secretKey;
+    _instance._assign = {
+      'platform_api_key': apiKey,
+      'sha1_signature': convertToSHA1(secretKey),
+    };
+
     return _instance;
   }
 
@@ -44,15 +50,6 @@ class DitoApi {
     );
   }
 
-  Future<void> initialize(String apiKey, String secretKey) async {
-    _apiKey = apiKey;
-    _secretKey = secretKey;
-    _assign = {
-      'platform_api_key': apiKey,
-      'sha1_signature': convertToSHA1(secretKey),
-    };
-  }
-
   Future<http.Response> identify(User user) async {
     final queryParameters = {
       'user_data': jsonEncode(user.toJson()),
@@ -67,12 +64,6 @@ class DitoApi {
   }
 
   Future<http.Response> trackEvent(Event event, User user) async {
-    if (user.isNotValid) {
-      final database = LocalDatabase.instance;
-      await database.createEvent(event);
-      return http.Response("", 200);
-    }
-
     final body = {
       'id_type': 'id',
       'network_name': 'pt',
@@ -101,7 +92,7 @@ class DitoApi {
     queryParameters.addAll(_assign);
 
     const url = 'notification.plataformasocial.com.br';
-    final path = 'notifications/${notificationId}/open';
+    final path = 'notifications/$notificationId/open';
 
     return await _post(url, path, body: body);
   }
