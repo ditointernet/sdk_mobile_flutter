@@ -1,3 +1,13 @@
+## 0.5.4 (Jun 05, 2024)
+
+### Bug Fixes
+
+- Bug Fixes
+    - Fixing notification id from dataPayload for string (this enable the new sender)
+- Additional Notes
+    - No additional notes in this version.
+    -
+
 ## 0.5.3 (Jun 04, 2024)
 
 ### Bug Fixes
