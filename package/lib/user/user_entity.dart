@@ -22,10 +22,12 @@ class UserEntity {
 
   String? get id => userID;
 
+  /// User is valid when userId is not empty
   bool get isValid => userID!.isNotEmpty;
 
   bool get isNotValid => !isValid;
 
+  // Factory method to instance a user from a JSON object
   factory UserEntity.fromMap(Map<String, dynamic> map) {
     return UserEntity(
         userID: map['userID'],
@@ -41,6 +43,7 @@ class UserEntity {
             : null);
   }
 
+  // Factory method to convert a user to JSON object
   Map<String, dynamic> toJson() {
     return {
       'name': name,
@@ -53,6 +56,3 @@ class UserEntity {
     };
   }
 }
-
-@Deprecated("This data class was deprecated! ")
-class User extends UserEntity {}
