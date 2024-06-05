@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -143,9 +144,9 @@ class NotificationService {
       if (payload != null) {
         final data = DataPayload.fromJson(jsonDecode(payload));
         await _dito.openNotification(
-            notificationId: data.notification.toString(),
-            identifier: data.reference.toString(),
-            reference: data.reference.toString());
+            notificationId: data.notification,
+            identifier: data.reference,
+            reference: data.reference);
       }
     });
   }
