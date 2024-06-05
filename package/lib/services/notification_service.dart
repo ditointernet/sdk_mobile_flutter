@@ -143,10 +143,13 @@ class NotificationService {
     selectNotificationStream.stream.listen((String? payload) async {
       if (payload != null) {
         final data = DataPayload.fromJson(jsonDecode(payload));
-        await _dito.openNotification(
-            notificationId: data.notification,
-            identifier: data.reference,
-            reference: data.reference);
+
+        if (data.notification.isNotEmpty) {
+          await _dito.openNotification(
+              notificationId: data.notification,
+              identifier: data.reference,
+              reference: data.reference);
+        }
       }
     });
   }
