@@ -27,11 +27,11 @@ class AppFormState extends State<AppForm> {
           userID: cpf, cpf: cpf, name: 'Teste SDK Flutter', email: email);
       await dito.identifyUser();
 
-      // final token = await dito.notificationService().getDeviceFirebaseToken();
-      //
-      // if (token != null && token.isNotEmpty) {
-      //   dito.registryMobileToken(token: token);
-      // }
+      final token = await dito.notificationService().getDeviceFirebaseToken();
+
+      if (token != null && token.isNotEmpty) {
+        dito.registryMobileToken(token: token);
+      }
     }
 
     handleIdentify() async {
@@ -101,16 +101,16 @@ class AppFormState extends State<AppForm> {
                   padding: const EdgeInsets.all(15.0),
                   child: Column(children: [
                     FilledButton(
-                      child: const Text('Registrar Identify'),
                       onPressed: handleIdentify,
+                      child: const Text('Registrar Identify'),
                     ),
                     OutlinedButton(
-                      child: const Text('Receber Notification'),
                       onPressed: handleNotification,
+                      child: const Text('Receber Notification'),
                     ),
                     TextButton(
-                      child: const Text('Criar notificação local'),
                       onPressed: handleLocalNotification,
+                      child: const Text('Criar notificação local'),
                     )
                   ])))
         ],
