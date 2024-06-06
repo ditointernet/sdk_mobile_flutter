@@ -1,26 +1,23 @@
 library dito_sdk;
 
+import 'package:dito_sdk/user/user_entity.dart';
 import 'package:dito_sdk/user/user_interface.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:http/http.dart' as http;
+import 'package:http'
+    '/http.dart' as http;
 
-import 'constants.dart';
+import 'data/dito_api.dart';
 import 'database.dart';
 import 'entity/event.dart';
-import 'entity/user.dart';
 import 'services/notification_service.dart';
-import 'data/dito_api.dart';
 
 /// DitoSDK is a singleton class that provides various methods to interact with Dito API
 /// and manage user data, events, and push notifications.
 class DitoSDK {
-  final _userInterface = UserInterface();
-  User _user = User();
+  final UserInterface _userInterface = UserInterface();
+  final DitoApi ditoApi = DitoApi();
   late NotificationService _notificationService;
-  Constants constants = Constants();
-
-  late DitoApi ditoApi;
 
   static final DitoSDK _instance = DitoSDK._internal();
 
@@ -44,13 +41,8 @@ class DitoSDK {
   /// [apiKey] - The API key for the Dito platform.
   /// [secretKey] - The secret key for the Dito platform.
   void initialize({required String apiKey, required String secretKey}) async {
-    _apiKey = apiKey;
-    _secretKey = secretKey;
     _notificationService = NotificationService(_instance);
-    _assign = {
-      'platform_api_key': apiKey,
-      'sha1_signature': convertToSHA1(_secretKey!),
-    };
+    ditoApi.setKeys(apiKey, secretKey);
   }
 
   /// This method initializes the push notification service using Firebase.
@@ -69,20 +61,13 @@ class DitoSDK {
         .listen(_notificationService.handleMessage);
   }
 
-  void _checkConfiguration() {
-    if (_apiKey == null || _secretKey == null) {
-      throw Exception(
-          'API key and Secret Key must be initialized before using. Please call the initialize() method first.');
-    }
-  }
-
   Future<void> _verifyPendingEvents() async {
     final database = LocalDatabase.instance;
     final events = await database.getEvents();
 
     if (events.isNotEmpty) {
       for (final event in events) {
-        await _postEvent(event);
+        await ditoApi.trackEvent(event, user.data);
       }
       database.deleteEvents();
     }
@@ -96,22 +81,6 @@ class DitoSDK {
     final result = await _userInterface.identify(user);
     await _verifyPendingEvents();
     return result;
-  }
-
-  Future<http.Response> _postEvent(Event event) async {
-    _checkConfiguration();
-
-    final body = {
-      'id_type': 'id',
-      'network_name': 'pt',
-      'event': jsonEncode(event.toJson())
-    };
-
-    final url = Domain(Endpoint.events.replace(_userInterface.id!)).spited;
-    final uri = Uri.https(url[0], url[1], _assign);
-
-    body.addAll(_assign);
-    return await Api().post(url: uri, body: body);
   }
 
   /// This method tracks an event with optional revenue and custom data.
@@ -135,13 +104,13 @@ class DitoSDK {
         customData: customData,
         revenue: revenue);
 
-    if (_userInterface.isNotValid) {
+    if (_userInterface.data.isNotValid) {
       final database = LocalDatabase.instance;
       await database.createEvent(event);
       return http.Response("", 200);
     }
 
-    return await _postEvent(event);
+    return await ditoApi.trackEvent(event, _userInterface.data);
   }
 
   /// This method registers a mobile token for push notifications.
@@ -149,7 +118,7 @@ class DitoSDK {
   /// [token] - The mobile token to be registered.
   /// Returns an http.Response.
   Future<http.Response> registryMobileToken({required String token}) async {
-    return await ditoApi.registryMobileToken(token, _user);
+    return await ditoApi.registryMobileToken(token, _userInterface.data);
   }
 
   /// This method removes a mobile token from the push notification service.
@@ -157,7 +126,7 @@ class DitoSDK {
   /// [token] - The mobile token to be removed.
   /// Returns an http.Response.
   Future<http.Response> removeMobileToken({required String token}) async {
-    return await ditoApi.removeMobileToken(token, _user);
+    return await ditoApi.removeMobileToken(token, _userInterface.data);
   }
 
   /// This method opens a notification and sends its data to the Dito API.

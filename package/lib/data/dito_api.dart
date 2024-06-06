@@ -1,9 +1,10 @@
-import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:io';
 
-import '../entity/user.dart';
+import 'package:http/http.dart' as http;
+
 import '../entity/event.dart';
+import '../user/user_entity.dart';
 import '../utils/sha1.dart';
 
 class DitoApi {
@@ -14,18 +15,20 @@ class DitoApi {
 
   static final DitoApi _instance = DitoApi._internal();
 
-  factory DitoApi(String apiKey, String secretKey) {
+  factory DitoApi() {
+    return _instance;
+  }
+
+  DitoApi._internal();
+
+  void setKeys(String apiKey, String secretKey) {
     _instance._apiKey = apiKey;
     _instance._secretKey = secretKey;
     _instance._assign = {
       'platform_api_key': apiKey,
       'sha1_signature': convertToSHA1(secretKey),
     };
-
-    return _instance;
   }
-
-  DitoApi._internal();
 
   void _checkConfiguration() {
     if (_apiKey == null || _secretKey == null) {
@@ -50,7 +53,7 @@ class DitoApi {
     );
   }
 
-  Future<http.Response> identify(User user) async {
+  Future<http.Response> identify(UserEntity user) async {
     final queryParameters = {
       'user_data': jsonEncode(user.toJson()),
     };
@@ -63,7 +66,7 @@ class DitoApi {
     return await _post(url, path, queryParameters: queryParameters);
   }
 
-  Future<http.Response> trackEvent(Event event, User user) async {
+  Future<http.Response> trackEvent(Event event, UserEntity user) async {
     final body = {
       'id_type': 'id',
       'network_name': 'pt',
@@ -97,7 +100,8 @@ class DitoApi {
     return await _post(url, path, body: body);
   }
 
-  Future<http.Response> registryMobileToken(String token, User user) async {
+  Future<http.Response> registryMobileToken(
+      String token, UserEntity user) async {
     if (user.isNotValid) {
       throw Exception(
           'User registration is required. Please call the identify() method first.');
@@ -117,7 +121,7 @@ class DitoApi {
     return await _post(url, path, queryParameters: queryParameters);
   }
 
-  Future<http.Response> removeMobileToken(String token, User user) async {
+  Future<http.Response> removeMobileToken(String token, UserEntity user) async {
     if (user.isNotValid) {
       throw Exception(
           'User registration is required. Please call the identify() method first.');

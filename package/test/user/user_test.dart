@@ -7,12 +7,12 @@ import '../utils.dart';
 final DitoSDK dito = DitoSDK();
 const id = '22222222222';
 
-Future<void> setUp(dynamic Function() body) async {
-  dynamic env = await testEnv();
-  dito.initialize(apiKey: env["apiKey"], secretKey: env["secret"]);
-}
-
 void main() {
+  setUp(() async {
+    dynamic env = await testEnv();
+    dito.initialize(apiKey: env["apiKey"], secretKey: env["secret"]);
+  });
+
   group('User interface', () {
     test('User entity start null', () {
       expect(dito.user.data.userID, null);

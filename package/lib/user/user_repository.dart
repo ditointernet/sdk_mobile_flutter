@@ -1,9 +1,6 @@
 import 'dart:async';
-import 'dart:convert';
 
-import '../constants.dart';
-import '../entity/domain.dart';
-import '../utils/http.dart';
+import '../data/dito_api.dart';
 import 'user_entity.dart';
 
 final class UserData extends UserEntity {
@@ -16,6 +13,7 @@ final class UserData extends UserEntity {
 
 class UserRepository {
   final _userData = UserData();
+  final DitoApi api = DitoApi();
 
   /// This method get a user data on Static Data Object UserData
   /// Return a UserEntity Class
@@ -37,30 +35,16 @@ class UserRepository {
 
   /// This method enable user data save and send to DitoAPI
   /// Return bool with true when the identify was successes
-  FutureOr<bool> identify(UserEntity? user) async {
+  Future<bool> identify(UserEntity? user) async {
     if (user != null) _set(user);
 
     if (_userData.isNotValid) {
       throw Exception('User registration id (userID) is required');
     }
 
-    final queryParameters = {
-      'user_data': jsonEncode(_userData.toJson()),
-    };
-
-    final url = Domain(Endpoint.identify.replace(_userData.id!)).spited;
-    final uri = Uri.https(url[0], url[1], queryParameters);
-
-    return await Api().post(url: uri).then((response) {
-      if (response.statusCode == 200) {
-        // TODO: Notify event class to send pending events of database
-
-        return true;
-      }
-
-      return false;
-    }).catchError((e) {
-      return false;
-    });
+    return await api
+        .identify(user!)
+        .then((response) => true)
+        .catchError((error) => false);
   }
 }
