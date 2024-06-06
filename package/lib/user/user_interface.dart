@@ -1,17 +1,44 @@
 import 'dart:async';
 
+import 'package:dito_sdk/event/event_interface.dart';
 import 'package:dito_sdk/user/user_entity.dart';
 import 'package:dito_sdk/user/user_repository.dart';
+import 'package:flutter/foundation.dart';
 
-/// This is a interface from user to communicate with user repository
+import '../utils/custom_data.dart';
+
+/// UserInterface is an interface for communication with the user repository
 interface class UserInterface {
-  final UserRepository repository = UserRepository();
+  final UserRepository _repository = UserRepository();
+  final EventInterface _eventInterface = EventInterface();
 
-  /// This method enable user data save and send to DitoAPI
-  /// Return bool with true when the identify was successes
-  Future<bool> identify(UserEntity? user) => repository.identify(user);
+  /// Identifies the user by saving their data and sending it to DitoAPI.
+  ///
+  /// [user] - The UserEntity object containing user data.
+  /// Returns a Future that completes with true if the identification was successful.
+  Future<bool> identify(UserEntity user) async {
+    try {
+      final version = await customDataVersion;
+      if (user.customData == null) {
+        user.customData = version;
+      } else {
+        user.customData?.addAll(version);
+      }
 
-  /// This get method enable to access user data from repository
-  /// Returns UserEntity Class
-  UserEntity get data => repository.data;
+      final result = await _repository.identify(user);
+      await _eventInterface.verifyPendingEvents();
+
+      return result;
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error identifying user: $e');
+      }
+      return false;
+    }
+  }
+
+  /// Gets the user data from the repository.
+  ///
+  /// Returns the UserEntity object containing user data.
+  UserEntity get data => _repository.data;
 }
