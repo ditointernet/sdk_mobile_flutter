@@ -147,7 +147,7 @@ class NotificationService {
         if (data.notification.isNotEmpty) {
           await _dito.openNotification(
               notificationId: data.notification,
-              identifier: data.reference,
+              identifier: data.identifier,
               reference: data.reference);
         }
       }
