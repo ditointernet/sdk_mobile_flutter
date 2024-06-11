@@ -1,22 +1,23 @@
 library dito_sdk;
 
+import 'package:dito_sdk/user/user_entity.dart';
+import 'package:dito_sdk/user/user_interface.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:http/http.dart' as http;
+import 'package:http'
+    '/http.dart' as http;
 
-import 'constants.dart';
+import 'data/dito_api.dart';
 import 'database.dart';
 import 'entity/event.dart';
-import 'entity/user.dart';
 import 'services/notification_service.dart';
-import 'data/dito_api.dart';
 
+/// DitoSDK is a singleton class that provides various methods to interact with Dito API
+/// and manage user data, events, and push notifications.
 class DitoSDK {
+  final UserInterface _userInterface = UserInterface();
+  final DitoApi ditoApi = DitoApi();
   late NotificationService _notificationService;
-  User _user = User();
-  Constants constants = Constants();
-
-  late DitoApi ditoApi;
 
   static final DitoSDK _instance = DitoSDK._internal();
 
@@ -26,19 +27,25 @@ class DitoSDK {
 
   DitoSDK._internal();
 
+  /// This get method provides an interface for communication with a User entity.
+  /// Returns an instance of UserInterface class.
+  UserInterface get user => _userInterface;
+
   NotificationService notificationService() {
     return _notificationService;
   }
 
-  User get user {
-    return _user;
-  }
-
+  /// This method initializes the SDK with the provided API key and secret key.
+  /// It also initializes the NotificationService and assigns API key and SHA1 signature.
+  ///
+  /// [apiKey] - The API key for the Dito platform.
+  /// [secretKey] - The secret key for the Dito platform.
   void initialize({required String apiKey, required String secretKey}) async {
     _notificationService = NotificationService(_instance);
-    ditoApi = DitoApi(apiKey, secretKey);
+    ditoApi.setKeys(apiKey, secretKey);
   }
 
+  /// This method initializes the push notification service using Firebase.
   Future<void> initializePushNotificationService() async {
     await Firebase.initializeApp();
     await _notificationService.initialize();
@@ -60,86 +67,28 @@ class DitoSDK {
 
     if (events.isNotEmpty) {
       for (final event in events) {
-        await ditoApi.trackEvent(event, _user);
+        await ditoApi.trackEvent(event, user.data);
       }
       database.deleteEvents();
     }
   }
 
-  @Deprecated('migration')
-  Future<void> setUserId(String userId) async {
-    _setUserId(userId);
+  /// This method enables saving and sending user data to the Dito API.
+  ///
+  /// [user] - UserEntity object.
+  /// Returns a boolean indicating success.
+  Future<bool> identify(UserEntity user) async {
+    final result = await _userInterface.identify(user);
+    await _verifyPendingEvents();
+    return result;
   }
 
-  Future<void> _setUserId(String userId) async {
-    if (_user.isValid) {
-      _verifyPendingEvents();
-    }
-  }
-
-  void identify({
-    required String userID,
-    String? cpf,
-    String? name,
-    String? email,
-    String? gender,
-    String? birthday,
-    String? location,
-    Map<String, String>? customData,
-  }) {
-    _user.userID = userID;
-
-    if (cpf != null) {
-      _user.cpf = cpf;
-    }
-
-    if (name != null) {
-      _user.name = name;
-    }
-
-    if (email != null) {
-      _user.email = email;
-    }
-
-    if (gender != null) {
-      _user.gender = gender;
-    }
-
-    if (birthday != null) {
-      _user.birthday = birthday;
-    }
-
-    if (location != null) {
-      _user.location = location;
-    }
-
-    if (customData != null) {
-      _user.customData = customData;
-    }
-
-    _setUserId(userID);
-  }
-
-  Future<void> setUser(User user) async {
-    _user = user;
-
-    if (_user.isValid) {
-      await _setUserId(_user.id!);
-    } else {
-      throw Exception(
-          'User registration is required. Please call the identify() method first.');
-    }
-  }
-
-  Future<http.Response> identifyUser() async {
-    if (_user.isNotValid) {
-      throw Exception(
-          'User registration is required. Please call the identify() method first.');
-    }
-
-    return await ditoApi.identify(_user);
-  }
-
+  /// This method tracks an event with optional revenue and custom data.
+  ///
+  /// [eventName] - The name of the event.
+  /// [revenue] - Optional revenue associated with the event.
+  /// [customData] - Optional custom data associated with the event.
+  /// Returns an http.Response.
   Future<http.Response> trackEvent({
     required String eventName,
     double? revenue,
@@ -155,23 +104,37 @@ class DitoSDK {
         customData: customData,
         revenue: revenue);
 
-    if (_user.isNotValid) {
+    if (_userInterface.data.isNotValid) {
       final database = LocalDatabase.instance;
       await database.createEvent(event);
       return http.Response("", 200);
     }
 
-    return await ditoApi.trackEvent(event, _user);
+    return await ditoApi.trackEvent(event, _userInterface.data);
   }
 
+  /// This method registers a mobile token for push notifications.
+  ///
+  /// [token] - The mobile token to be registered.
+  /// Returns an http.Response.
   Future<http.Response> registryMobileToken({required String token}) async {
-    return await ditoApi.registryMobileToken(token, _user);
+    return await ditoApi.registryMobileToken(token, _userInterface.data);
   }
 
+  /// This method removes a mobile token from the push notification service.
+  ///
+  /// [token] - The mobile token to be removed.
+  /// Returns an http.Response.
   Future<http.Response> removeMobileToken({required String token}) async {
-    return await ditoApi.removeMobileToken(token, _user);
+    return await ditoApi.removeMobileToken(token, _userInterface.data);
   }
 
+  /// This method opens a notification and sends its data to the Dito API.
+  ///
+  /// [notificationId] - The ID of the notification.
+  /// [identifier] - The identifier for the notification.
+  /// [reference] - The reference for the notification.
+  /// Returns an http.Response.
   Future<http.Response> openNotification(
       {required String notificationId,
       required String identifier,
