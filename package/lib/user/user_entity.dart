@@ -23,7 +23,7 @@ class UserEntity {
   String? get id => userID;
 
   /// User is valid when userId is not empty
-  bool get isValid => userID != null || userID!.isNotEmpty;
+  bool get isValid => userID != null && userID!.isNotEmpty;
 
   bool get isNotValid => userID == null || userID!.isEmpty;
 
