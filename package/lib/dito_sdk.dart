@@ -5,6 +5,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:http/http.dart' as http;
 
 import 'data/dito_api.dart';
+import 'event/event_entity.dart';
 import 'event/event_interface.dart';
 import 'services/notification_service.dart';
 import 'user/user_entity.dart';

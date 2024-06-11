@@ -19,7 +19,8 @@ void main() {
     });
 
     test('Set User on memory', () async {
-      dito.user.identify(UserEntity(userID: id, email: "teste@teste.com"));
+      await dito.user
+          .identify(UserEntity(userID: id, email: "teste@teste.com"));
       expect(dito.user.data.id, id);
       expect(dito.user.data.email, "teste@teste.com");
     });

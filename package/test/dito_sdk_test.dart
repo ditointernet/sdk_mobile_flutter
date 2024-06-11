@@ -7,15 +7,15 @@ import 'utils.dart';
 final DitoSDK dito = DitoSDK();
 const id = '22222222222';
 
-Future<void> setUp() async {
-  dynamic env = await testEnv();
-  dito.initialize(apiKey: env["apiKey"], secretKey: env["secret"]);
-}
-
 void main() {
   group('Dito SDK: ', () {
+    setUp(() async {
+      dynamic env = await testEnv();
+      dito.initialize(apiKey: env["apiKey"], secretKey: env["secret"]);
+    });
+
     test('Send mobile token', () async {
-      dito.identify(UserEntity(userID: id));
+      await dito.identify(UserEntity(userID: id));
 
       final response = await dito.registryMobileToken(
           token:
