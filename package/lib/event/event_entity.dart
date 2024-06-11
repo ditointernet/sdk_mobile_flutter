@@ -1,23 +1,23 @@
 import 'dart:convert';
 
-class Event {
-  final String eventName;
-  final String eventMoment;
-  final double? revenue;
-  final Map<String, dynamic>? customData;
+class EventEntity {
+  String eventName;
+  String? eventMoment;
+  double? revenue;
+  Map<String, dynamic>? customData;
 
-  Event({
+  EventEntity({
     required this.eventName,
-    required this.eventMoment,
     this.revenue,
+    this.eventMoment,
     this.customData,
   });
 
-  factory Event.fromMap(Map<String, dynamic> map) {
-    return Event(
+  factory EventEntity.fromMap(Map<String, dynamic> map) {
+    return EventEntity(
       eventName: map['eventName'],
-      eventMoment: map['eventMoment'],
       revenue: map['revenue'],
+      eventMoment: map['eventMoment'],
       customData: map['customData'] != null
           ? (json.decode(map['customData']) as Map<String, dynamic>)
               .map((key, value) => MapEntry(key, value as String))
@@ -30,7 +30,7 @@ class Event {
       'eventName': eventName,
       'eventMoment': eventMoment,
       'revenue': revenue,
-      'customData': customData != null ? json.encode(customData) : null,
+      'customData': customData != null ? jsonEncode(customData) : null,
     };
   }
 

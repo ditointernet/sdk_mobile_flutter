@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:http/http.dart' as http;
 
-import '../entity/event.dart';
+import '../event/event_entity.dart';
 import '../user/user_entity.dart';
 import '../utils/sha1.dart';
 
@@ -66,7 +66,7 @@ class DitoApi {
     return await _post(url, path, queryParameters: queryParameters);
   }
 
-  Future<http.Response> trackEvent(Event event, UserEntity user) async {
+  Future<http.Response> trackEvent(EventEntity event, UserEntity user) async {
     final body = {
       'id_type': 'id',
       'network_name': 'pt',
