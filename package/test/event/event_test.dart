@@ -1,5 +1,5 @@
+import 'package:dito_sdk/data/event_database.dart';
 import 'package:dito_sdk/dito_sdk.dart';
-import 'package:dito_sdk/event/services/event_database_service.dart';
 import 'package:dito_sdk/user/user_entity.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
@@ -20,10 +20,10 @@ void main() async {
   });
 
   group('Events: ', () {
-    late EventDatabaseService database;
+    late EventDatabase database;
 
     setUp(() async {
-      database = EventDatabaseService();
+      database = EventDatabase();
       await database.database;
     });
 
