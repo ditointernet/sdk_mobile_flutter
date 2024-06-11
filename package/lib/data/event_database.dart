@@ -3,25 +3,24 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
-import '../event_entity.dart';
+import '../event/event_entity.dart';
 
 /// EventDatabaseService is a singleton class that provides methods to interact with a SQLite database
 /// for storing and managing events.
-class EventDatabaseService {
+class EventDatabase {
   static const String _dbName = 'ditoSDK.db';
   static const String _tableName = 'events';
   static Database? _database;
 
-  static final EventDatabaseService _instance =
-      EventDatabaseService._internal();
+  static final EventDatabase _instance = EventDatabase._internal();
 
   /// Factory constructor to return the singleton instance of EventDatabaseService.
-  factory EventDatabaseService() {
+  factory EventDatabase() {
     return _instance;
   }
 
   /// Private named constructor for internal initialization of singleton instance.
-  EventDatabaseService._internal();
+  EventDatabase._internal();
 
   /// Getter for the database instance.
   /// Initializes the database if it is not already initialized.
