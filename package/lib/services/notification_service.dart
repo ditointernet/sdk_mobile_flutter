@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
@@ -69,7 +70,9 @@ class NotificationService {
 
   void handleMessage(RemoteMessage message) {
     if (message.data["data"] == null) {
-      print("Data is not defined: ${message.data}");
+      if (kDebugMode) {
+        print("Data is not defined: ${message.data}");
+      }
     }
 
     final notification = DataPayload.fromJson(jsonDecode(message.data["data"]));
