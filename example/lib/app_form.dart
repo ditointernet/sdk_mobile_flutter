@@ -1,6 +1,6 @@
 import 'package:dito_sdk/dito_sdk.dart';
-import 'package:dito_sdk/entity/custom_notification.dart';
 import 'package:dito_sdk/user/user_entity.dart';
+import 'package:dito_sdk/notification/notification_entity.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -20,8 +20,8 @@ class AppFormState extends State<AppForm> {
   Widget build(BuildContext context) {
     final dito = Provider.of<DitoSDK>(context);
 
-    String cpf = "22222222222";
-    String email = "teste@dito.com.br";
+    String cpf = "32190381209";
+    String email = "teste.sdk2@dito.com.br";
 
     identify() async {
       final user = UserEntity(
@@ -58,7 +58,7 @@ class AppFormState extends State<AppForm> {
     }
 
     handleLocalNotification() {
-      dito.notificationService().addNotificationToStream(CustomNotification(
+      dito.notificationService().addNotificationToStream(NotificationEntity(
           id: 123,
           title: "Notificação local",
           body:
