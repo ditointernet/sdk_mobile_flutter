@@ -23,9 +23,9 @@ class UserEntity {
   String? get id => userID;
 
   /// User is valid when userId is not empty
-  bool get isValid => userID!.isNotEmpty;
+  bool get isValid => userID != null && userID!.isNotEmpty;
 
-  bool get isNotValid => !isValid;
+  bool get isNotValid => userID == null || userID!.isEmpty;
 
   // Factory method to instance a user from a JSON object
   factory UserEntity.fromMap(Map<String, dynamic> map) {
