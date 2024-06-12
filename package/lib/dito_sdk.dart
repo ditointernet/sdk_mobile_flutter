@@ -74,7 +74,7 @@ class DitoSDK {
   /// This method get the mobile token for push notifications.
   ///
   /// Returns a String or null.
-  Future<String?> getMobileToken() async {
+  Future<String?> getToken() async {
     return _notificationInterface.getDeviceFirebaseToken();
   }
 
@@ -82,16 +82,16 @@ class DitoSDK {
   ///
   /// [token] - The mobile token to be registered.
   /// Returns an http.Response.
-  Future<http.Response> registryMobileToken({required String token}) async {
-    return await _notificationInterface.registryMobileToken(token);
+  Future<http.Response> registryToken({required String token}) async {
+    return await _notificationInterface.registryToken(token);
   }
 
   /// This method removes a mobile token from the push notification service.
   ///
   /// [token] - The mobile token to be removed.
   /// Returns an http.Response.
-  Future<http.Response> removeMobileToken({required String token}) async {
-    return await _notificationInterface.removeMobileToken(token);
+  Future<http.Response> removeToken({required String token}) async {
+    return await _notificationInterface.removeToken(token);
   }
 
   /// This method is a handler for manage messages in the background.

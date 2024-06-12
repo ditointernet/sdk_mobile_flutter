@@ -112,15 +112,15 @@ class NotificationInterface {
   ///
   /// [token] - The mobile token to be registered.
   /// Returns an http.Response.
-  registryMobileToken(String token) async {
-    return await _repository.registryMobileToken(token);
+  registryToken(String token) async {
+    return await _repository.registryToken(token);
   }
 
   /// This method removes a mobile token for push notifications.
   ///
   /// [token] - The mobile token to be removed.
   /// Returns an http.Response.
-  removeMobileToken(String token) async {
-    return await _repository.removeMobileToken(token);
+  removeToken(String token) async {
+    return await _repository.removeToken(token);
   }
 }

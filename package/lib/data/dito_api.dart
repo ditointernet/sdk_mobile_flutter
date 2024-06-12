@@ -100,8 +100,7 @@ class DitoApi {
     return await _post(url, path, body: body);
   }
 
-  Future<http.Response> registryMobileToken(
-      String token, UserEntity user) async {
+  Future<http.Response> registryToken(String token, UserEntity user) async {
     if (user.isNotValid) {
       throw Exception(
           'User registration is required. Please call the identify() method first.');
@@ -121,7 +120,7 @@ class DitoApi {
     return await _post(url, path, queryParameters: queryParameters);
   }
 
-  Future<http.Response> removeMobileToken(String token, UserEntity user) async {
+  Future<http.Response> removeToken(String token, UserEntity user) async {
     if (user.isNotValid) {
       throw Exception(
           'User registration is required. Please call the identify() method first.');
