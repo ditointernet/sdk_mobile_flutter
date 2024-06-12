@@ -17,10 +17,7 @@ class NotificationRepository {
       Function(RemoteMessage) onMessage) async {
     await Firebase.initializeApp();
 
-// por que só para android?
-    if (Platform.isAndroid) {
-      await FirebaseMessaging.instance.setAutoInitEnabled(true);
-    }
+    await FirebaseMessaging.instance.setAutoInitEnabled(true);
 
 // parece não ter utilidade https://firebase.flutter.dev/docs/messaging/notifications/#handling-interaction
     RemoteMessage? initialMessage =
@@ -61,15 +58,15 @@ class NotificationRepository {
   ///
   /// [token] - The mobile token to be registered.
   /// Returns an http.Response.
-  Future<http.Response> registryMobileToken(String token) async {
-    return await _api.registryMobileToken(token, _userInterface.data);
+  Future<http.Response> registryToken(String token) async {
+    return await _api.registryToken(token, _userInterface.data);
   }
 
   /// This method removes a mobile token for push notifications.
   ///
   /// [token] - The mobile token to be removed.
   /// Returns an http.Response.
-  Future<http.Response> removeMobileToken(String token) async {
-    return await _api.removeMobileToken(token, _userInterface.data);
+  Future<http.Response> removeToken(String token) async {
+    return await _api.removeToken(token, _userInterface.data);
   }
 }

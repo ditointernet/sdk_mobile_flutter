@@ -28,10 +28,10 @@ class AppFormState extends State<AppForm> {
 
       await dito.user.identify(user);
 
-      final token = await dito.getMobileToken();
+      final token = await dito.getToken();
 
       if (token != null && token.isNotEmpty) {
-        dito.registryMobileToken(token: token);
+        dito.registryToken(token: token);
       }
     }
 
