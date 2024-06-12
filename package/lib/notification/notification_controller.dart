@@ -25,6 +25,7 @@ class NotificationController {
       presentSound: true,
       presentBanner: true);
 
+  /// This method initializes localNotificationsPlugin
   initialize() async {
     localNotificationsPlugin = FlutterLocalNotificationsPlugin();
     const android = AndroidInitializationSettings('@mipmap/ic_launcher');
@@ -53,6 +54,9 @@ class NotificationController {
         ?.createNotificationChannel(channel);
   }
 
+  /// This method uses local notifications plugin to show messages on the screen
+  ///
+  /// [notification] - NotificationEntity object
   showNotification(NotificationEntity notification) {
     localNotificationsPlugin.show(
       notification.id,
@@ -63,6 +67,9 @@ class NotificationController {
     );
   }
 
+  /// This method is called when user clicks on the notification
+  ///
+  /// [response] - NotificationResponse object
   Future<void> onTapNotification(NotificationResponse? response) async {
     final payload = response?.payload;
 

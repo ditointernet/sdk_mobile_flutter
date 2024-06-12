@@ -9,9 +9,10 @@ import '../data/dito_api.dart';
 import '../user/user_interface.dart';
 
 class NotificationRepository {
-  final DitoApi _ditoApi = DitoApi();
+  final DitoApi _api = DitoApi();
   final UserInterface _userInterface = UserInterface();
 
+  /// This method initializes FirebaseMessaging
   Future<void> initializeFirebaseMessaging(
       Function(RemoteMessage) onMessage) async {
     await Firebase.initializeApp();
@@ -31,28 +32,44 @@ class NotificationRepository {
 
     FirebaseMessaging.onMessageOpenedApp.listen(onMessage);
 
-// alterar só para iOS? https://firebase.flutter.dev/docs/messaging/notifications/#ios-configuration
-    await FirebaseMessaging.instance
-        .setForegroundNotificationPresentationOptions(
-            badge: true, sound: true, alert: true);
+    if (Platform.isIOS) {
+      await FirebaseMessaging.instance
+          .setForegroundNotificationPresentationOptions(
+              badge: true, sound: true, alert: true);
+    }
 
+    /// Shows the message when FCM payload is received
     FirebaseMessaging.onMessage.listen(onMessage);
   }
 
+  /// This method asks for permission to show the notifications.
+  ///
+  /// Returns a bool.
   Future<bool> checkPermissions() async {
     var settings = await FirebaseMessaging.instance.requestPermission();
     return settings.authorizationStatus == AuthorizationStatus.authorized;
   }
 
+  /// This method get the mobile token for push notifications.
+  ///
+  /// Returns a String or null.
   Future<String?> getFirebaseToken() async {
     return FirebaseMessaging.instance.getToken();
   }
 
+  /// This method registers a mobile token for push notifications.
+  ///
+  /// [token] - The mobile token to be registered.
+  /// Returns an http.Response.
   Future<http.Response> registryMobileToken(String token) async {
-    return await _ditoApi.registryMobileToken(token, _userInterface.data);
+    return await _api.registryMobileToken(token, _userInterface.data);
   }
 
+  /// This method removes a mobile token for push notifications.
+  ///
+  /// [token] - The mobile token to be removed.
+  /// Returns an http.Response.
   Future<http.Response> removeMobileToken(String token) async {
-    return await _ditoApi.removeMobileToken(token, _userInterface.data);
+    return await _api.removeMobileToken(token, _userInterface.data);
   }
 }
