@@ -5,10 +5,17 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'notification_entity.dart';
 
 class NotificationController {
-  final Function(DataPayload) onSelectNotification;
+  late Function(DataPayload) onSelectNotification;
   late FlutterLocalNotificationsPlugin localNotificationsPlugin;
 
-  NotificationController({required this.onSelectNotification});
+  static final NotificationController _instance =
+      NotificationController._internal();
+
+  factory NotificationController() {
+    return _instance;
+  }
+
+  NotificationController._internal();
 
   AndroidNotificationDetails androidDetails = const AndroidNotificationDetails(
     'dito_notifications',
@@ -26,7 +33,8 @@ class NotificationController {
       presentBanner: true);
 
   /// This method initializes localNotificationsPlugin
-  initialize() async {
+  initialize(Function(DataPayload) onSelectNotification) async {
+    _instance.onSelectNotification = onSelectNotification;
     localNotificationsPlugin = FlutterLocalNotificationsPlugin();
     const android = AndroidInitializationSettings('@mipmap/ic_launcher');
     const ios = DarwinInitializationSettings();
