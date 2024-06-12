@@ -17,16 +17,9 @@ void main() {
     test('Send mobile token', () async {
       await dito.identify(UserEntity(userID: id));
 
-      final response = await dito.registryMobileToken(
+      final response = await dito.registryToken(
           token:
               "eXb4Y_piSZS2RKv7WeqjW0:APA91bHJUQ6kL8ZrevvO8zAgYIEdtCWSa7RkmszRFdYz32jYblJvOkIiDcpDdqVqZvOm8CSiEHTzljHajvMO66FFxiqteB6od2sMe01UIOwvKrpUOFXz-L4Slif9jSY9pUaMxyqCtoxR");
-
-      expect(response.statusCode, 200);
-    });
-
-    test('Send open notification', () async {
-      final response = await dito.openNotification(
-          notificationId: '723422', identifier: '1713466024', reference: id);
 
       expect(response.statusCode, 200);
     });

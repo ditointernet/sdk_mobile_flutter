@@ -369,7 +369,7 @@ import 'package:dito_sdk/dito_sdk.dart';
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   final notification = DataPayload.fromJson(jsonDecode(message.data["data"]));
 
-  dito.notificationService().showLocalNotification(CustomNotification(
+  dito.notificationService().showLocalNotification(NotificationEntity(
       id: message.hashCode,
       title: notification.details.title || "O nome do aplicativo",
       body: notification.details.message,
