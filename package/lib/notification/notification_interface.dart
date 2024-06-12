@@ -13,7 +13,7 @@ import 'notification_controller.dart';
 /// NotificationInterface is an interface for communication with the notification repository and notification controller
 class NotificationInterface {
   final NotificationRepository _repository = NotificationRepository();
-  late NotificationController _controller;
+  final NotificationController _controller = NotificationController();
   final DitoApi _api = DitoApi();
 
   /// The broadcast stream for received notifications
@@ -28,10 +28,8 @@ class NotificationInterface {
   /// This method initializes notification controller and notification repository.
   /// Start listening to notifications
   Future<void> initialize() async {
-    _controller =
-        NotificationController(onSelectNotification: onSelectNotification);
     await _repository.initializeFirebaseMessaging(onMessage);
-    await _controller.initialize();
+    await _controller.initialize(onSelectNotification);
     _listenStream();
   }
 
