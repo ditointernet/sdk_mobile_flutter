@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 import '../data/dito_api.dart';
@@ -18,6 +19,8 @@ class NotificationRepository {
     await Firebase.initializeApp();
 
     await FirebaseMessaging.instance.setAutoInitEnabled(true);
+
+    _handleToken();
 
     /*
     RemoteMessage? initialMessage =
@@ -40,6 +43,24 @@ class NotificationRepository {
     FirebaseMessaging.onMessage.listen(onMessage);
   }
 
+  _handleToken() async {
+    _userInterface.data.token = await _getFirebaseToken();
+    FirebaseMessaging.instance.onTokenRefresh.listen((token) {
+      final lastToken = _userInterface.data.token;
+      if (lastToken != token) {
+        if (lastToken != null && lastToken.isNotEmpty) {
+          _removeToken(lastToken);
+        }
+        _registryToken(token);
+        _userInterface.data.token = token;
+      }
+    }).onError((err) {
+      if (kDebugMode) {
+        print('Error getting token.: $err');
+      }
+    });
+  }
+
   /// This method asks for permission to show the notifications.
   ///
   /// Returns a bool.
@@ -51,7 +72,7 @@ class NotificationRepository {
   /// This method get the mobile token for push notifications.
   ///
   /// Returns a String or null.
-  Future<String?> getFirebaseToken() async {
+  Future<String?> _getFirebaseToken() async {
     return FirebaseMessaging.instance.getToken();
   }
 
@@ -59,7 +80,7 @@ class NotificationRepository {
   ///
   /// [token] - The mobile token to be registered.
   /// Returns an http.Response.
-  Future<http.Response> registryToken(String token) async {
+  Future<http.Response> _registryToken(String token) async {
     return await _api.registryToken(token, _userInterface.data);
   }
 
@@ -67,7 +88,7 @@ class NotificationRepository {
   ///
   /// [token] - The mobile token to be removed.
   /// Returns an http.Response.
-  Future<http.Response> removeToken(String token) async {
+  Future<http.Response> _removeToken(String token) async {
     return await _api.removeToken(token, _userInterface.data);
   }
 }
