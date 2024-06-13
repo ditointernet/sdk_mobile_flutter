@@ -13,15 +13,5 @@ void main() {
       dynamic env = await testEnv();
       dito.initialize(apiKey: env["apiKey"], secretKey: env["secret"]);
     });
-
-    test('Send mobile token', () async {
-      await dito.identify(UserEntity(userID: id));
-
-      final response = await dito.registryToken(
-          token:
-              "eXb4Y_piSZS2RKv7WeqjW0:APA91bHJUQ6kL8ZrevvO8zAgYIEdtCWSa7RkmszRFdYz32jYblJvOkIiDcpDdqVqZvOm8CSiEHTzljHajvMO66FFxiqteB6od2sMe01UIOwvKrpUOFXz-L4Slif9jSY9pUaMxyqCtoxR");
-
-      expect(response.statusCode, 200);
-    });
   });
 }

@@ -1,5 +1,6 @@
 import 'package:dito_sdk/dito_sdk.dart';
 import 'package:dito_sdk/user/user_entity.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -27,12 +28,6 @@ class AppFormState extends State<AppForm> {
           userID: cpf, cpf: cpf, name: 'Teste SDK Flutter', email: email);
 
       await dito.user.identify(user);
-
-      final token = await dito.getToken();
-
-      if (token != null && token.isNotEmpty) {
-        dito.registryToken(token: token);
-      }
     }
 
     handleIdentify() async {
@@ -54,6 +49,10 @@ class AppFormState extends State<AppForm> {
           const SnackBar(content: Text('Evento de notificação solicitado')),
         );
       }
+    }
+
+    handleDeleteToken() async {
+      await FirebaseMessaging.instance.deleteToken();
     }
 
     return Form(
@@ -96,6 +95,10 @@ class AppFormState extends State<AppForm> {
                     OutlinedButton(
                       onPressed: handleNotification,
                       child: const Text('Receber Notification'),
+                    ),
+                    OutlinedButton(
+                      onPressed: handleDeleteToken,
+                      child: const Text('Deletar token'),
                     ),
                   ])))
         ],

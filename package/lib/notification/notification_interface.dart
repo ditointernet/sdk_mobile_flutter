@@ -98,27 +98,4 @@ class NotificationInterface {
       _selectNotificationStream.add(data);
     }
   }
-
-  /// This method get the mobile token for push notifications.
-  ///
-  /// Returns a String or null.
-  Future<String?> getDeviceFirebaseToken() async {
-    return _repository.getFirebaseToken();
-  }
-
-  /// This method registers a mobile token for push notifications.
-  ///
-  /// [token] - The mobile token to be registered.
-  /// Returns an http.Response.
-  registryToken(String token) async {
-    return await _repository.registryToken(token);
-  }
-
-  /// This method removes a mobile token for push notifications.
-  ///
-  /// [token] - The mobile token to be removed.
-  /// Returns an http.Response.
-  removeToken(String token) async {
-    return await _repository.removeToken(token);
-  }
 }
