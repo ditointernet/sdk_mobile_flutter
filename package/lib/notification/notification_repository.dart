@@ -19,7 +19,7 @@ class NotificationRepository {
 
     await FirebaseMessaging.instance.setAutoInitEnabled(true);
 
-// parece não ter utilidade https://firebase.flutter.dev/docs/messaging/notifications/#handling-interaction
+    /*
     RemoteMessage? initialMessage =
         await FirebaseMessaging.instance.getInitialMessage();
 
@@ -28,6 +28,7 @@ class NotificationRepository {
     }
 
     FirebaseMessaging.onMessageOpenedApp.listen(onMessage);
+    */
 
     if (Platform.isIOS) {
       await FirebaseMessaging.instance
