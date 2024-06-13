@@ -97,7 +97,7 @@ class DitoApi {
     const url = 'notification.plataformasocial.com.br';
     final path = 'notifications/$notificationId/open';
 
-    return await _post(url, path, body: body);
+    return await _post(url, path, queryParameters: queryParameters, body: body);
   }
 
   Future<http.Response> registryToken(String token, UserEntity user) async {
