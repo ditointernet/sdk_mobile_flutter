@@ -71,6 +71,14 @@ class DitoSDK {
     return await _eventInterface.trackEvent(event);
   }
 
+  /// This method removes a mobile token for push notifications.
+  ///
+  /// [token] - The mobile token to be removed.
+  /// Returns an http.Response.
+  removeToken(String token) async {
+    return await _notificationInterface.removeToken(token);
+  }
+
   /// This method is a handler for manage messages in the background.
   /// It initializes Firebase and Dito, then push the message.
   Future<void> onBackgroundMessageHandler(RemoteMessage message,

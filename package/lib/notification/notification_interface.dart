@@ -98,4 +98,7 @@ class NotificationInterface {
       _selectNotificationStream.add(data);
     }
   }
+
+  /// This method returns the repository method that removes the token.
+  removeToken(String token) => _repository.removeToken(token);
 }

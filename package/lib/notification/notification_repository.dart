@@ -43,13 +43,13 @@ class NotificationRepository {
     FirebaseMessaging.onMessage.listen(onMessage);
   }
 
-  _handleToken() async {
+  void _handleToken() async {
     _userInterface.data.token = await _getFirebaseToken();
     FirebaseMessaging.instance.onTokenRefresh.listen((token) {
       final lastToken = _userInterface.data.token;
       if (lastToken != token) {
         if (lastToken != null && lastToken.isNotEmpty) {
-          _removeToken(lastToken);
+          removeToken(lastToken);
         }
         _registryToken(token);
         _userInterface.data.token = token;
@@ -72,9 +72,7 @@ class NotificationRepository {
   /// This method get the mobile token for push notifications.
   ///
   /// Returns a String or null.
-  Future<String?> _getFirebaseToken() async {
-    return FirebaseMessaging.instance.getToken();
-  }
+  Future<String?> _getFirebaseToken() => FirebaseMessaging.instance.getToken();
 
   /// This method registers a mobile token for push notifications.
   ///
@@ -88,7 +86,7 @@ class NotificationRepository {
   ///
   /// [token] - The mobile token to be removed.
   /// Returns an http.Response.
-  Future<http.Response> _removeToken(String token) async {
+  Future<http.Response> removeToken(String token) async {
     return await _api.removeToken(token, _userInterface.data);
   }
 }
