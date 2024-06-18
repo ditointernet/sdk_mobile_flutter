@@ -9,7 +9,6 @@ import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 
-
 import 'app.dart';
 import 'constants.dart';
 
@@ -21,6 +20,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   DitoSDK dito = DitoSDK();
   dito.initialize(
       apiKey: Constants.ditoApiKey, secretKey: Constants.ditoSecretKey);
+  await dito.initializePushNotificationService();
 
   final notification = DataPayload.fromJson(jsonDecode(message.data["data"]));
 
