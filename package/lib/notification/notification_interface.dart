@@ -99,6 +99,23 @@ class NotificationInterface {
     }
   }
 
-  /// This method returns the repository method that removes the token.
-  removeToken(String token) => _repository.removeToken(token);
+  /// This method registers a mobile token for push notifications.
+  ///
+  /// [token] - The mobile token to be registered.
+  /// Returns an http.Response.
+  registryToken(String? token) async {
+    String? newToken = token;
+    newToken ??= await _repository.getFirebaseToken();
+    if (newToken != null) _repository.registryToken(newToken);
+  }
+
+  /// This method removes a mobile token for push notifications.
+  ///
+  /// [token] - The mobile token to be removed.
+  /// Returns an http.Response.
+  removeToken(String? token) async {
+    String? newToken = token;
+    newToken ??= await _repository.getFirebaseToken();
+    if (newToken != null) _repository.removeToken(newToken);
+  }
 }
