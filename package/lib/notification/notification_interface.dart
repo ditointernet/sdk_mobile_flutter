@@ -27,10 +27,10 @@ class NotificationInterface {
 
   /// This method initializes notification controller and notification repository.
   /// Start listening to notifications
-  Future<void> initialize() async {
+  Future<void> initialize(Function(DataPayload)? onMessageClicked) async {
     await _repository.initializeFirebaseMessaging(onMessage);
     await _controller.initialize(onSelectNotification);
-    _listenStream();
+    _listenStream(onMessageClicked);
   }
 
   // This method turns off the streams when this class is unmounted
@@ -40,12 +40,14 @@ class NotificationInterface {
   }
 
   // This method initializes the listeners on streams
-  _listenStream() {
+  _listenStream(Function(DataPayload)? onMessageClicked) {
     _didReceiveLocalNotificationStream.stream
         .listen((NotificationEntity receivedNotification) {
       _controller.showNotification(receivedNotification);
     });
     _selectNotificationStream.stream.listen((DataPayload data) async {
+      if (onMessageClicked != null) onMessageClicked(data);
+
       final notificationId = data.notification;
 
       // Only sends the event if the message is linked to a notification
@@ -54,13 +56,6 @@ class NotificationInterface {
             notificationId, data.identifier, data.reference);
       }
     });
-  }
-
-  /// This method adds a received notification to stream
-  ///
-  /// [notification] - NotificationEntity object.
-  _addNotificationToStream(NotificationEntity notification) {
-    _didReceiveLocalNotificationStream.add(notification);
   }
 
   /// This method is a handler for new remote messages.
@@ -82,11 +77,11 @@ class NotificationInterface {
     final appName = packageInfo.appName;
 
     if (messagingAllowed && notification.details.message.isNotEmpty) {
-      _addNotificationToStream(NotificationEntity(
+      _didReceiveLocalNotificationStream.add((NotificationEntity(
           id: message.hashCode,
           title: notification.details.title ?? appName,
           body: notification.details.message,
-          payload: notification));
+          payload: notification)));
     }
   }
 
