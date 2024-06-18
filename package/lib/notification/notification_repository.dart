@@ -44,14 +44,14 @@ class NotificationRepository {
   }
 
   void _handleToken() async {
-    _userInterface.data.token = await _getFirebaseToken();
+    _userInterface.data.token = await getFirebaseToken();
     FirebaseMessaging.instance.onTokenRefresh.listen((token) {
       final lastToken = _userInterface.data.token;
       if (lastToken != token) {
         if (lastToken != null && lastToken.isNotEmpty) {
           removeToken(lastToken);
         }
-        _registryToken(token);
+        registryToken(token);
         _userInterface.data.token = token;
       }
     }).onError((err) {
@@ -72,13 +72,13 @@ class NotificationRepository {
   /// This method get the mobile token for push notifications.
   ///
   /// Returns a String or null.
-  Future<String?> _getFirebaseToken() => FirebaseMessaging.instance.getToken();
+  Future<String?> getFirebaseToken() => FirebaseMessaging.instance.getToken();
 
   /// This method registers a mobile token for push notifications.
   ///
   /// [token] - The mobile token to be registered.
   /// Returns an http.Response.
-  Future<http.Response> _registryToken(String token) async {
+  Future<http.Response> registryToken(String token) async {
     return await _api.registryToken(token, _userInterface.data);
   }
 

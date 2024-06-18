@@ -71,11 +71,19 @@ class DitoSDK {
     return await _eventInterface.trackEvent(event);
   }
 
+  /// This method registers a mobile token for push notifications.
+  ///
+  /// [token] - The mobile token to be registered.
+  /// Returns an http.Response.
+  Future<http.Response> registryToken({String? token}) async {
+    return await _notificationInterface.registryToken(token);
+  }
+
   /// This method removes a mobile token from the push notification service.
   ///
   /// [token] - The mobile token to be removed.
   /// Returns an http.Response.
-  Future<http.Response> removeToken({required String token}) async {
+  Future<http.Response> removeToken({String? token}) async {
     return await _notificationInterface.removeToken(token);
   }
 
