@@ -16,33 +16,29 @@ class Details {
 }
 
 class DataPayload {
-  final int reference;
-  final int notification;
-  final int notification_log_id;
+  final String reference;
+  final String identifier;
+  final String notification;
+  final String notification_log_id;
   final Details details;
 
-  DataPayload(this.reference, this.notification, this.notification_log_id,
-      this.details);
+  DataPayload(this.reference, this.identifier, this.notification,
+      this.notification_log_id, this.details);
 
   factory DataPayload.fromJson(dynamic json) {
     assert(json is Map);
 
-    final reference = json["reference"] is int
-        ? json["reference"]
-        : int.parse(json["reference"]);
-    final notification = json["notification"] is int
-        ? json["notification"]
-        : int.parse(json["notification"]);
-    final notificationLogId = json["notification_log_id"] is int
-        ? json["notification_log_id"]
-        : int.parse(json["notification_log_id"]);
-
-    return DataPayload(reference, notification, notificationLogId,
+    return DataPayload(
+        json["reference"],
+        json["identifier"],
+        json["notification"],
+        json["notification_log_id"],
         Details.fromJson(json["details"]));
   }
 
   Map<String, dynamic> toJson() => {
         'reference': reference,
+        'identifier': identifier,
         'notification': notification,
         'notification_log_id': notification_log_id,
         'details': details.toJson(),
