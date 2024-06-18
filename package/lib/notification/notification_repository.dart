@@ -22,17 +22,6 @@ class NotificationRepository {
 
     _handleToken();
 
-    /*
-    RemoteMessage? initialMessage =
-        await FirebaseMessaging.instance.getInitialMessage();
-
-    if (initialMessage != null) {
-      onMessage(initialMessage);
-    }
-
-    FirebaseMessaging.onMessageOpenedApp.listen(onMessage);
-    */
-
     if (Platform.isIOS) {
       await FirebaseMessaging.instance
           .setForegroundNotificationPresentationOptions(
