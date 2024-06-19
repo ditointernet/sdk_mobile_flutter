@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:dito_sdk/notification/notification_events.dart';
 import 'package:event_bus/event_bus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -11,18 +12,12 @@ import 'notification_entity.dart';
 import 'notification_repository.dart';
 import 'notification_controller.dart';
 
-class NotificationClickedEvent {
-  DataPayload data;
-
-  NotificationClickedEvent(this.data);
-}
-
 /// NotificationInterface is an interface for communication with the notification repository and notification controller
 class NotificationInterface {
   final NotificationRepository _repository = NotificationRepository();
   final NotificationController _controller = NotificationController();
+  final NotificationEvents _notificationEvents = NotificationEvents();
   final DitoApi _api = DitoApi();
-  EventBus eventBus = EventBus();
 
   /// The broadcast stream for received notifications
   final StreamController<NotificationEntity>
@@ -54,7 +49,7 @@ class NotificationInterface {
       _controller.showNotification(receivedNotification);
     });
     _selectNotificationStream.stream.listen((DataPayload data) async {
-      eventBus.fire(NotificationClickedEvent(data));
+      _notificationEvents.stream.fire(MessageClickedEvent(data));
 
       final notificationId = data.notification;
 
