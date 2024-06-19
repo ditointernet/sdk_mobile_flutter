@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:event_bus/event_bus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -10,11 +11,18 @@ import 'notification_entity.dart';
 import 'notification_repository.dart';
 import 'notification_controller.dart';
 
+class NotificationClickedEvent {
+  DataPayload data;
+
+  NotificationClickedEvent(this.data);
+}
+
 /// NotificationInterface is an interface for communication with the notification repository and notification controller
 class NotificationInterface {
   final NotificationRepository _repository = NotificationRepository();
   final NotificationController _controller = NotificationController();
   final DitoApi _api = DitoApi();
+  EventBus eventBus = EventBus();
 
   /// The broadcast stream for received notifications
   final StreamController<NotificationEntity>
@@ -27,10 +35,10 @@ class NotificationInterface {
 
   /// This method initializes notification controller and notification repository.
   /// Start listening to notifications
-  Future<void> initialize(Function(DataPayload)? onMessageClicked) async {
+  Future<void> initialize() async {
     await _repository.initializeFirebaseMessaging(onMessage);
     await _controller.initialize(onSelectNotification);
-    _listenStream(onMessageClicked);
+    _listenStream();
   }
 
   // This method turns off the streams when this class is unmounted
@@ -40,13 +48,13 @@ class NotificationInterface {
   }
 
   // This method initializes the listeners on streams
-  _listenStream(Function(DataPayload)? onMessageClicked) {
+  _listenStream() {
     _didReceiveLocalNotificationStream.stream
         .listen((NotificationEntity receivedNotification) {
       _controller.showNotification(receivedNotification);
     });
     _selectNotificationStream.stream.listen((DataPayload data) async {
-      if (onMessageClicked != null) onMessageClicked(data);
+      eventBus.fire(NotificationClickedEvent(data));
 
       final notificationId = data.notification;
 

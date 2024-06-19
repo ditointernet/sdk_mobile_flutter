@@ -20,8 +20,8 @@ class AppFormState extends State<AppForm> {
   Widget build(BuildContext context) {
     final dito = Provider.of<DitoSDK>(context);
 
-    String cpf = "32190381209";
-    String email = "teste.sdk2@dito.com.br";
+    String cpf = "32190381210";
+    String email = "teste.sdk3@dito.com.br";
 
     identify() async {
       final user = UserEntity(
@@ -42,7 +42,6 @@ class AppFormState extends State<AppForm> {
 
     handleNotification() async {
       if (_formKey.currentState!.validate()) {
-        await identify();
         await dito.trackEvent(eventName: 'action-test');
 
         ScaffoldMessenger.of(context).showSnackBar(
