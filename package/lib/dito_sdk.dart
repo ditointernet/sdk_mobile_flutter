@@ -4,6 +4,7 @@ import 'package:dito_sdk/notification/notification_entity.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:http/http.dart' as http;
+import 'package:event_bus/event_bus.dart';
 
 import 'data/dito_api.dart';
 import 'event/event_entity.dart';
@@ -19,6 +20,7 @@ class DitoSDK {
   final UserInterface _userInterface = UserInterface();
   final EventInterface _eventInterface = EventInterface();
   final NotificationInterface _notificationInterface = NotificationInterface();
+  EventBus eventBus = EventBus();
 
   static final DitoSDK _instance = DitoSDK._internal();
 
@@ -42,9 +44,14 @@ class DitoSDK {
   }
 
   /// This method initializes the push notification service using Firebase.
-  Future<void> initializePushNotificationService(
-      {Function(DataPayload)? onMessageClicked}) async {
-    await _notificationInterface.initialize(onMessageClicked);
+  Future<void> initializePushNotificationService() async {
+    await _notificationInterface.initialize();
+  }
+
+  setOnMessageClick(Function(DataPayload) onMessageClicked) {
+    eventBus.on<NotificationClickedEvent>().listen((event) {
+      onMessageClicked(event.data);
+    });
   }
 
   /// This method enables saving and sending user data to the Dito API.
@@ -97,7 +104,7 @@ class DitoSDK {
       Function(DataPayload)? onMessageClicked}) async {
     _api.setKeys(apiKey, secretKey);
     await Firebase.initializeApp();
-    await _notificationInterface.initialize(onMessageClicked);
+    await _notificationInterface.initialize();
     return await _notificationInterface.onMessage(message);
   }
 }

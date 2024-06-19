@@ -19,6 +19,7 @@ dependencies:
   firebase_core: ">=2.30.1"
   sqflite_common_ffi: ">=2.3.3"
   package_info_plus: ">=4.1.0"
+  event_bus: ^2.0.0
 
 dev_dependencies:
   flutter_test:
