@@ -11,6 +11,10 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   DitoSDK dito = DitoSDK();
   dito.onBackgroundMessageHandler(message,
       apiKey: Constants.ditoApiKey, secretKey: Constants.ditoSecretKey);
+  dito.setOnMessageClick((data) {
+    print('app is in a terminated or background state');
+    print(data.toJson());
+  });
 }
 
 void main() async {
@@ -22,6 +26,7 @@ void main() async {
       apiKey: Constants.ditoApiKey, secretKey: Constants.ditoSecretKey);
   await dito.initializePushNotificationService();
   dito.setOnMessageClick((data) {
+    print('app is open');
     print(data.toJson());
   });
 

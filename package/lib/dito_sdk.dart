@@ -99,9 +99,7 @@ class DitoSDK {
   /// This method is a handler for manage messages in the background.
   /// It initializes Firebase and Dito, then push the message.
   Future<void> onBackgroundMessageHandler(RemoteMessage message,
-      {required String apiKey,
-      required String secretKey,
-      Function(DataPayload)? onMessageClicked}) async {
+      {required String apiKey, required String secretKey}) async {
     _api.setKeys(apiKey, secretKey);
     await Firebase.initializeApp();
     await _notificationInterface.initialize();
