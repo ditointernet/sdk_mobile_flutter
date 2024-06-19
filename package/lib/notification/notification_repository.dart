@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 import '../data/dito_api.dart';
@@ -18,6 +19,8 @@ class NotificationRepository {
     await Firebase.initializeApp();
 
     await FirebaseMessaging.instance.setAutoInitEnabled(true);
+
+    _handleToken();
 
     /*
     RemoteMessage? initialMessage =
@@ -40,6 +43,24 @@ class NotificationRepository {
     FirebaseMessaging.onMessage.listen(onMessage);
   }
 
+  void _handleToken() async {
+    _userInterface.data.token = await getFirebaseToken();
+    FirebaseMessaging.instance.onTokenRefresh.listen((token) {
+      final lastToken = _userInterface.data.token;
+      if (lastToken != token) {
+        if (lastToken != null && lastToken.isNotEmpty) {
+          removeToken(lastToken);
+        }
+        registryToken(token);
+        _userInterface.data.token = token;
+      }
+    }).onError((err) {
+      if (kDebugMode) {
+        print('Error getting token.: $err');
+      }
+    });
+  }
+
   /// This method asks for permission to show the notifications.
   ///
   /// Returns a bool.
@@ -51,9 +72,7 @@ class NotificationRepository {
   /// This method get the mobile token for push notifications.
   ///
   /// Returns a String or null.
-  Future<String?> getFirebaseToken() async {
-    return FirebaseMessaging.instance.getToken();
-  }
+  Future<String?> getFirebaseToken() => FirebaseMessaging.instance.getToken();
 
   /// This method registers a mobile token for push notifications.
   ///

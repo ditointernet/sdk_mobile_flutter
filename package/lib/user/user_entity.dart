@@ -8,6 +8,7 @@ class UserEntity {
   String? gender;
   String? birthday;
   String? location;
+  String? token;
   Map<String, dynamic>? customData;
 
   UserEntity(
@@ -18,6 +19,7 @@ class UserEntity {
       this.gender,
       this.birthday,
       this.location,
+      this.token,
       this.customData});
 
   String? get id => userID;
