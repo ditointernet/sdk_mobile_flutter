@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:dito_sdk/notification/notification_events.dart';
+import 'package:event_bus/event_bus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -14,6 +16,7 @@ import 'notification_controller.dart';
 class NotificationInterface {
   final NotificationRepository _repository = NotificationRepository();
   final NotificationController _controller = NotificationController();
+  final NotificationEvents _notificationEvents = NotificationEvents();
   final DitoApi _api = DitoApi();
 
   /// The broadcast stream for received notifications
@@ -46,6 +49,8 @@ class NotificationInterface {
       _controller.showNotification(receivedNotification);
     });
     _selectNotificationStream.stream.listen((DataPayload data) async {
+      _notificationEvents.stream.fire(MessageClickedEvent(data));
+
       final notificationId = data.notification;
 
       // Only sends the event if the message is linked to a notification
@@ -54,13 +59,6 @@ class NotificationInterface {
             notificationId, data.identifier, data.reference);
       }
     });
-  }
-
-  /// This method adds a received notification to stream
-  ///
-  /// [notification] - NotificationEntity object.
-  _addNotificationToStream(NotificationEntity notification) {
-    _didReceiveLocalNotificationStream.add(notification);
   }
 
   /// This method is a handler for new remote messages.
@@ -82,11 +80,11 @@ class NotificationInterface {
     final appName = packageInfo.appName;
 
     if (messagingAllowed && notification.details.message.isNotEmpty) {
-      _addNotificationToStream(NotificationEntity(
+      _didReceiveLocalNotificationStream.add((NotificationEntity(
           id: message.hashCode,
           title: notification.details.title ?? appName,
           body: notification.details.message,
-          payload: notification));
+          payload: notification)));
     }
   }
 

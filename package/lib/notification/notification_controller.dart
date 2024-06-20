@@ -45,7 +45,6 @@ class NotificationController {
     await localNotificationsPlugin.initialize(initializationSettings,
         onDidReceiveNotificationResponse: onTapNotification);
 
-// Precisa completar a config no app? https://firebase.flutter.dev/docs/messaging/notifications/#notification-channels
     await _setupAndroidChannel();
   }
 

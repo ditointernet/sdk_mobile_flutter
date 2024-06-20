@@ -42,7 +42,6 @@ class AppFormState extends State<AppForm> {
 
     handleNotification() async {
       if (_formKey.currentState!.validate()) {
-        await identify();
         await dito.trackEvent(eventName: 'action-test');
 
         ScaffoldMessenger.of(context).showSnackBar(
