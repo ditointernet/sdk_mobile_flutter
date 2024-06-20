@@ -27,7 +27,7 @@ class AppFormState extends State<AppForm> {
       final user = UserEntity(
           userID: cpf, cpf: cpf, name: 'Teste SDK Flutter', email: email);
 
-      await dito.user.identify(user);
+      await dito.identify(user);
     }
 
     handleIdentify() async {

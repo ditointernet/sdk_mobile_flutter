@@ -48,7 +48,7 @@ class DitoSDK {
     await _notificationInterface.initialize();
   }
 
-  setOnMessageClick(Function(DataPayload) onMessageClicked) {
+  void setOnMessageClick(Function(DataPayload) onMessageClicked) {
     _notificationEvents.stream.on<MessageClickedEvent>().listen((event) {
       onMessageClicked(event.data);
     });
