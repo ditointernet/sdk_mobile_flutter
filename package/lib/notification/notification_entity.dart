@@ -1,25 +1,24 @@
 class Details {
   final String? link;
   final String message;
+  final String? title;
 
-  Details(this.link, this.message);
+  Details(this.link, this.message, this.title);
 
   factory Details.fromJson(dynamic json) {
     assert(json is Map);
-    return Details(json["link"], json["message"]);
+    return Details(json["link"], json["message"], json["title"]);
   }
 
-  Map<String, dynamic> toJson() => {
-        'link': link,
-        'message': message,
-      };
+  Map<String, dynamic> toJson() =>
+      {'link': link, 'message': message, 'title': title};
 }
 
 class DataPayload {
   final String reference;
   final String identifier;
-  final String notification;
-  final String notification_log_id;
+  final String? notification;
+  final String? notification_log_id;
   final Details details;
 
   DataPayload(this.reference, this.identifier, this.notification,
@@ -30,7 +29,8 @@ class DataPayload {
 
     return DataPayload(
         json["reference"],
-        json["identifier"],
+        // removendo json["identifier"] por causa do erro
+        json["notification_log_id"],
         json["notification"],
         json["notification_log_id"],
         Details.fromJson(json["details"]));
@@ -43,4 +43,18 @@ class DataPayload {
         'notification_log_id': notification_log_id,
         'details': details.toJson(),
       };
+}
+
+class NotificationEntity {
+  final int id;
+  final String title;
+  final String body;
+  final DataPayload? payload;
+
+  NotificationEntity({
+    required this.id,
+    required this.title,
+    required this.body,
+    this.payload,
+  });
 }

@@ -1,3 +1,30 @@
+## 0.5.5 ()
+
+### New Features:
+
+- User domain implementation;
+- Creation of event domain;
+- Changes on SDK architecture;
+- Change implementation of identify to `DitoSDK.identify(UserEntity(userID: ''))`;
+
+### Bug Fixes:
+
+- Hotfix: Changed Data Payload type to string.
+- Prevented sending opened notifications with empty ID.
+
+### Improvements:
+
+- Version update.
+- Configured DitoApi instance.
+- Removed unnecessary endpoints and domains.
+
+### Notable Commits:
+
+- [NOT-3023] DitoApi
+- [NOT-3023] constants
+- feat: User domain implementation
+- feat: create event domain
+
 ## 0.5.4 (Jun 05, 2024)
 
 ### Bug Fixes
@@ -31,44 +58,45 @@
 ### Bug Fixes
 
 - Bug Fixes
-  - Backward compatibility for dependent packages;
-  - `openNotification()` in the request submission contract.
+    - Backward compatibility for dependent packages;
+    - `openNotification()` in the request submission contract.
 - Additional Notes
-  - No additional notes in this version.
+    - No additional notes in this version.
 
 ## 0.5.0 (April 30, 2024)
 
 ### New Features
 
 - Added the following methods:
-  - `setUser()`: Method to save user data before an identify.
-  - `removeMobileToken()`: Method to remove a user's token.
-  - `initializePushNotificationService()`: Method to initialize the mobile push notification service.
-  - `setAndroidDetails()`: Method to customize the mobile push notification service on Android.
-  - `setIosDetails()`: Method to customize the mobile push notification service on iOS.
+    - `setUser()`: Method to save user data before an identify.
+    - `removeMobileToken()`: Method to remove a user's token.
+    - `initializePushNotificationService()`: Method to initialize the mobile push notification
+      service.
+    - `setAndroidDetails()`: Method to customize the mobile push notification service on Android.
+    - `setIosDetails()`: Method to customize the mobile push notification service on iOS.
 - Changes
-  - Removed setUserAgent method, which is now generated automatically.
-  - Deprecated setUserId method.
+    - Removed setUserAgent method, which is now generated automatically.
+    - Deprecated setUserId method.
 - Bug Fixes
-  - No bug fixes in this version.
+    - No bug fixes in this version.
 - Additional Notes
-  - No additional notes in this version.
+    - No additional notes in this version.
 
 ## 0.4.0 (November 23, 2023)
 
 ### New Features
 
 - Added the following methods:
-  - `registryMobileToken()`: Method to register the mobile token for the user.
-  - `openNotification()`: Method to notify of the opening of a mobile notification.
+    - `registryMobileToken()`: Method to register the mobile token for the user.
+    - `openNotification()`: Method to notify of the opening of a mobile notification.
 - Changes
 - Removed encoding attribute from all requests.
 - Removed json.encode from the data attribute in the identifyUser() method.
 - `identifyUser()` method returning the request result. (changed to Future<http.Response>).
 - Bug Fixes
-  - No bug fixes in this version.
+    - No bug fixes in this version.
 - Additional Notes
-  - No additional notes in this version.
+    - No additional notes in this version.
 
 ## 0.3.0 (October 26, 2023)
 
@@ -77,35 +105,35 @@
 - Event storage while not having a registered userID.
 - Sending stored events as soon as a userID is registered.
 - Changes
-  - No changes in this version.
+    - No changes in this version.
 - Bug Fixes
-  - No bug fixes in this version.
+    - No bug fixes in this version.
 - Additional Notes
-  - No additional notes in this version.
+    - No additional notes in this version.
 
 ## 0.2.0 (October 10, 2023)
 
 ### Refactor
 
 - Changes
-  - Renamed registerUser() method to identifyUser().
-  - Documentation improvements.
+    - Renamed registerUser() method to identifyUser().
+    - Documentation improvements.
 - Bug Fixes
-  - No bug fixes in this version.
+    - No bug fixes in this version.
 - Additional Notes
-  - No additional notes in this version.
+    - No additional notes in this version.
 
 ## 0.1.1 (October 2, 2023)
 
 ### Refectory
 
 - Changes
-  - Removed print from methods.
-  - Exception handling in methods that contain requests.
+    - Removed print from methods.
+    - Exception handling in methods that contain requests.
 - Bug Fixes
-  - No bug fixes in this version.
+    - No bug fixes in this version.
 - Additional Notes
-  - No additional notes in this version.
+    - No additional notes in this version.
 
 ## 0.1.0 (October 2, 2023)
 

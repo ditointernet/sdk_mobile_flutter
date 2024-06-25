@@ -1,27 +1,26 @@
 library dito_sdk;
 
-import 'dart:convert';
-
-import 'package:dito_sdk/entity/domain.dart';
+import 'package:dito_sdk/notification/notification_entity.dart';
+import 'package:dito_sdk/notification/notification_events.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:http/http.dart' as http;
 
-import 'constants.dart';
-import 'database.dart';
-import 'entity/event.dart';
-import 'entity/user.dart';
-import 'services/notification_service.dart';
-import 'utils/http.dart';
-import 'utils/sha1.dart';
+import 'data/dito_api.dart';
+import 'event/event_entity.dart';
+import 'event/event_interface.dart';
+import 'notification/notification_interface.dart';
+import 'user/user_entity.dart';
+import 'user/user_interface.dart';
 
+/// DitoSDK is a singleton class that provides various methods to interact with Dito API
+/// and manage user data, events, and push notifications.
 class DitoSDK {
-  String? _apiKey;
-  String? _secretKey;
-  late Map<String, String> _assign;
-  late NotificationService _notificationService;
-  User _user = User();
-  Constants constants = Constants();
+  final DitoApi _api = DitoApi();
+  final UserInterface _userInterface = UserInterface();
+  final EventInterface _eventInterface = EventInterface();
+  final NotificationInterface _notificationInterface = NotificationInterface();
+  final NotificationEvents _notificationEvents = NotificationEvents();
 
   static final DitoSDK _instance = DitoSDK._internal();
 
@@ -31,251 +30,79 @@ class DitoSDK {
 
   DitoSDK._internal();
 
-  NotificationService notificationService() {
-    return _notificationService;
-  }
+  /// This get method provides an interface for communication with a User entity.
+  /// Returns an instance of UserInterface class.
+  UserInterface get user => _userInterface;
 
-  User get user {
-    return _user;
-  }
-
+  /// This method initializes the SDK with the provided API key and secret key.
+  /// It also initializes the NotificationService and assigns API key and SHA1 signature.
+  ///
+  /// [apiKey] - The API key for the Dito platform.
+  /// [secretKey] - The secret key for the Dito platform.
   void initialize({required String apiKey, required String secretKey}) async {
-    _apiKey = apiKey;
-    _secretKey = secretKey;
-    _notificationService = NotificationService(_instance);
-    _assign = {
-      'platform_api_key': apiKey,
-      'sha1_signature': convertToSHA1(_secretKey!),
-    };
+    _api.setKeys(apiKey, secretKey);
   }
 
+  /// This method initializes the push notification service using Firebase.
   Future<void> initializePushNotificationService() async {
-    await Firebase.initializeApp();
-    await _notificationService.initialize();
-
-    RemoteMessage? initialMessage =
-        await FirebaseMessaging.instance.getInitialMessage();
-
-    if (initialMessage != null) {
-      _notificationService.handleMessage(initialMessage);
-    }
-
-    FirebaseMessaging.onMessageOpenedApp
-        .listen(_notificationService.handleMessage);
+    await _notificationInterface.initialize();
   }
 
-  void _checkConfiguration() {
-    if (_apiKey == null || _secretKey == null) {
-      throw Exception(
-          'API key and Secret Key must be initialized before using. Please call the initialize() method first.');
-    }
+  void setOnMessageClick(Function(DataPayload) onMessageClicked) {
+    _notificationEvents.stream.on<MessageClickedEvent>().listen((event) {
+      onMessageClicked(event.data);
+    });
   }
 
-  Future<void> _verifyPendingEvents() async {
-    final database = LocalDatabase.instance;
-    final events = await database.getEvents();
-
-    if (events.isNotEmpty) {
-      for (final event in events) {
-        await _postEvent(event);
-      }
-      database.deleteEvents();
-    }
+  /// This method enables saving and sending user data to the Dito API.
+  ///
+  /// [user] - UserEntity object.
+  /// Returns a boolean indicating success.
+  Future<bool> identify(UserEntity user) async {
+    final result = await _userInterface.identify(user);
+    return result;
   }
 
-  @Deprecated('migration')
-  Future<void> setUserId(String userId) async {
-    _setUserId(userId);
-  }
-
-  Future<void> _setUserId(String userId) async {
-    if (_user.isValid) {
-      _verifyPendingEvents();
-    }
-  }
-
-  void identify({
-    required String userID,
-    String? cpf,
-    String? name,
-    String? email,
-    String? gender,
-    String? birthday,
-    String? location,
-    Map<String, String>? customData,
-  }) {
-    _user.userID = userID;
-
-    if (cpf != null) {
-      _user.cpf = cpf;
-    }
-
-    if (name != null) {
-      _user.name = name;
-    }
-
-    if (email != null) {
-      _user.email = email;
-    }
-
-    if (gender != null) {
-      _user.gender = gender;
-    }
-
-    if (birthday != null) {
-      _user.birthday = birthday;
-    }
-
-    if (location != null) {
-      _user.location = location;
-    }
-
-    if (customData != null) {
-      _user.customData = customData;
-    }
-
-    _setUserId(userID);
-  }
-
-  Future<void> setUser(User user) async {
-    _user = user;
-
-    if (_user.isValid) {
-      await _setUserId(_user.id!);
-    } else {
-      throw Exception(
-          'User registration is required. Please call the identify() method first.');
-    }
-  }
-
-  Future<http.Response> identifyUser() async {
-    _checkConfiguration();
-
-    if (_user.isNotValid) {
-      throw Exception(
-          'User registration is required. Please call the identify() method first.');
-    }
-
-    final queryParameters = {
-      'user_data': jsonEncode(_user.toJson()),
-    };
-
-    queryParameters.addAll(_assign);
-    final url = Domain(Endpoint.identify.replace(_user.id!)).spited;
-    final uri = Uri.https(url[0], url[1], queryParameters);
-
-    return await Api().post(
-      url: uri,
-    );
-  }
-
-  Future<http.Response> _postEvent(Event event) async {
-    _checkConfiguration();
-
-    final body = {
-      'id_type': 'id',
-      'network_name': 'pt',
-      'event': jsonEncode(event.toJson())
-    };
-
-    final url = Domain(Endpoint.events.replace(_user.id!)).spited;
-    final uri = Uri.https(url[0], url[1], _assign);
-
-    body.addAll(_assign);
-    return await Api().post(url: uri, body: body);
-  }
-
-  Future<http.Response> trackEvent({
+  /// This method tracks an event with optional revenue and custom data.
+  ///
+  /// [eventName] - The name of the event.
+  /// [revenue] - Optional revenue associated with the event.
+  /// [customData] - Optional custom data associated with the event.
+  /// Returns a bool.
+  Future<bool> trackEvent({
     required String eventName,
     double? revenue,
-    Map<String, String>? customData,
+    Map<String, dynamic>? customData,
   }) async {
-    DateTime localDateTime = DateTime.now();
-    DateTime utcDateTime = localDateTime.toUtc();
-    String eventMoment = utcDateTime.toIso8601String();
+    final event = EventEntity(
+        eventName: eventName, customData: customData, revenue: revenue);
 
-    final event = Event(
-        eventName: eventName,
-        eventMoment: eventMoment,
-        customData: customData,
-        revenue: revenue);
-
-    if (_user.isNotValid) {
-      final database = LocalDatabase.instance;
-      await database.createEvent(event);
-      return http.Response("", 200);
-    }
-
-    return await _postEvent(event);
+    return await _eventInterface.trackEvent(event);
   }
 
-  Future<http.Response> registryMobileToken({required String token}) async {
-    _checkConfiguration();
-
-    if (_user.isNotValid) {
-      throw Exception(
-          'User registration is required. Please call the identify() method first.');
-    }
-
-    final queryParameters = {
-      'id_type': 'id',
-      'token': token,
-      'platform': constants.platform,
-    };
-
-    queryParameters.addAll(_assign);
-    final url = Domain(Endpoint.registryMobileTokens.replace(_user.id!)).spited;
-    final uri = Uri.https(url[0], url[1], queryParameters);
-
-    return await Api().post(
-      url: uri,
-    );
+  /// This method registers a mobile token for push notifications.
+  ///
+  /// [token] - The mobile token to be registered.
+  /// Returns an http.Response.
+  Future<http.Response> registryToken({String? token}) async {
+    return await _notificationInterface.registryToken(token);
   }
 
-  Future<http.Response> removeMobileToken({required String token}) async {
-    _checkConfiguration();
-
-    if (_user.isNotValid) {
-      throw Exception(
-          'User registration is required. Please call the identify() method first.');
-    }
-
-    final queryParameters = {
-      'id_type': 'id',
-      'token': token,
-      'platform': constants.platform,
-    };
-
-    queryParameters.addAll(_assign);
-    final url = Domain(Endpoint.removeMobileTokens.replace(_user.id!)).spited;
-    final uri = Uri.https(url[0], url[1], queryParameters);
-
-    return await Api().post(
-      url: uri,
-    );
+  /// This method removes a mobile token from the push notification service.
+  ///
+  /// [token] - The mobile token to be removed.
+  /// Returns an http.Response.
+  Future<http.Response> removeToken({String? token}) async {
+    return await _notificationInterface.removeToken(token);
   }
 
-  Future<http.Response> openNotification(
-      {required String notificationId,
-      required String identifier,
-      required String reference}) async {
-    _checkConfiguration();
-
-    final queryParameters = {
-      'channel_type': 'mobile',
-    };
-
-    final body = {
-      'identifier': identifier,
-      'reference': reference,
-    };
-
-    queryParameters.addAll(_assign);
-
-    final url =
-        Domain(Endpoint.openNotification.replace(notificationId)).spited;
-    final uri = Uri.https(url[0], url[1], queryParameters);
-
-    return await Api().post(url: uri, body: body);
+  /// This method is a handler for manage messages in the background.
+  /// It initializes Firebase and Dito, then push the message.
+  Future<void> onBackgroundMessageHandler(RemoteMessage message,
+      {required String apiKey, required String secretKey}) async {
+    _api.setKeys(apiKey, secretKey);
+    await Firebase.initializeApp();
+    await _notificationInterface.initialize();
+    return await _notificationInterface.onMessage(message);
   }
 }

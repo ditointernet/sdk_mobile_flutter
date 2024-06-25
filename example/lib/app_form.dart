@@ -1,5 +1,6 @@
 import 'package:dito_sdk/dito_sdk.dart';
-import 'package:dito_sdk/entity/custom_notification.dart';
+import 'package:dito_sdk/user/user_entity.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -19,19 +20,14 @@ class AppFormState extends State<AppForm> {
   Widget build(BuildContext context) {
     final dito = Provider.of<DitoSDK>(context);
 
-    String cpf = "22222222222";
-    String email = "teste@dito.com.br";
+    String cpf = "32190381209";
+    String email = "teste.sdk2@dito.com.br";
 
     identify() async {
-      dito.identify(
+      final user = UserEntity(
           userID: cpf, cpf: cpf, name: 'Teste SDK Flutter', email: email);
-      await dito.identifyUser();
 
-      // final token = await dito.notificationService().getDeviceFirebaseToken();
-      //
-      // if (token != null && token.isNotEmpty) {
-      //   dito.registryMobileToken(token: token);
-      // }
+      await dito.identify(user);
     }
 
     handleIdentify() async {
@@ -46,7 +42,6 @@ class AppFormState extends State<AppForm> {
 
     handleNotification() async {
       if (_formKey.currentState!.validate()) {
-        await identify();
         await dito.trackEvent(eventName: 'action-test');
 
         ScaffoldMessenger.of(context).showSnackBar(
@@ -55,16 +50,8 @@ class AppFormState extends State<AppForm> {
       }
     }
 
-    handleLocalNotification() {
-      dito.notificationService().addNotificationToStream(CustomNotification(
-          id: 123,
-          title: "Notificação local",
-          body:
-              "Está é uma mensagem de teste, validando o stream de dados das notificações locais"));
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Push enviado para a fila')),
-      );
+    handleDeleteToken() async {
+      await FirebaseMessaging.instance.deleteToken();
     }
 
     return Form(
@@ -101,17 +88,17 @@ class AppFormState extends State<AppForm> {
                   padding: const EdgeInsets.all(15.0),
                   child: Column(children: [
                     FilledButton(
-                      child: const Text('Registrar Identify'),
                       onPressed: handleIdentify,
+                      child: const Text('Registrar Identify'),
                     ),
                     OutlinedButton(
-                      child: const Text('Receber Notification'),
                       onPressed: handleNotification,
+                      child: const Text('Receber Notification'),
                     ),
-                    TextButton(
-                      child: const Text('Criar notificação local'),
-                      onPressed: handleLocalNotification,
-                    )
+                    OutlinedButton(
+                      onPressed: handleDeleteToken,
+                      child: const Text('Deletar token'),
+                    ),
                   ])))
         ],
       ),

@@ -76,6 +76,8 @@ Este método define as configurações do usuário que será usado para todas as
 void identify(UserEntity user);
 ```
 
+#### Parameters
+
 - **user** _(UserEntity, obrigatório)_: Parâmetro para identificar o usuário na plataforma da Dito.
 
 ### trackEvent()
@@ -135,7 +137,7 @@ Future<http.Response> registryToken({
 
 #### Exception
 
-- Caso a SDK ainda não tenha `identify` cadastrado quando esse método for chamado, irá ocorrer um
+- Caso a SDK ainda não tenha `user` cadastrado quando esse método for chamado, irá ocorrer um
   erro no aplicativo. (utilize o método `identify()` para definir o usuário)
 
 ### removeMobileToken()
@@ -154,7 +156,7 @@ Future<http.Response> removeMobileToken({
 
 #### Exception
 
-- Caso a SDK ainda não tenha `identify` cadastrado quando esse método for chamado, irá ocorrer um
+- Caso a SDK ainda não tenha `user` cadastrado quando esse método for chamado, irá ocorrer um
   erro no aplicativo. (utilize o método `identify()` para definir o usuário)
 
 ## Exemplos

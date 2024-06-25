@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-class User {
+class UserEntity {
   String? userID;
   String? name;
   String? cpf;
@@ -8,9 +8,10 @@ class User {
   String? gender;
   String? birthday;
   String? location;
+  String? token;
   Map<String, dynamic>? customData;
 
-  User(
+  UserEntity(
       {this.userID,
       this.name,
       this.cpf,
@@ -18,14 +19,19 @@ class User {
       this.gender,
       this.birthday,
       this.location,
+      this.token,
       this.customData});
 
   String? get id => userID;
-  bool get isValid => userID != null && userID!.isNotEmpty;
-  bool get isNotValid => !isValid;
 
-  factory User.fromMap(Map<String, dynamic> map) {
-    return User(
+  /// User is valid when userId is not empty
+  bool get isValid => userID != null && userID!.isNotEmpty;
+
+  bool get isNotValid => userID == null || userID!.isEmpty;
+
+  // Factory method to instance a user from a JSON object
+  factory UserEntity.fromMap(Map<String, dynamic> map) {
+    return UserEntity(
         userID: map['userID'],
         name: map['name'],
         cpf: map['cpf'],
@@ -39,6 +45,7 @@ class User {
             : null);
   }
 
+  // Factory method to convert a user to JSON object
   Map<String, dynamic> toJson() {
     return {
       'name': name,
