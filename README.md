@@ -161,15 +161,15 @@ import 'package:dito_sdk/dito_sdk.dart';
 
 final dito = DitoSDK();
 
-// Inicializa a SDK com suas chaves de API
+// Initialize the SDK with your API keys
 dito.initialize( apiKey: 'your_api_key', secretKey: 'your_secret_key');
 
-// Define ou atualiza informações do usuário na instância 
+// Sets or updates user information on the instance
 final user = UserEntity(userID: cpf, cpf: cpf, name: name, email: email);
 await dito.identify(user);
 
 
-// Registra um evento na Dito
+// Register an event at Dito
 await dito.trackEvent(eventName: 'login');
 ```
 
