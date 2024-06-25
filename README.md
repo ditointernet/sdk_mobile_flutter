@@ -2,20 +2,54 @@
 [![pt-br](https://img.shields.io/badge/lang-pt--br-green.svg)](https://github.com/ditointernet/sdk_mobile_flutter/blob/main/README.pt-br.md)
 [![es](https://img.shields.io/badge/lang-es-yellow.svg)](https://github.com/ditointernet/sdk_mobile_flutter/blob/main/README.es.md)
 
-```markdown
 # Dito SDK (Flutter)
 
-DitoSDK is a Dart library that provides methods to integrate applications with the Dito platform. It allows user identification, event registration, and sending custom data.
+DitoSDK is a Dart library that provides methods to integrate applications with the Dito platform. It allows to identify users, record events, and send personalized data.
 
 ## Installation
 
-To install the DitoSDK library in your Flutter application, you should follow the instructions provided [at this link](https://pub.dev/packages/dito_sdk/install).
+To install the DitoSDK library in your Flutter application, you must follow the instructions provided at [this link](https://pub.dev/packages/dito_sdk/install).
+
+## Entities
+
+### UserEntity
+
+```dart
+class UserEntity {
+  String? userID;
+  String? name;
+  String? cpf;
+  String? email;
+  String? gender;
+  String? birthday;
+  String? location;
+  Map<String, dynamic>? customData;
+}
+```
+
+### DataPayload
+
+```dart
+class Details {
+  final String? link;
+  final String message;
+  final String? title;
+}
+
+class DataPayload {
+  final String reference;
+  final String identifier;
+  final String? notification;
+  final String? notification_log_id;
+  final Details details;
+}
+```
 
 ## Methods
 
-### initialize()
+### initialize() 
 
-This method must be called before any other operation with the SDK. It initializes the API and SECRET keys necessary for authentication on the Dito platform.
+This method must be called before any other operation with the SDK. It initializes the API and SECRET keys required for authentication on the Dito platform.
 
 ```dart
 void initialize({required String apiKey, required String secretKey});
@@ -26,7 +60,7 @@ void initialize({required String apiKey, required String secretKey});
 - **apiKey** _(String, required)_: The API key for the Dito platform.
 - **secretKey** _(String, required)_: The secret key for the Dito platform.
 
-### initializePushNotificationService()
+### initializePushNotificationService() 
 
 This method should be called after the SDK initialization. It initializes the settings and services necessary for the functioning of push notifications on the Dito platform.
 
@@ -34,91 +68,115 @@ This method should be called after the SDK initialization. It initializes the se
 void initializePushNotificationService();
 ```
 
-#### Parameters
-
-- **apiKey** _(String, required)_: The API key for the Dito platform.
-- **secretKey** _(String, required)_: The secret key for the Dito platform.
-
 ### identify()
 
-This method sets the user ID that will be used for all subsequent operations.
+This method defines user settings that will be used for all subsequent operations.
 
 ```dart
-void identify(String userId);
+void identify(UserEntity user);
 ```
 
-- **userID** _(String, required)_: ID to identify the user on the Dito platform.
-- **name** _(String)_: Parameter to identify the user on the Dito platform.
-- **email** _(String)_: Parameter to identify the user on the Dito platform.
-- **gender** _(String)_: Parameter to identify the user on the Dito platform.
-- **birthday** _(String)_: Parameter to identify the user on the Dito platform.
-- **location** _(String)_: Parameter to identify the user on the Dito platform.
-- **customData** _(Map<String, dynamic>)_: Parameter to identify the user on the Dito platform.
+#### Parameters
+
+- **user** _(UserEntity, obrigatório)_: Parameter to identify the user on Dito’s platform.
 
 ### trackEvent()
 
-This method records an event on the Dito platform.
+This method records an event on the Dito platform. If the user has already been registered, the event will be sent immediately. However, if the user has not yet been registered, the event will be stored locally and sent later.
 
 ```dart
-void trackEvent({required String eventName, double? revenue, Map<String, dynamic>? customData});
+Future<void> trackEvent({
+  required String eventName,
+  double? revenue,
+  Map<String, String>? customData,
+});
 ```
+
+#### Parameters
 
 - **eventName** _(String, required)_: Name of the event to be tracked.
 - **revenue** _(double)_: Revenue generated from the event.
 - **customData** _(Map<String, dynamic)_: Custom data related to the event.
 
-## Example Usage
+### setOnMessageClick()
 
-Below is an example of how to use the DitoSDK:
-
-### main.dart
+The `setOnMessageClick()` method sets a callback for the push notification click event.
 
 ```dart
-import 'package:dito_sdk/dito_sdk.dart';
-
-void main() {
-  DitoSDK dito = DitoSDK();
-
-  dito.initialize(apiKey: 'your_api_key', secretKey: 'your_secret_key');
-  dito.initializePushNotificationService();
-
-  dito.identify('user_id', name: 'John Doe', email: 'john.doe@example.com');
-  dito.trackEvent(
-    eventName: 'purchased product',
-    revenue: 99.90,
-    customData: {
-      'product': 'productX',
-      'sku_product': '99999999',
-      'payment_method': 'Visa',
-    },
-  );
-}
+Future<void> setOnMessageClick(
+  Function(DataPayload) onMessageClicked
+);
 ```
 
-You can call the `identify()` method at any time to add or update user details, and only when necessary, send them through the `identifyUser()` method.
+#### Parameters
 
-### arquivoZ.dart
+- **onMessageClicked** _(Function(DataPayload), required)_: Function that will be called when clicking on the message
+
+
+## Token management
+
+Our SDK ensures the registration of the current user's token in addition to the deletion of invalid tokens. However, we also provide the following methods in case you need to add/remove any token.
+
+### registryMobileToken()
+
+This method allows you to register a mobile token for the user.
+
+```dart
+Future<http.Response> registryToken({
+  String? token,
+});
+```
+
+#### Parâmetros
+
+- **token** _(String)_: The mobile token that will be registered, if it is not sent we will get the value from Firebase.
+
+#### Exception
+
+- If the SDK does not already have `user` registered when this method is called, an error will occur in the application. (Use the `identify()` method to define the user)
+### removeMobileToken()
+
+This method allows you to remove a mobile token for the user.
+
+```dart
+Future<http.Response> removeMobileToken({
+  String? token,
+});
+```
+
+#### Parameters
+
+- **token** _(String)_: The mobile token that will be removed, if it is not sent we will get the value from Firebase.
+
+#### Exception
+
+- If the SDK does not already have `user` registered when this method is called, an error will occur in the application. (Use the `identify()` method to define the user)
+
+## Examples
+
+### Using the SDK only for event tracking:
 
 ```dart
 import 'package:dito_sdk/dito_sdk.dart';
 
 final dito = DitoSDK();
 
-// Record an event on Dito
-dito.trackEvent(
-  eventName: 'purchased product',
-  revenue: 99.90,
-  customData: {
-    'product': 'productX',
-    'sku_product': '99999999',
-    'payment_method': 'Visa',
-  },
-);
+// Inicializa a SDK com suas chaves de API
+dito.initialize( apiKey: 'your_api_key', secretKey: 'your_secret_key');
+
+// Define ou atualiza informações do usuário na instância 
+final user = UserEntity(userID: cpf, cpf: cpf, name: name, email: email);
+await dito.identify(user);
+
+
+// Registra um evento na Dito
+await dito.trackEvent(eventName: 'login');
 ```
 
-### Using SDK with Push Notification:
+### Using the SDK for push notification:
 
-To make it work, it is necessary to configure the Firebase Cloud Messaging (FCM) library by following these steps:
+For it to work, you need to configure the Firebase Cloud Message (FCM) lib, following the
+following steps:
 
 ```shell
 dart pub global activate flutterfire_cli
@@ -129,29 +187,24 @@ flutter pub add firebase_core firebase_messaging
 flutterfire configure
 ```
 
-Follow the steps that will appear on the CLI, so you will have the Firebase access keys configured within the Android and iOS apps.
+Follow the steps that will appear in the CLI, so you will have the Firebase access keys configured
+within the Android and iOS Apps.
 
 #### main.dart
 
 ```dart
 import 'package:dito_sdk/dito_sdk.dart';
 
-// Method to register a service that will receive push notifications when the app is completely closed
+// Method to register a service that will receive messages when the app is completely closed or in the background
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  final notification = DataPayload.fromJson(jsonDecode(message.data["data"]));
-
-  dito.notificationService().showLocalNotification(NotificationEntity(
-      id: message.hashCode,
-      title: notification.details.title || "App Name",
-      body: notification.details.message,
-      payload: notification));
+  DitoSDK dito = DitoSDK();
+  dito.onBackgroundMessageHandler(message,
+      apiKey: Constants.ditoApiKey, secretKey: Constants.ditoSecretKey);
 }
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  await Firebase.initializeApp();
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
   DitoSDK dito = DitoSDK();
@@ -160,5 +213,5 @@ void main() async {
 }
 ```
 
-> Remember to replace 'your_api_key', 'your_secret_key', and 'user_id' with the correct values in your environment.
-```
+> Remember to replace 'your_api_key', 'your_secret_key' with the correct values
+> in your environment.
