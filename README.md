@@ -1,6 +1,5 @@
 [![en](https://img.shields.io/badge/lang-en-red.svg)](https://github.com/ditointernet/sdk_mobile_flutter/blob/main/README.md)
 [![pt-br](https://img.shields.io/badge/lang-pt--br-green.svg)](https://github.com/ditointernet/sdk_mobile_flutter/blob/main/README.pt-br.md)
-[![es](https://img.shields.io/badge/lang-es-yellow.svg)](https://github.com/ditointernet/sdk_mobile_flutter/blob/main/README.es.md)
 
 # Dito SDK (Flutter)
 
