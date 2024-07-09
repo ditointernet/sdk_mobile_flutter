@@ -1,12 +1,12 @@
 abstract class Constants {
   static const String ditoApiKey = String.fromEnvironment(
     'API_KEY',
-    defaultValue: '',
+    defaultValue: 'MjAxNS0xMi0xNSAxNDoyMDowNyAtMDIwMERpdG8gRkVSQXMxOTM',
   );
 
   static const String ditoSecretKey = String.fromEnvironment(
     'SECRET_KEY',
-    defaultValue: '',
+    defaultValue: 'ii4WwTVvIzx8RyAsv6QKD5a4dCpN5AhcCtv2sDZo',
   );
 
   static const String firebaseAndroidApKey = String.fromEnvironment(

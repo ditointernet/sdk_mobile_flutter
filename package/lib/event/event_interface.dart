@@ -18,7 +18,7 @@ interface class EventInterface {
       DateTime utcDateTime = localDateTime.toUtc();
       String eventMoment = utcDateTime.toIso8601String();
 
-      event.eventMoment = eventMoment;
+      event.eventMoment ??= eventMoment;
 
       final version = await customDataVersion;
       if (event.customData == null) {
@@ -33,27 +33,6 @@ interface class EventInterface {
         print('Error tracking event: $e');
       }
       return false;
-    }
-  }
-
-  /// Verifies and processes any pending events.
-  ///
-  /// Throws an exception if the user is not valid.
-  Future<void> verifyPendingEvents() async {
-    try {
-      final events = await _repository.fetchPendingEvents();
-
-      if (events.isNotEmpty) {
-        for (final event in events) {
-          await trackEvent(event);
-        }
-        await _repository.clearEvents();
-      }
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error verifying pending events: $e');
-      }
-      rethrow;
     }
   }
 }

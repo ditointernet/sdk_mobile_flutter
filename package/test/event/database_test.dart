@@ -77,8 +77,8 @@ void main() {
       final events = await eventDatabaseService.fetchAll();
 
       expect(events.length, 2);
-      expect(events[0].eventName, 'Test Event 1');
-      expect(events[1].eventName, 'Test Event 2');
+      expect(events.first.eventName, 'Test Event 1');
+      expect(events.last.eventName, 'Test Event 2');
     });
 
     test('should clear the database', () async {

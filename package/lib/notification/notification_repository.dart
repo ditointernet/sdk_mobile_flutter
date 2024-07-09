@@ -1,81 +1,61 @@
 import 'dart:async';
-import 'dart:io';
 
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 import '../data/dito_api.dart';
+import '../event/event_entity.dart';
+import '../event/event_interface.dart';
 import '../user/user_interface.dart';
+import 'notification_entity.dart';
 
 class NotificationRepository {
   final DitoApi _api = DitoApi();
   final UserInterface _userInterface = UserInterface();
+  final EventInterface _eventInterface = EventInterface();
 
-  /// This method initializes FirebaseMessaging
-  Future<void> initializeFirebaseMessaging(
-      Function(RemoteMessage) onMessage) async {
-    await Firebase.initializeApp();
+  /// The broadcast stream for received notifications
+  final StreamController<NotificationEntity> didReceiveLocalNotificationStream =
+      StreamController<NotificationEntity>.broadcast();
 
-    await FirebaseMessaging.instance.setAutoInitEnabled(true);
+  /// The broadcast stream for selected notifications
+  final StreamController<DataPayload> selectNotificationStream =
+      StreamController<DataPayload>.broadcast();
 
-    _handleToken();
-
-    if (Platform.isIOS) {
-      await FirebaseMessaging.instance
-          .setForegroundNotificationPresentationOptions(
-              badge: true, sound: true, alert: true);
-    }
-
-    /// Shows the message when FCM payload is received
-    FirebaseMessaging.onMessage.listen(onMessage);
-  }
-
-  void _handleToken() async {
-    _userInterface.data.token = await getFirebaseToken();
-    FirebaseMessaging.instance.onTokenRefresh.listen((token) {
-      final lastToken = _userInterface.data.token;
-      if (lastToken != token) {
-        if (lastToken != null && lastToken.isNotEmpty) {
-          removeToken(lastToken);
-        }
-        registryToken(token);
-        _userInterface.data.token = token;
-      }
-    }).onError((err) {
-      if (kDebugMode) {
-        print('Error getting token.: $err');
-      }
-    });
-  }
-
-  /// This method asks for permission to show the notifications.
+  /// Registers the FCM token with the server.
   ///
-  /// Returns a bool.
-  Future<bool> checkPermissions() async {
-    var settings = await FirebaseMessaging.instance.requestPermission();
-    return settings.authorizationStatus == AuthorizationStatus.authorized;
-  }
-
-  /// This method get the mobile token for push notifications.
-  ///
-  /// Returns a String or null.
-  Future<String?> getFirebaseToken() => FirebaseMessaging.instance.getToken();
-
-  /// This method registers a mobile token for push notifications.
-  ///
-  /// [token] - The mobile token to be registered.
-  /// Returns an http.Response.
+  /// [token] - The FCM token to be registered.
+  /// Returns an http.Response from the server.
   Future<http.Response> registryToken(String token) async {
     return await _api.registryToken(token, _userInterface.data);
   }
 
-  /// This method removes a mobile token for push notifications.
+  /// Removes the FCM token from the server.
   ///
-  /// [token] - The mobile token to be removed.
-  /// Returns an http.Response.
+  /// [token] - The FCM token to be removed.
+  /// Returns an http.Response from the server.
   Future<http.Response> removeToken(String token) async {
     return await _api.removeToken(token, _userInterface.data);
+  }
+
+  /// This method send a notify received push event to Dito
+  ///
+  /// [notification] - DataPayload object.
+  Future<void> notifyReceivedNotification(String notificationId) async {
+    await _eventInterface.trackEvent(EventEntity(
+        eventName: 'received-mobile-push-notification',
+        customData: {'notification_id': notificationId}));
+  }
+
+  /// This method send a open unsubscribe from notification event to Dito
+  Future<void> unsubscribeFromNotifications() async {
+    await _eventInterface.trackEvent(
+        EventEntity(eventName: 'unsubscribed-mobile-push-notification'));
+  }
+
+  /// This method send a open deeplink event to Dito
+  Future<void> notifyOpenDeepLink(String? notificationId) async {
+    await _eventInterface.trackEvent(EventEntity(
+        eventName: 'open-deeplink-mobile-push-notification',
+        customData: {'notification_id': notificationId}));
   }
 }

@@ -1,9 +1,11 @@
 import 'dart:async';
+import 'dart:io';
 
-import 'package:dito_sdk/user/user_repository.dart';
+import 'package:flutter/foundation.dart';
 
 import '../data/dito_api.dart';
 import '../data/event_database.dart';
+import '../user/user_repository.dart';
 import 'event_entity.dart';
 
 /// EventRepository is responsible for managing events by interacting with
@@ -20,29 +22,45 @@ class EventRepository {
   /// Returns a Future that completes with true if the event was successfully tracked,
   /// or false if an error occurred.
   Future<bool> trackEvent(EventEntity event) async {
-    // If the user is not registered, save the event to the local database
-    if (_userRepository.data.isNotValid) {
+    try {
+      // If the user is not registered, save the event to the local database
+      if (_userRepository.data.isNotValid) {
+        return await _database.create(event);
+      }
+
+      // If the user don't have internet connection
+      final result = await InternetAddress.lookup('dito.com.br');
+      if (result.isEmpty && result[0].rawAddress.isEmpty) {
+        return await _database.create(event);
+      }
+
+      // Otherwise, send the event to the Dito API
+      return await _api
+          .trackEvent(event, _userRepository.data)
+          .then((response) => true)
+          .catchError((e) => false);
+    } on SocketException catch (_) {
       return await _database.create(event);
     }
-
-    // Otherwise, send the event to the Dito API
-    return await _api
-        .trackEvent(event, _userRepository.data)
-        .then((response) => true)
-        .catchError((e) => false);
   }
 
-  /// Fetches all pending events from the local database.
+  /// Verifies and processes any pending events.
   ///
-  /// Returns a Future that completes with a list of EventEntity objects.
-  Future<List<EventEntity>> fetchPendingEvents() async {
-    return await _database.fetchAll();
-  }
+  /// Throws an exception if the user is not valid.
+  Future<void> verifyPendingEvents() async {
+    try {
+      final events = await _database.fetchAll();
 
-  /// Clears all events from the local database.
-  ///
-  /// Returns a Future that completes when the database has been cleared.
-  Future<void> clearEvents() async {
-    return await _database.clearDatabase();
+      for (final event in events) {
+        await trackEvent(event);
+      }
+
+      await _database.clearDatabase();
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error verifying pending events: $e');
+      }
+      rethrow;
+    }
   }
 }

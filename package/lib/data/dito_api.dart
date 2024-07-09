@@ -8,7 +8,7 @@ import '../user/user_entity.dart';
 import '../utils/sha1.dart';
 
 class DitoApi {
-  final String _platform = Platform.isIOS ? 'iPhone' : 'Android';
+  final String _platform = Platform.isIOS ? 'Apple iPhone' : 'Android';
   String? _apiKey;
   String? _secretKey;
   late Map<String, String> _assign;
@@ -53,6 +53,22 @@ class DitoApi {
     );
   }
 
+  Future<http.Response> _put(String url, String path,
+      {Map<String, Object?>? queryParameters, Map<String, Object?>? body}) {
+    _checkConfiguration();
+
+    final uri = Uri.https(url, path, queryParameters);
+
+    return http.put(
+      uri,
+      body: body,
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'User-Agent': _platform,
+      },
+    );
+  }
+
   Future<http.Response> identify(UserEntity user) async {
     final queryParameters = {
       'user_data': jsonEncode(user.toJson()),
@@ -63,7 +79,24 @@ class DitoApi {
     const url = 'login.plataformasocial.com.br';
     final path = 'users/portal/${user.id}/signup';
 
-    return await _post(url, path, queryParameters: queryParameters);
+    return await _post(url, path,
+        queryParameters: queryParameters,
+        body: {'user_data': jsonEncode(user.toJson())});
+  }
+
+  Future<http.Response> updateUserData(UserEntity user) async {
+    final queryParameters = {
+      'user_data': jsonEncode(user.toJson()),
+    };
+
+    queryParameters.addAll(_assign);
+
+    const url = 'login.plataformasocial.com.br';
+    final path = 'users/${user.id}';
+
+    return await _put(url, path,
+        queryParameters: queryParameters,
+        body: {'user_data': jsonEncode(user.toJson())});
   }
 
   Future<http.Response> trackEvent(EventEntity event, UserEntity user) async {
@@ -73,10 +106,10 @@ class DitoApi {
       'event': jsonEncode(event.toJson())
     };
 
+    body.addAll(_assign);
+
     const url = 'events.plataformasocial.com.br';
     final path = 'users/${user.id}';
-
-    body.addAll(_assign);
 
     return await _post(url, path, body: body);
   }

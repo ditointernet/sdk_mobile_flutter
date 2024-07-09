@@ -20,23 +20,27 @@ class AppFormState extends State<AppForm> {
   Widget build(BuildContext context) {
     final dito = Provider.of<DitoSDK>(context);
 
-    String cpf = "32190381209";
-    String email = "teste.sdk2@dito.com.br";
+    String cpf = "33333333333";
+    String email = "teste.sdk-flutter@dito.com.br";
 
     identify() async {
       final user = UserEntity(
-          userID: cpf, cpf: cpf, name: 'Teste SDK Flutter', email: email);
+          userID: "e400c65b1800bee5bf546c5b7bd37cd4f7452bb8",
+          cpf: cpf,
+          name: 'Teste SDK Flutter 33333333333',
+          email: email);
 
       await dito.user.identify(user);
+      await dito.registryToken();
     }
 
     handleIdentify() async {
       if (_formKey.currentState!.validate()) {
-        await identify();
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Usuário identificado')),
-        );
+        await identify().then((response) => {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Usuário identificado')),
+              )
+            });
       }
     }
 
@@ -60,8 +64,8 @@ class AppFormState extends State<AppForm> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           TextFormField(
-            onSaved: (value) {
-              cpf = value!;
+            onChanged: (value) {
+              cpf = value;
             },
             initialValue: cpf,
             validator: (value) {
@@ -72,8 +76,8 @@ class AppFormState extends State<AppForm> {
             },
           ),
           TextFormField(
-            onSaved: (value) {
-              email = value!;
+            onChanged: (value) {
+              email = value;
             },
             initialValue: email,
             validator: (value) {

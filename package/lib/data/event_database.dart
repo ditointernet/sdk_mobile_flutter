@@ -121,12 +121,11 @@ class EventDatabase {
 
   /// Method to retrieve all events from the events table.
   /// Returns a Future that completes with a list of EventEntity objects.
-  Future<List<EventEntity>> fetchAll() async {
+  Future<Iterable<EventEntity>> fetchAll() async {
     try {
       final db = await database;
-      final List<Map<String, dynamic>> maps = await db.query(_tableName);
-
-      return maps.map((map) => EventEntity.fromMap(map)).toList();
+      final maps = await db.query(_tableName);
+      return maps.map((map) => EventEntity.fromMap(map));
     } catch (e) {
       if (kDebugMode) {
         print('Error retrieving events: $e');

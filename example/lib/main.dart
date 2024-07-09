@@ -18,11 +18,14 @@ void main() async {
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
   DitoSDK dito = DitoSDK();
+
   dito.initialize(
       apiKey: Constants.ditoApiKey, secretKey: Constants.ditoSecretKey);
+
   await dito.initializePushNotificationService();
-  dito.setOnMessageClick((data) {
-    print(data.toJson());
+
+  dito.onMessageClick = ((data) {
+    print(data);
   });
 
   runApp(MultiProvider(providers: [

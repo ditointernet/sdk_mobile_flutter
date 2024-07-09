@@ -1,14 +1,17 @@
-# Dito SDK (Flutter)
+## Dito SDK (Flutter)
+==================
 
 DitoSDK é uma biblioteca Dart que fornece métodos para integrar aplicativos com a plataforma da
 Dito. Ela permite identificar usuários, registrar eventos e enviar dados personalizados.
 
 ## Instalação
+----------
 
-Para instalar a biblioteca DitoSDK em seu aplicativo Flutter, você deve seguir as instruções
-fornecidas [nesse link](https://pub.dev/packages/dito_sdk/install).
+Para instalar a biblioteca DitoSDK em seu aplicativo Flutter, siga as instruções
+fornecidas [neste link](https://pub.dev/packages/dito_sdk/install).
 
 ## Métodos
+-------
 
 ### initialize()
 
@@ -18,78 +21,43 @@ API e SECRET necessárias para a autenticação na plataforma Dito.
 ```dart
 void initialize({required String apiKey, required String secretKey});
 ```
-
 #### Parâmetros
 
-- **apiKey** _(String, obrigatório)_: A chave de API da plataforma Dito.
-- **secretKey** _(String, obrigatório)_: O segredo da chave de API da plataforma Dito.
+- **apiKey** *(String, obrigatório)*: A chave de API da plataforma Dito.
+- **secretKey** *(String, obrigatório)*: O segredo da chave de API da plataforma Dito.
 
 ### initializePushNotificationService()
 
-Este método deve ser chamado após a inicialização da SDK. Ele inicializa as configurações e serviços
+Este método deve ser chamado após a inicialização do SDK. Ele inicializa as configurações e serviços
 necessários para o funcionamento de push notifications da plataforma Dito.
 
 ```dart
 void initializePushNotificationService();
 ```
 
-#### Parâmetros
-
-- **apiKey** _(String, obrigatório)_: A chave de API da plataforma Dito.
-- **secretKey** _(String, obrigatório)_: O segredo da chave de API da plataforma Dito.
-
 ### identify()
-
-Este método define o ID do usuário que será usado para todas as operações subsequentes.
-
-```dart
-void identify(String userId);
-```
-
-- **userID** _(String, obrigatório)_: Id para identificar o usuário na plataforma da Dito.
-- **name** _(String)_: Parâmetro para identificar o usuário na plataforma da Dito.
-- **email** _(String)_: Parâmetro para identificar o usuário na plataforma da Dito.
-- **gender** _(String)_: Parâmetro para identificar o usuário na plataforma da Dito.
-- **birthday** _(String)_: Parâmetro para identificar o usuário na plataforma da Dito.
-- **location** _(String)_: Parâmetro para identificar o usuário na plataforma da Dito.
-- **customData** _(Map<String, dynamic>)_: Parâmetro para identificar o usuário na plataforma da
-  Dito.
-
-#### identifyUser()
 
 Este método registra o usuário na plataforma da Dito com as informações fornecidas anteriormente
 usando o método `identify()`.
 
-```dart
-Future<http.Response> identifyUser
-
-() async;
-```
-
-#### Exception
-
-- Caso a SDK ainda não tenha `userId` cadastrado quando esse método for chamado, irá ocorrer um erro
-  no aplicativo. (utilize o método `setUserId()` para definir o `userId`)
+dart
+Future<bool> identify(UserEntity user) async;`
 
 ### trackEvent()
 
-O método `trackEvent()` tem a finalidade de registrar um evento na plataforma da Dito. Caso o userID
-já tenha sido registrado, o evento será enviado imediatamente. No entanto, caso o userID ainda não
-tenha sido registrado, o evento será armazenado localmente e posteriormente enviado quando o userID
-for registrado por meio do método `setUserId()`.
+O método `trackEvent()` registra um evento na plataforma da Dito. Caso o `userId` já tenha sido
+registrado, o evento será enviado imediatamente. Caso contrário, o evento será armazenado localmente
+e enviado posteriormente quando o `userId` for registrado.
 
-```dart
+```dart 
 Future<void> trackEvent
 (
 {
 required
 String
-eventName,
-double? revenue,
-Map<String, String>
+eventName, double? revenue, Map<String, String>
 ?
 customData
-,
 }
 )
 async;
@@ -97,9 +65,9 @@ async;
 
 #### Parâmetros
 
-- **eventName** _(String, obrigatório)_: O nome do evento a ser registrado.
-- **revenue** _(double, opcional)_: A receita associada ao evento.
-- **customData** _(Map<String, String>, opcional)_: Dados personalizados adicionais associados ao
+- **eventName** *(String, obrigatório)*: O nome do evento a ser registrado.
+- **revenue** *(double, opcional)*: A receita associada ao evento.
+- **customData** *(Map<String, String>, opcional)*: Dados personalizados adicionais associados ao
   evento.
 
 ### registryMobileToken()
@@ -107,52 +75,68 @@ async;
 Este método permite registrar um token mobile para o usuário.
 
 ```dart
-Future<http.Response> registryMobileToken({
-  required String token,
-  String? platform,
-});
+Future<http.Response> registryMobileToken
+(
+{
+required
+String
+token
+,
+String
+?
+platform
+}
+)
+async;
 ```
 
 #### Parâmetros
 
-- **token** _(String, obrigatório)_: O token mobile que será registrado.
-- **platform** _(String, opcional)_: Nome da plataforma que o usuário está acessando o aplicativo.
-  Valores válidos: 'iPhone' e 'Android'.
-  `<br>`_Caso não seja passado algum valor nessa prop, a sdk irá pegar por default o valor
-  pelo `platform`._
+- **token** *(String, obrigatório)*: O token mobile que será registrado.
+- **platform** *(String, opcional)*: Nome da plataforma que o usuário está acessando o aplicativo.
+  Valores válidos: 'iPhone' e 'Android'. *Caso não seja passado algum valor nessa prop, a sdk irá
+  pegar por default o valor pela `platform`.*
 
-#### Exception
+#### Exceções
 
-- Caso seja passado um valor diferente de 'iPhone' ou 'Android' na propriedade platform, irá ocorrer
+- Caso seja passado um valor diferente de 'iPhone' ou 'Android' na propriedade `platform`, ocorrerá
   um erro no aplicativo.
-- Caso a SDK ainda não tenha `identify` cadastrado quando esse método for chamado, irá ocorrer um
-  erro no aplicativo. (utilize o método `identify()` para definir o id do usuário)
+- Caso a SDK ainda não tenha `userId` cadastrado quando esse método for chamado, ocorrerá um erro no
+  aplicativo. (utilize o método `identify()` para definir o `userId`)
 
 ### removeMobileToken()
 
 Este método permite remover um token mobile para o usuário.
 
 ```dart
-Future<http.Response> removeMobileToken({
-  required String token,
-  String? platform,
-});
+Future<http.Response> removeMobileToken
+(
+{
+required
+String
+token
+,
+String
+?
+platform
+}
+)
+async;
 ```
 
 #### Parâmetros
 
-- **token** _(String, obrigatório)_: O token mobile que será removido.
-- **platform** _(String, opcional)_: Nome da plataforma que o usuário está acessando o aplicativo.
-  Valores válidos: 'iPhone' e 'Android'.
-  `<br>`_Caso não seja passado algum valor nessa prop, a sdk irá pegar por default o valor
-  pelo `platform`._
+- **token** *(String, obrigatório)*: O token mobile que será removido.
+- **platform** *(String, opcional)*: Nome da plataforma que o usuário está acessando o aplicativo.
+  Valores válidos: 'iPhone' e 'Android'. *Caso não seja passado algum valor nessa prop, a sdk irá
+  pegar por default o valor pela `platform`.*
 
-#### Exception
+#### Exceções
 
-- Caso seja passado um valor diferente de 'iPhone' ou 'Android' na propriedade platform, irá ocorrer
+- Caso seja passado um valor diferente de 'iPhone' ou 'Android' na propriedade `platform`, ocorrerá
   um erro no aplicativo.
-- Caso a SDK ainda não tenha `identify` cadastrado quando esse método for chamado, irá ocorrer um
-  erro no aplicativo. (utilize o método `identify()` para definir o id do usuário)
+- Caso a SDK ainda não tenha `userId` cadastrado quando esse método for chamado, ocorrerá um erro no
+  aplicativo. (utilize o método `identify()` para definir o `userId`)
 
 ### openNotification()
 
@@ -164,48 +148,40 @@ Future<http.Response> openNotification
 {
 required
 String
-notificationId,
-required String identifier,
-required String reference
-}) async
+notificationId, required String identifier, required String reference}) async;
 ```
 
 #### Parâmetros
 
-- **notificationId** _(String, obrigatório)_: Id da notificação da Dito recebida pelo aplicativo.
-- **identifier** _(String, obrigatório)_: Parâmetro para dentificar a notificação na plataforma da
+- **notificationId** *(String, obrigatório)*: Id da notificação da Dito recebida pelo aplicativo.
+- **identifier** *(String, obrigatório)*: Parâmetro para identificar a notificação na plataforma da
   Dito.
-- **reference** _(String, obrigatório)_: Parâmetro para identificar o usuário na plataforma da Dito.
+- **reference** *(String, obrigatório)*: Parâmetro para identificar o usuário na plataforma da Dito.
 
-###### Observações
+Classes
+-------
 
-- Esses parâmetros estarão presentes no data da notificação
-
-## Classes
-
-### User
+### UserEntity
 
 Classe para manipulação dos dados do usuário.
 
-```dart
-
-User user = User(sha1("joao@example.com"), 'João da Silva', 'joao@example.com', 'São Paulo');
-```
+dart
+User user = User('sha1_hash', 'João da Silva', 'joao@example.com', 'São Paulo');`
 
 #### Parâmetros
 
-- **userID** _(String, obrigatório)_: Id para identificar o usuário na plataforma da Dito.
-- **name** _(String)_: Parâmetro para identificar o usuário na plataforma da Dito.
-- **email** _(String)_: Parâmetro para identificar o usuário na plataforma da Dito.
-- **gender** _(String)_: Parâmetro para identificar o usuário na plataforma da Dito.
-- **birthday** _(String)_: Parâmetro para identificar o usuário na plataforma da Dito.
-- **location** _(String)_: Parâmetro para identificar o usuário na plataforma da Dito.
-- **customData** _(Map<String, dynamic>)_: Parâmetro para identificar o usuário na plataforma da
-  Dito.
+- **userId** *(String, obrigatório)*: Id para identificar o usuário na plataforma da Dito.
+- **name** *(String, opcional)*: Nome do usuário.
+- **email** *(String, opcional)*: Email do usuário.
+- **gender** *(String, opcional)*: Gênero do usuário.
+- **birthday** *(String, opcional)*: Data de nascimento do usuário.
+- **location** *(String, opcional)*: Localização do usuário.
+- **customData** *(Map<String, dynamic>, opcional)*: Dados personalizados adicionais do usuário.
 
-## Exemplos
+Exemplos
+--------
 
-### Uso básico da SDK:
+### Uso básico da SDK
 
 ```dart
 import 'package:dito_sdk/dito_sdk.dart';
@@ -218,19 +194,22 @@ dito.initialize
 apiKey: 'sua_api_key', secretKey: 'sua_secret_key');
 
 // Define ou atualiza informações do usuário na instância (neste momento, ainda não há comunicação com a Dito)
-dito.identify( sha1("joao@example.com"), 'João da Silva', 'joao@example.com', 'São Paulo');
+dito.identify('sha1_hash', name: 'João da Silva', email: 'joao@example.com', location: 'São Paulo');
 
 // Envia as informações do usuário (que foram definidas ou atualizadas pelo identify) para a Dito
 await dito.identifyUser();
 
 // Registra um evento na Dito
-await dito.trackEvent(eventName: '
+await dito.trackEvent(
+eventName
+:
+'
 login
 '
 );
 ```
 
-### Uso avançado da SDK:
+### Uso avançado da SDK
 
 #### main.dart
 
@@ -253,10 +232,10 @@ import 'package:dito_sdk/dito_sdk.dart';
 final dito = DitoSDK();
 
 // Define o ID do usuário
-dito.setUserId
-('id_do_usuario
+dito.identify
+('sha1_hash
 '
-);dito.identify( sha1("joao@example.com"), 'João da Silva', 'joao@example.com', 'São Paulo');
+, name: 'João da Silva', email: 'joao@example.com', location: 'São Paulo');
 await dito.identifyUser();
 ```
 
@@ -269,15 +248,16 @@ final dito = DitoSDK();
 
 // Define ou atualiza informações do usuário na instância (neste momento, ainda não há comunicação com a Dito)
 dito.identify
-(
-sha1("joao@example.com"), 'João da Silva', 'joao@example.com', 'São Paulo');
+('sha1_hash
+'
+, name: 'João da Silva', email: 'joao@example.com', location: 'São Paulo');
 await dito.identifyUser();
-await dito.registryMobileToken(
-token
+await dito.registryMobileToken(token
 :
-token
+'
+token_value
+'
 );
-
 ```
 
 #### arquivoY.dart
@@ -288,32 +268,18 @@ import 'package:dito_sdk/dito_sdk.dart';
 final dito = DitoSDK();
 
 // Define ou atualiza informações do usuário na instância (neste momento, ainda não há comunicação com a Dito)
+await
 dito.identify
-(
-sha1("joao@example.com"), 'João da Silva', 'joao@example.com', 'Rio de Janeiro', {
+('sha1_hash
+'
+,name: 'João da Silva',
+email: 'joao@example.com',
+location: 'Rio de Janeiro',
+customData: {
 'loja preferida': 'LojaX',
 'canal preferido': 'Loja Física'
-});
-await
-dito
-.
-identifyUser
-(
-);
-```
-
-Isso resultará no envio do seguinte payload do usuário ao chamar `identifyUser()`:
-
-```javascript
-{
-  name: 'João da Silva',
-  email: 'joao@example.com',
-  location: 'Rio de Janeiro',
-  customData: {
-    'loja preferida': 'LojaX',
-    'canal preferido': 'Loja Física'
-  }
 }
+);
 ```
 
 A nossa SDK é uma instância única, o que significa que, mesmo que ela seja inicializada em vários
@@ -330,6 +296,7 @@ import 'package:dito_sdk/dito_sdk.dart';
 final dito = DitoSDK();
 
 // Registra um evento na Dito
+await
 dito.trackEvent
 (
 eventName: 'comprou produto',
@@ -338,31 +305,31 @@ customData: {
 'produto': 'produtoX',
 'sku_produto': '99999999',
 'metodo_pagamento': 'Visa',
-},
+}
 );
 ```
 
-### Uso da SDK com push notification:
+### Uso da SDK com push notification
 
-Para o funcionamento é necessário configurar a lib do Firebase Cloud Message (FCM), seguindo os
-seguintes passos:
+Para o funcionamento é necessário configurar a biblioteca do Firebase Cloud Messaging (FCM),
+seguindo os seguintes passos:
 
 ```shell
 dart pub global activate flutterfire_cli
 flutter pub add firebase_core firebase_messaging
-```
-
-```shell
 flutterfire configure
 ```
 
-Siga os passos que irá aparecer na CLI, assim terá as chaves de acesso do Firebase configuradas
-dentro dos App's Android e iOS.
+Siga os passos que irão aparecer na CLI para configurar as chaves de acesso do Firebase dentro dos
+aplicativos Android e iOS.
 
 #### main.dart
 
 ```dart
 import 'package:dito_sdk/dito_sdk.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'dart:convert';
 
 // Método para registrar um serviço que irá receber os push quando o app estiver totalmente fechado
 @pragma('vm:entry-point')
@@ -371,8 +338,8 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 
   dito.notificationService().showLocalNotification(NotificationEntity(
       id: message.hashCode,
-      title: notification.details.title || "O nome do aplicativo",
-      body: notification.details.message,
+      title: notification.details.title ?? "O nome do aplicativo",
+      body: notification.details.message ?? "",
       payload: notification));
 }
 
@@ -382,9 +349,9 @@ void main() async {
   await Firebase.initializeApp();
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
-  DitoSDK dito = DitoSDK();
+  final dito = DitoSDK();
   dito.initialize(apiKey: 'sua_api_key', secretKey: 'sua_secret_key');
-  await dito.initializePushService();
+  await dito.initializePushNotificationService();
 }
 ```
 

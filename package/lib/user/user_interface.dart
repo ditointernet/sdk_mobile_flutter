@@ -1,16 +1,16 @@
 import 'dart:async';
 
-import 'package:dito_sdk/event/event_interface.dart';
-import 'package:dito_sdk/user/user_entity.dart';
-import 'package:dito_sdk/user/user_repository.dart';
 import 'package:flutter/foundation.dart';
 
+import '../event/event_repository.dart';
 import '../utils/custom_data.dart';
+import 'user_entity.dart';
+import 'user_repository.dart';
 
 /// UserInterface is an interface for communication with the user repository
 interface class UserInterface {
   final UserRepository _repository = UserRepository();
-  final EventInterface _eventInterface = EventInterface();
+  final EventRepository _eventRepository = EventRepository();
 
   /// Identifies the user by saving their data and sending it to DitoAPI.
   ///
@@ -25,8 +25,9 @@ interface class UserInterface {
         user.customData?.addAll(version);
       }
 
-      final result = await _repository.identify(user);
-      await _eventInterface.verifyPendingEvents();
+      final result = _repository.identify(user);
+
+      _eventRepository.verifyPendingEvents();
 
       return result;
     } catch (e) {

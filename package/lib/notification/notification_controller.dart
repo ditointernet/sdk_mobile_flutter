@@ -2,11 +2,37 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+
 import 'notification_entity.dart';
+import 'notification_repository.dart';
 
 class NotificationController {
-  late Function(DataPayload) onSelectNotification;
   late FlutterLocalNotificationsPlugin localNotificationsPlugin;
+  final NotificationRepository _repository = NotificationRepository();
+  Function(DataPayload)? _selectNotification;
+
+  /// Android-specific notification details.
+  AndroidNotificationDetails androidNotificationDetails =
+      const AndroidNotificationDetails(
+    'dito_notifications', // Notification channel ID.
+    'Notifications sent by Dito', // Notification channel name.
+    channelDescription:
+        'Notifications sent by Dito', // Notification channel description.
+    importance: Importance.max, // Maximum importance level.
+    priority: Priority.max, // Maximum priority level.
+    enableVibration: true, // Enable vibration.
+  );
+
+  /// iOS-specific notification details.
+  DarwinNotificationDetails darwinNotificationDetails =
+      const DarwinNotificationDetails(
+    presentAlert: true, // Display alert.
+    presentBadge: true, // Display badge.
+    presentSound: true, // Play sound.
+    presentBanner: true, // Display banner.
+  );
+
+  NotificationController._internal();
 
   static final NotificationController _instance =
       NotificationController._internal();
@@ -15,27 +41,13 @@ class NotificationController {
     return _instance;
   }
 
-  NotificationController._internal();
-
-  AndroidNotificationDetails androidDetails = const AndroidNotificationDetails(
-    'dito_notifications',
-    'Notifications sended by Dito',
-    channelDescription: 'Notifications sended by Dito',
-    importance: Importance.max,
-    priority: Priority.max,
-    enableVibration: true,
-  );
-
-  DarwinNotificationDetails iosDetails = const DarwinNotificationDetails(
-      presentAlert: true,
-      presentBadge: true,
-      presentSound: true,
-      presentBanner: true);
-
-  /// This method initializes localNotificationsPlugin
-  initialize(Function(DataPayload) onSelectNotification) async {
-    _instance.onSelectNotification = onSelectNotification;
+  /// Initializes the local notifications plugin.
+  ///
+  /// [onSelectNotification] - Callback function to handle notification selection.
+  Future<void> initialize(Function(DataPayload) selectNotification) async {
+    _selectNotification = selectNotification;
     localNotificationsPlugin = FlutterLocalNotificationsPlugin();
+
     const android = AndroidInitializationSettings('@mipmap/ic_launcher');
     const ios = DarwinInitializationSettings();
 
@@ -48,11 +60,12 @@ class NotificationController {
     await _setupAndroidChannel();
   }
 
-  _setupAndroidChannel() async {
+  /// Sets up the Android notification channel.
+  Future<void> _setupAndroidChannel() async {
     const AndroidNotificationChannel channel = AndroidNotificationChannel(
-      'dito_notifications',
-      'Notifications sended by Dito',
-      importance: Importance.max,
+      'dito_notifications', // Channel ID.
+      'Notifications sent by Dito', // Channel name.
+      importance: Importance.max, // Maximum importance level.
     );
 
     await localNotificationsPlugin
@@ -61,29 +74,33 @@ class NotificationController {
         ?.createNotificationChannel(channel);
   }
 
-  /// This method uses local notifications plugin to show messages on the screen
+  /// Displays a notification.
   ///
-  /// [notification] - NotificationEntity object
-  showNotification(NotificationEntity notification) {
+  /// [notification] - NotificationEntity object containing notification details.
+  void showNotification(NotificationEntity notification) async {
     localNotificationsPlugin.show(
-      notification.id,
-      notification.title,
-      notification.body,
-      NotificationDetails(android: androidDetails, iOS: iosDetails),
-      payload: jsonEncode(notification.payload?.toJson()),
+      notification.id, // Notification ID.
+      notification.title, // Notification title.
+      notification.body, // Notification body.
+      NotificationDetails(
+          android: androidNotificationDetails, iOS: darwinNotificationDetails),
+      payload:
+          jsonEncode(notification.payload?.toJson()), // Notification payload.
     );
   }
 
-  /// This method is called when user clicks on the notification
+  /// Handles notification selection by the user.
   ///
-  /// [response] - NotificationResponse object
+  /// [response] - NotificationResponse object containing response details.
   Future<void> onTapNotification(NotificationResponse? response) async {
     final payload = response?.payload;
 
     if (payload != null && payload.isNotEmpty) {
-      final data = DataPayload.fromJson(jsonDecode(payload));
+      final data = DataPayload.fromPayload(jsonDecode(payload));
 
-      onSelectNotification(data);
+      await _repository.notifyOpenDeepLink(data.notification);
+
+      if (_selectNotification != null) _selectNotification!(data);
     }
   }
 }

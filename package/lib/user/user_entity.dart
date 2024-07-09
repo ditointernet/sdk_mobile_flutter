@@ -47,14 +47,17 @@ class UserEntity {
 
   // Factory method to convert a user to JSON object
   Map<String, dynamic> toJson() {
-    return {
+    final json = {
       'name': name,
       'cpf': cpf,
       'email': email,
       'gender': gender,
       'birthday': birthday,
       'location': location,
-      'data': customData != null ? jsonEncode(customData) : null,
     };
+
+    json.removeWhere((key, value) => value == null);
+
+    return json;
   }
 }
