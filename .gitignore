@@ -30,3 +30,7 @@ example/build/
 package/build/
 .flutter-plugins*
 package/test/.env-test.json
+/example/ios/_GoogleService-Info.plist
+/build/
+/example/lib/firebase_options.dart
+/example/ios/Podfile.lock
