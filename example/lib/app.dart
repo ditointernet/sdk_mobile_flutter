@@ -37,7 +37,6 @@ class _AppState extends State<App> {
             ),
             body: const Center(
               child: AppForm(),
-            ))
-    );
+            )));
   }
 }

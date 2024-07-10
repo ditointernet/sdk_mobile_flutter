@@ -53,6 +53,22 @@ class DitoApi {
     );
   }
 
+  Future<http.Response> _put(String url, String path,
+      {Map<String, Object?>? queryParameters, Map<String, Object?>? body}) {
+    _checkConfiguration();
+
+    final uri = Uri.https(url, path, queryParameters);
+
+    return http.put(
+      uri,
+      body: body,
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'User-Agent': _platform,
+      },
+    );
+  }
+
   Future<http.Response> identify(UserEntity user) async {
     final queryParameters = {
       'user_data': jsonEncode(user.toJson()),
@@ -64,6 +80,21 @@ class DitoApi {
     final path = 'users/portal/${user.id}/signup';
 
     return await _post(url, path, queryParameters: queryParameters);
+  }
+
+  Future<http.Response> updateUserData(UserEntity user) async {
+    final queryParameters = {
+      'user_data': jsonEncode(user.toJson()),
+    };
+
+    queryParameters.addAll(_assign);
+
+    const url = 'login.plataformasocial.com.br';
+    final path = 'users/${user.id}';
+
+    return await _put(url, path,
+        queryParameters: queryParameters,
+        body: {'user_data': jsonEncode(user.toJson())});
   }
 
   Future<http.Response> trackEvent(EventEntity event, UserEntity user) async {

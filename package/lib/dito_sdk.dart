@@ -1,7 +1,5 @@
 library dito_sdk;
 
-import 'package:dito_sdk/notification/notification_entity.dart';
-import 'package:dito_sdk/notification/notification_events.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:http/http.dart' as http;
@@ -9,6 +7,7 @@ import 'package:http/http.dart' as http;
 import 'data/dito_api.dart';
 import 'event/event_entity.dart';
 import 'event/event_interface.dart';
+import 'notification/notification_entity.dart';
 import 'notification/notification_interface.dart';
 import 'user/user_entity.dart';
 import 'user/user_interface.dart';
@@ -20,7 +19,6 @@ class DitoSDK {
   final UserInterface _userInterface = UserInterface();
   final EventInterface _eventInterface = EventInterface();
   final NotificationInterface _notificationInterface = NotificationInterface();
-  final NotificationEvents _notificationEvents = NotificationEvents();
 
   static final DitoSDK _instance = DitoSDK._internal();
 
@@ -48,10 +46,11 @@ class DitoSDK {
     await _notificationInterface.initialize();
   }
 
-  void setOnMessageClick(Function(DataPayload) onMessageClicked) {
-    _notificationEvents.stream.on<MessageClickedEvent>().listen((event) {
-      onMessageClicked(event.data);
-    });
+  /// This is a callback definition that is trigger after tap on push notification banner.
+  ///
+  /// [function(DataPayload)] - function with DataPayload params.
+  set onMessageClick(Function(DataPayload) onMessageClicked) {
+    _notificationInterface.onMessageClick = onMessageClicked;
   }
 
   /// This method enables saving and sending user data to the Dito API.

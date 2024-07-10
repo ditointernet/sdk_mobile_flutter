@@ -1,5 +1,6 @@
 import 'package:dito_sdk/dito_sdk.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -21,9 +22,12 @@ void main() async {
   dito.initialize(
       apiKey: Constants.ditoApiKey, secretKey: Constants.ditoSecretKey);
   await dito.initializePushNotificationService();
-  dito.setOnMessageClick((data) {
-    print(data.toJson());
-  });
+
+  dito.onMessageClick = (data) {
+    if (kDebugMode) {
+      print(data.toJson());
+    }
+  };
 
   runApp(MultiProvider(providers: [
     Provider<DitoSDK>(

@@ -18,10 +18,8 @@ class EventEntity {
       eventName: map['eventName'],
       revenue: map['revenue'],
       eventMoment: map['eventMoment'],
-      customData: map['customData'] != null
-          ? (json.decode(map['customData']) as Map<String, dynamic>)
-              .map((key, value) => MapEntry(key, value as String))
-          : null,
+      customData:
+          map['customData'] != null ? json.decode(map['customData']) : null,
     );
   }
 
@@ -34,10 +32,16 @@ class EventEntity {
     };
   }
 
-  Map<String, dynamic> toJson() => {
-        'action': eventName,
-        'revenue': revenue,
-        'data': customData,
-        'created_at': eventMoment
-      };
+  Map<String, dynamic> toJson() {
+    final json = {
+      'action': eventName,
+      'revenue': revenue,
+      'data': customData,
+      'created_at': eventMoment
+    };
+
+    json.removeWhere((key, value) => value == null);
+
+    return json;
+  }
 }
