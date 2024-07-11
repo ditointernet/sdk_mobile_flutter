@@ -2,14 +2,10 @@ library dito_sdk;
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:http/http.dart' as http;
 
 import 'data/dito_api.dart';
-import 'event/event_entity.dart';
 import 'event/event_interface.dart';
-import 'notification/notification_entity.dart';
 import 'notification/notification_interface.dart';
-import 'user/user_entity.dart';
 import 'user/user_interface.dart';
 
 /// DitoSDK is a singleton class that provides various methods to interact with Dito API
@@ -32,6 +28,14 @@ class DitoSDK {
   /// Returns an instance of UserInterface class.
   UserInterface get user => _userInterface;
 
+  /// This get method provides an interface for communication with a Notifications.
+  /// Returns an instance of NotificationInterface class.
+  NotificationInterface get notification => _notificationInterface;
+
+  /// This get method provides an interface for communication with a Event.
+  /// Returns an instance of EventInterface class.
+  EventInterface get event => _eventInterface;
+
   /// This method initializes the SDK with the provided API key and secret key.
   /// It also initializes the NotificationService and assigns API key and SHA1 signature.
   ///
@@ -44,55 +48,6 @@ class DitoSDK {
   /// This method initializes the push notification service using Firebase.
   Future<void> initializePushNotificationService() async {
     await _notificationInterface.initialize();
-  }
-
-  /// This is a callback definition that is trigger after tap on push notification banner.
-  ///
-  /// [function(DataPayload)] - function with DataPayload params.
-  set onMessageClick(Function(DataPayload) onMessageClicked) {
-    _notificationInterface.onMessageClick = onMessageClicked;
-  }
-
-  /// This method enables saving and sending user data to the Dito API.
-  ///
-  /// [user] - UserEntity object.
-  /// Returns a boolean indicating success.
-  Future<bool> identify(UserEntity user) async {
-    final result = await _userInterface.identify(user);
-    return result;
-  }
-
-  /// This method tracks an event with optional revenue and custom data.
-  ///
-  /// [eventName] - The name of the event.
-  /// [revenue] - Optional revenue associated with the event.
-  /// [customData] - Optional custom data associated with the event.
-  /// Returns a bool.
-  Future<bool> trackEvent({
-    required String eventName,
-    double? revenue,
-    Map<String, dynamic>? customData,
-  }) async {
-    final event = EventEntity(
-        eventName: eventName, customData: customData, revenue: revenue);
-
-    return await _eventInterface.trackEvent(event);
-  }
-
-  /// This method registers a mobile token for push notifications.
-  ///
-  /// [token] - The mobile token to be registered.
-  /// Returns an http.Response.
-  Future<http.Response> registryToken({String? token}) async {
-    return await _notificationInterface.registryToken(token);
-  }
-
-  /// This method removes a mobile token from the push notification service.
-  ///
-  /// [token] - The mobile token to be removed.
-  /// Returns an http.Response.
-  Future<http.Response> removeToken({String? token}) async {
-    return await _notificationInterface.removeToken(token);
   }
 
   /// This method is a handler for manage messages in the background.

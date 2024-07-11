@@ -1,5 +1,6 @@
-import 'package:dito_sdk/data/event_database.dart';
+import 'package:dito_sdk/data/database.dart';
 import 'package:dito_sdk/dito_sdk.dart';
+import 'package:dito_sdk/event/event_entity.dart';
 import 'package:dito_sdk/user/user_entity.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
@@ -20,29 +21,30 @@ void main() async {
   });
 
   group('Events: ', () {
-    late EventDatabase database;
+    final LocalDatabase database = LocalDatabase();
 
     setUp(() async {
-      database = EventDatabase();
       await database.database;
     });
 
     tearDown(() async {
-      await database.clearDatabase();
+      await database.clearDatabase("events");
       await database.closeDatabase();
     });
 
     test('Send event without identify', () async {
-      await dito.trackEvent(eventName: 'event-test-sdk-flutter');
-      final events = await database.fetchAll();
+      await dito.event
+          .trackEvent(EventEntity(eventName: 'event-test-sdk-flutter'));
+      final events = await database.fetchAll("events");
       expect(events.length, 1);
-      expect(events.first.eventName, 'event-test-sdk-flutter');
+      expect(events.first["eventName"], 'event-test-sdk-flutter');
     });
 
     test('Send event with identify', () async {
       dito.user.identify(UserEntity(userID: id, email: "teste@teste.com"));
-      final result = await dito.trackEvent(eventName: 'event-test-sdk-flutter');
-      final events = await database.fetchAll();
+      final result = await dito.event
+          .trackEvent(EventEntity(eventName: 'event-test-sdk-flutter'));
+      final events = await database.fetchAll("events");
 
       expect(events.length, 0);
       expect(result, true);
@@ -50,13 +52,13 @@ void main() async {
 
     test('Send event with custom data', () async {
       dito.user.identify(UserEntity(userID: id, email: "teste@teste.com"));
-      final result = await dito.trackEvent(
+      final result = await dito.event.trackEvent(EventEntity(
           eventName: 'event-test-sdk-flutter',
           customData: {
             "data do ultimo teste": DateTime.now().toIso8601String()
           },
-          revenue: 10);
-      final events = await database.fetchAll();
+          revenue: 10));
+      final events = await database.fetchAll("events");
 
       expect(events.length, 0);
       expect(result, true);

@@ -23,7 +23,7 @@ void main() async {
       apiKey: Constants.ditoApiKey, secretKey: Constants.ditoSecretKey);
   await dito.initializePushNotificationService();
 
-  dito.onMessageClick = (data) {
+  dito.notification.onMessageClick = (data) {
     if (kDebugMode) {
       print(data.toJson());
     }

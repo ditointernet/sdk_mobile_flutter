@@ -1,5 +1,4 @@
 import 'package:dito_sdk/dito_sdk.dart';
-import 'package:dito_sdk/user/user_entity.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'utils.dart';

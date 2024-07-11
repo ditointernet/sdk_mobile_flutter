@@ -1,6 +1,6 @@
 import 'package:dito_sdk/dito_sdk.dart';
+import 'package:dito_sdk/event/event_entity.dart';
 import 'package:dito_sdk/user/user_entity.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -31,7 +31,8 @@ class AppFormState extends State<AppForm> {
           email: email);
 
       await dito.user.identify(user);
-      await dito.registryToken();
+      await dito.notification
+          .registryToken(await dito.notification.getFirebaseToken());
     }
 
     handleIdentify() async {
@@ -46,7 +47,7 @@ class AppFormState extends State<AppForm> {
 
     handleNotification() async {
       if (_formKey.currentState!.validate()) {
-        await dito.trackEvent(eventName: 'action-test');
+        await dito.event.trackEvent(EventEntity(eventName: 'action-test'));
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Evento de notificação solicitado')),
@@ -55,7 +56,8 @@ class AppFormState extends State<AppForm> {
     }
 
     handleDeleteToken() async {
-      await FirebaseMessaging.instance.deleteToken();
+      await dito.notification
+          .removeToken(await dito.notification.getFirebaseToken());
     }
 
     return Form(
