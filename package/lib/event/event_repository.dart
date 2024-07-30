@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:dito_sdk/user/user_repository.dart';
+import 'package:flutter/foundation.dart';
 
 import '../data/dito_api.dart';
 import '../data/event_database.dart';
@@ -32,17 +33,23 @@ class EventRepository {
         .catchError((e) => false);
   }
 
-  /// Fetches all pending events from the local database.
+  /// Verifies and processes any pending events.
   ///
-  /// Returns a Future that completes with a list of EventEntity objects.
-  Future<List<EventEntity>> fetchPendingEvents() async {
-    return await _database.fetchAll();
-  }
+  /// Throws an exception if the user is not valid.
+  Future<void> verifyPendingEvents() async {
+    try {
+      final events = await _database.fetchAll();
 
-  /// Clears all events from the local database.
-  ///
-  /// Returns a Future that completes when the database has been cleared.
-  Future<void> clearEvents() async {
-    return await _database.clearDatabase();
+      for (final event in events) {
+        await trackEvent(event);
+      }
+
+      await _database.clearDatabase();
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error verifying pending events: $e');
+      }
+      rethrow;
+    }
   }
 }

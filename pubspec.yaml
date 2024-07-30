@@ -5,5 +5,3 @@ environment:
 
 dev_dependencies:
   melos: ^6.0.0
-dependencies:
-  event_bus: 2.0.0
