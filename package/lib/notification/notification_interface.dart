@@ -24,7 +24,7 @@ class NotificationInterface {
 
   /// This method initializes notification controller and notification repository.
   /// Start listening to notifications
-  Future<void> initialize() async {
+  Future<void> initialize(bool background) async {
     await Firebase.initializeApp();
     await FirebaseMessaging.instance.setAutoInitEnabled(true);
 
@@ -34,7 +34,7 @@ class NotificationInterface {
               badge: true, sound: true, alert: true);
     }
 
-    FirebaseMessaging.onMessage.listen(onMessage);
+    if (!background) FirebaseMessaging.onMessage.listen(onMessage);
 
     _handleToken();
 
