@@ -21,10 +21,14 @@ class NotificationInterface {
   final NotificationEvents _notificationEvents = NotificationEvents();
   final DitoApi _api = DitoApi();
   final UserInterface _userInterface = UserInterface();
+  bool initialized = false;
+  bool backgroundMessageRegistered = false;
 
   /// This method initializes notification controller and notification repository.
   /// Start listening to notifications
-  Future<void> initialize(bool background) async {
+  Future<void> initialize() async {
+    if (initialized) return;
+
     await Firebase.initializeApp();
     await FirebaseMessaging.instance.setAutoInitEnabled(true);
 
@@ -34,12 +38,20 @@ class NotificationInterface {
               badge: true, sound: true, alert: true);
     }
 
-    if (!background) FirebaseMessaging.onMessage.listen(onMessage);
+    FirebaseMessaging.onMessage.listen(onMessage);
 
     _handleToken();
 
     await _controller.initialize(onSelectNotification);
     _listenStream();
+    initialized = true;
+  }
+
+  void registerBackgroundMessageHandle() {
+    if (backgroundMessageRegistered) return;
+
+    FirebaseMessaging.onBackgroundMessage(onMessage);
+    backgroundMessageRegistered = true;
   }
 
   void _handleToken() async {

@@ -1,5 +1,4 @@
 import 'package:dito_sdk/dito_sdk.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -8,15 +7,14 @@ import 'app.dart';
 import 'constants.dart';
 
 @pragma('vm:entry-point')
-Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+Future<void> _firebaseMessagingBackgroundHandler() async {
   DitoSDK dito = DitoSDK();
-  dito.onBackgroundMessageHandler(message,
+  dito.onBackgroundPushNotificationHandler(
       apiKey: Constants.ditoApiKey, secretKey: Constants.ditoSecretKey);
 }
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
   DitoSDK dito = DitoSDK();
   dito.initialize(

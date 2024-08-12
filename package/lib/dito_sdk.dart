@@ -1,7 +1,5 @@
 library dito_sdk;
 
-import 'package:firebase_messaging/firebase_messaging.dart';
-
 import 'data/dito_api.dart';
 import 'event/event_interface.dart';
 import 'notification/notification_interface.dart';
@@ -46,15 +44,15 @@ class DitoSDK {
 
   /// This method initializes the push notification service using Firebase.
   Future<void> initializePushNotificationService() async {
-    await _notificationInterface.initialize(false);
+    await _notificationInterface.initialize();
   }
 
   /// This method is a handler for manage messages in the background.
   /// It initializes Firebase and Dito, then push the message.
-  Future<void> onBackgroundMessageHandler(RemoteMessage message,
-      {required String apiKey, required String secretKey}) async {
+  void onBackgroundPushNotificationHandler(
+      {required String apiKey, required String secretKey}) {
     _api.setKeys(apiKey, secretKey);
-    await _notificationInterface.initialize(true);
-    return await _notificationInterface.onMessage(message);
+    initializePushNotificationService();
+    _notificationInterface.registerBackgroundMessageHandle();
   }
 }
