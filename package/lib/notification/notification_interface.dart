@@ -123,7 +123,7 @@ class NotificationInterface {
           id: message.hashCode,
           notificationId: notification.notification,
           title: notification.details.title ?? appName,
-          body: "${notification.details.message} local",
+          body: notification.details.message,
           image: notification.details.image,
           payload: notification)));
     }
