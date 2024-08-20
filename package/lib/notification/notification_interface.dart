@@ -21,11 +21,17 @@ class NotificationInterface {
   final NotificationEvents _notificationEvents = NotificationEvents();
   final DitoApi _api = DitoApi();
   final UserInterface _userInterface = UserInterface();
+  bool initialized = false;
 
   /// This method initializes notification controller and notification repository.
   /// Start listening to notifications
   Future<void> initialize() async {
-    await Firebase.initializeApp();
+    if (Firebase.apps.isEmpty) {
+      throw 'Firebase not initialized';
+    }
+
+    if (initialized) return;
+
     await FirebaseMessaging.instance.setAutoInitEnabled(true);
 
     if (Platform.isIOS) {
@@ -40,6 +46,7 @@ class NotificationInterface {
 
     await _controller.initialize(onSelectNotification);
     _listenStream();
+    initialized = true;
   }
 
   void _handleToken() async {
