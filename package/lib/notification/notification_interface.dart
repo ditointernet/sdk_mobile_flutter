@@ -6,7 +6,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
-import '../data/dito_api.dart';
+import '../data/dito_api_interface.dart';
 import '../user/user_interface.dart';
 import 'notification_controller.dart';
 import 'notification_entity.dart';
@@ -19,7 +19,7 @@ class NotificationInterface {
   final NotificationRepository _repository = NotificationRepository();
   final NotificationController _controller = NotificationController();
   final NotificationEvents _notificationEvents = NotificationEvents();
-  final DitoApi _api = DitoApi();
+  final DitoApiInterface _api = DitoApiInterface();
   final UserInterface _userInterface = UserInterface();
   bool initialized = false;
 
@@ -55,9 +55,9 @@ class NotificationInterface {
       final lastToken = _userInterface.data.token;
       if (lastToken != token) {
         if (lastToken != null && lastToken.isNotEmpty) {
-          removeToken(lastToken);
+          removeToken(token: lastToken);
         }
-        registryToken(token);
+        registryToken(token: token);
         _userInterface.data.token = token;
       }
     }).onError((err) {
@@ -164,7 +164,7 @@ class NotificationInterface {
   ///
   /// [token] - The mobile token to be registered.
   /// Returns an http.Response.
-  registryToken(String? token) async {
+  registryToken({String? token}) async {
     String? newToken = token ?? await getFirebaseToken();
     if (newToken != null) _repository.registryToken(newToken);
   }
@@ -173,7 +173,7 @@ class NotificationInterface {
   ///
   /// [token] - The mobile token to be removed.
   /// Returns an http.Response.
-  removeToken(String? token) async {
+  removeToken({String? token}) async {
     String? newToken = token ?? await getFirebaseToken();
     if (newToken != null) _repository.removeToken(newToken);
   }

@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 
-import '../data/dito_api.dart';
+import '../data/dito_api_interface.dart';
 import '../data/notification_database.dart';
 import '../event/event_entity.dart';
 import '../event/event_interface.dart';
@@ -10,7 +10,7 @@ import '../user/user_repository.dart';
 import 'notification_entity.dart';
 
 class NotificationRepository {
-  final DitoApi _api = DitoApi();
+  final DitoApiInterface _api = DitoApiInterface();
   final _database = NotificationEvent();
   final UserRepository _userRepository = UserRepository();
   final EventInterface _eventInterface = EventInterface();
@@ -64,7 +64,7 @@ class NotificationRepository {
     }
 
     return await _api
-        .registryToken(token, _userRepository.data)
+        .registryToken(token)
         .then((result) => true)
         .catchError((e) => false);
   }
@@ -79,7 +79,7 @@ class NotificationRepository {
     }
 
     return await _api
-        .removeToken(token, _userRepository.data)
+        .removeToken(token)
         .then((result) => true)
         .catchError((e) => false);
   }

@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import '../data/dito_api.dart';
+import '../data/dito_api_interface.dart';
 import 'user_entity.dart';
 
 final class UserData extends UserEntity {
@@ -13,7 +13,7 @@ final class UserData extends UserEntity {
 
 class UserRepository {
   final _userData = UserData();
-  final DitoApi api = DitoApi();
+  final DitoApiInterface api = DitoApiInterface();
 
   /// This method get a user data on Static Data Object UserData
   /// Return a UserEntity Class
@@ -29,7 +29,7 @@ class UserRepository {
     if (user.email != null) _userData.email = user.email;
     if (user.gender != null) _userData.gender = user.gender;
     if (user.birthday != null) _userData.birthday = user.birthday;
-    if (user.location != null) _userData.location = user.location;
+    if (user.address != null) _userData.address = user.address;
     if (user.customData != null) _userData.customData = user.customData;
   }
 

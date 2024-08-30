@@ -4,12 +4,14 @@ class EventEntity {
   String eventName;
   String? eventMoment;
   double? revenue;
+  String? currency;
   Map<String, dynamic>? customData;
 
   EventEntity({
     required this.eventName,
     this.revenue,
     this.eventMoment,
+    this.currency,
     this.customData,
   });
 
@@ -18,6 +20,7 @@ class EventEntity {
       eventName: map['eventName'],
       revenue: map['revenue'],
       eventMoment: map['eventMoment'],
+      currency: map['currency'],
       customData:
           map['customData'] != null ? json.decode(map['customData']) : null,
     );
@@ -28,6 +31,7 @@ class EventEntity {
       'eventName': eventName,
       'eventMoment': eventMoment,
       'revenue': revenue,
+      'currency': currency,
       'customData': customData != null ? jsonEncode(customData) : null,
     };
   }
@@ -36,6 +40,7 @@ class EventEntity {
     final json = {
       'action': eventName,
       'revenue': revenue,
+      'currency': currency,
       'data': customData,
       'created_at': eventMoment
     };

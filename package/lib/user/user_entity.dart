@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'address_entity.dart';
+
 class UserEntity {
   String? userID;
   String? name;
@@ -7,7 +9,7 @@ class UserEntity {
   String? email;
   String? gender;
   String? birthday;
-  String? location;
+  AddressEntity? address;
   String? token;
   Map<String, dynamic>? customData;
 
@@ -18,7 +20,7 @@ class UserEntity {
       this.email,
       this.gender,
       this.birthday,
-      this.location,
+      this.address,
       this.token,
       this.customData});
 
@@ -38,7 +40,7 @@ class UserEntity {
         email: map['email'],
         gender: map['gender'],
         birthday: map['birthday'],
-        location: map['location'],
+        address: map['address'],
         customData: map['customData'] != null
             ? (json.decode(map['customData']) as Map<String, dynamic>)
                 .map((key, value) => MapEntry(key, value as String))
@@ -53,7 +55,7 @@ class UserEntity {
       'email': email,
       'gender': gender,
       'birthday': birthday,
-      'location': location,
+      'address': address != null ? jsonEncode(address) : null,
       'data': customData != null ? jsonEncode(customData) : null,
     };
   }

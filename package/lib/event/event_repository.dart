@@ -3,14 +3,14 @@ import 'dart:async';
 import 'package:dito_sdk/user/user_repository.dart';
 import 'package:flutter/foundation.dart';
 
-import '../data/dito_api.dart';
+import '../data/dito_api_interface.dart';
 import '../data/event_database.dart';
 import 'event_entity.dart';
 
 /// EventRepository is responsible for managing events by interacting with
 /// the local database and the Dito API.
 class EventRepository {
-  final DitoApi _api = DitoApi();
+  final DitoApiInterface _api = DitoApiInterface();
   final UserRepository _userRepository = UserRepository();
   final _database = EventDatabase();
 
@@ -28,7 +28,7 @@ class EventRepository {
 
     // Otherwise, send the event to the Dito API
     return await _api
-        .trackEvent(event, _userRepository.data)
+        .trackEvent(event)
         .then((response) => true)
         .catchError((e) => false);
   }

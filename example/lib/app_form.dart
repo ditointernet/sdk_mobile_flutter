@@ -31,8 +31,7 @@ class AppFormState extends State<AppForm> {
           email: email);
 
       await dito.user.identify(user);
-      await dito.notification
-          .registryToken(await dito.notification.getFirebaseToken());
+      await dito.notification.registryToken();
     }
 
     handleIdentify() async {
@@ -56,8 +55,7 @@ class AppFormState extends State<AppForm> {
     }
 
     handleDeleteToken() async {
-      await dito.notification
-          .removeToken(await dito.notification.getFirebaseToken());
+      await dito.notification.removeToken();
     }
 
     return Form(
