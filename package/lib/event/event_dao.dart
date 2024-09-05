@@ -1,31 +1,55 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 
-import '../event/event_entity.dart';
-import 'database.dart';
+import '../data/database.dart';
+import 'event_entity.dart';
+import 'navigation_entity.dart';
 
 /// EventDatabaseService is a singleton class that provides methods to interact with a SQLite database
 /// for storing and managing events.
-class EventDatabase {
+class EventDAO {
   static final LocalDatabase _database = LocalDatabase();
-  static final EventDatabase _instance = EventDatabase._internal();
+  static final EventDAO _instance = EventDAO._internal();
+
+  get _table => _database.tables["events"];
 
   /// Factory constructor to return the singleton instance of EventDatabaseService.
-  factory EventDatabase() {
+  factory EventDAO() {
     return _instance;
   }
 
   /// Private named constructor for internal initialization of singleton instance.
-  EventDatabase._internal();
+  EventDAO._internal();
 
   /// Method to insert a new event into the events table.
   ///
   /// [event] - The EventEntity object to be inserted.
   /// Returns a Future that completes with the row id of the inserted event.
-  Future<bool> create(EventEntity event) async {
+  Future<bool> create(
+      {EventEntity? event, NavigationEntity? navigation}) async {
     try {
-      return await _database.insert(
-              _database.tables["events"]!, event.toMap()) >
-          0;
+      if (event != null) {
+        return await _database.insert(_table, {
+              "name": event.action,
+              "event": jsonEncode(event.toJson()),
+              "type": "1",
+              "createdAt": DateTime.now().toIso8601String()
+            }) >
+            0;
+      }
+
+      if (navigation != null) {
+        return await _database.insert(_table, {
+              "name": navigation.pageName,
+              "event": jsonEncode(navigation.toJson()),
+              "type": "2",
+              "createdAt": DateTime.now().toIso8601String()
+            }) >
+            0;
+      }
+
+      return false;
     } catch (e) {
       if (kDebugMode) {
         print('Error inserting event: $e');
@@ -41,8 +65,8 @@ class EventDatabase {
   Future<bool> delete(EventEntity event) async {
     try {
       return await _database.delete(
-            _database.tables["events"]!,
-            'eventName = ? AND eventMoment = ?',
+            _table,
+            'name = ? AND createdAt = ?',
             [event],
           ) >
           0;
@@ -56,10 +80,9 @@ class EventDatabase {
 
   /// Method to retrieve all events from the events table.
   /// Returns a Future that completes with a list of Map objects.
-  Future<Iterable<EventEntity>> fetchAll() async {
+  Future<Iterable> fetchAll() async {
     try {
-      final maps = await _database.fetchAll(_database.tables["events"]!);
-      return maps.map((map) => EventEntity.fromMap(map));
+      return await _database.fetchAll(_table);
     } catch (e) {
       if (kDebugMode) {
         print('Error retrieving events: $e');
@@ -72,7 +95,7 @@ class EventDatabase {
   /// Returns a Future that completes with the number of rows deleted.
   Future<void> clearDatabase() async {
     try {
-      return _database.clearDatabase(_database.tables["events"]!);
+      return _database.clearDatabase(_table);
     } catch (e) {
       if (kDebugMode) {
         print('Error clearing database: $e');

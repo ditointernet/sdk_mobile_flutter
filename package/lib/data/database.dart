@@ -9,7 +9,7 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 class LocalDatabase {
   static const String _dbName = 'dito-offline.db';
   static Database? _database;
-  final tables = {"notification": "notification", "events": "events"};
+  final tables = {"notification": "notification", "events": "events", "user": "user"};
 
   static final LocalDatabase _instance = LocalDatabase._internal();
 
@@ -67,17 +67,18 @@ class LocalDatabase {
       await db.execute('''
         CREATE TABLE events (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
-          eventName TEXT,
-          eventMoment TEXT,
-          revenue REAL,
-          customData TEXT
+          name TEXT,
+          type INT,
+          event TEXT,
+          createdAt TEXT,
         );
       ''');
       await db.execute('''
-        CREATE TABLE notification (
+        CREATE TABLE user (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
-          event TEXT,
-          token TEXT
+          name TEXT,
+          user TEXT
+          createdAt TEXT,
         );
       ''');
     } catch (e) {

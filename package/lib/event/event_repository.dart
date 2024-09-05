@@ -1,18 +1,21 @@
 import 'dart:async';
+import 'dart:convert';
 
-import 'package:dito_sdk/user/user_repository.dart';
 import 'package:flutter/foundation.dart';
 
-import '../data/dito_api_interface.dart';
-import '../data/event_database.dart';
+import '../api/dito_api_interface.dart';
+import '../proto/api.pb.dart';
+import '../user/user_repository.dart';
+import 'event_dao.dart';
 import 'event_entity.dart';
+import 'navigation_entity.dart';
 
 /// EventRepository is responsible for managing events by interacting with
 /// the local database and the Dito API.
 class EventRepository {
-  final DitoApiInterface _api = DitoApiInterface();
+  final ApiInterface _api = ApiInterface();
   final UserRepository _userRepository = UserRepository();
-  final _database = EventDatabase();
+  final _database = EventDAO();
 
   /// Tracks an event by saving it to the local database if the user is not registered,
   /// or by sending it to the Dito API if the user is registered.
@@ -20,17 +23,34 @@ class EventRepository {
   /// [event] - The EventEntity object containing event data.
   /// Returns a Future that completes with true if the event was successfully tracked,
   /// or false if an error occurred.
-  Future<bool> trackEvent(EventEntity event) async {
+  Future<bool> track(EventEntity event) async {
     // If the user is not registered, save the event to the local database
     if (_userRepository.data.isNotValid) {
-      return await _database.create(event);
+      return await _database.create(event: event);
     }
 
     // Otherwise, send the event to the Dito API
-    return await _api
-        .trackEvent(event)
-        .then((response) => true)
-        .catchError((e) => false);
+    final activities = [ApiActivities().trackEvent(event)];
+
+    return await _api.createRequest(activities).call;
+  }
+
+  /// Tracks an event by saving it to the local database if the user is not registered,
+  /// or by sending it to the Dito API if the user is registered.
+  ///
+  /// [event] - The EventEntity object containing event data.
+  /// Returns a Future that completes with true if the event was successfully tracked,
+  /// or false if an error occurred.
+  Future<bool> navigate(NavigationEntity navigation) async {
+    // If the user is not registered, save the event to the local database
+    if (_userRepository.data.isNotValid) {
+      return await _database.create(navigation: navigation);
+    }
+
+    // Otherwise, send the event to the Dito API
+    final activities = [ApiActivities().trackNavigation(navigation)];
+
+    return await _api.createRequest(activities).call;
   }
 
   /// Verifies and processes any pending events.
@@ -38,11 +58,21 @@ class EventRepository {
   /// Throws an exception if the user is not valid.
   Future<void> verifyPendingEvents() async {
     try {
-      final events = await _database.fetchAll();
+      final rows = await _database.fetchAll();
+      List<Activity> activities = [];
 
-      for (final event in events) {
-        await trackEvent(event);
+      for (var row in rows) {
+        if (row["type"] == 1) {
+          final event = EventEntity.fromMap(jsonDecode(row["event"] as String));
+          activities.add(ApiActivities().trackEvent(event));
+        } else {
+          final navigation =
+              NavigationEntity.fromMap(jsonDecode(row["event"] as String));
+          activities.add(ApiActivities().trackNavigation(navigation));
+        }
       }
+
+      await _api.createRequest(activities).call;
 
       await _database.clearDatabase();
     } catch (e) {

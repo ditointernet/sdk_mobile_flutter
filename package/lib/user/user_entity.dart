@@ -59,4 +59,9 @@ class UserEntity {
       'data': customData != null ? jsonEncode(customData) : null,
     };
   }
+
+  // Factory method to convert a user to Map object
+  Map<String, dynamic> toMap() {
+    return toJson();
+  }
 }

@@ -1,48 +1,38 @@
 import 'dart:convert';
 
 class EventEntity {
-  String eventName;
-  String? eventMoment;
+  String action;
+  String? createdAt;
   double? revenue;
   String? currency;
   Map<String, dynamic>? customData;
 
   EventEntity({
-    required this.eventName,
+    required this.action,
     this.revenue,
-    this.eventMoment,
+    this.createdAt,
     this.currency,
     this.customData,
   });
 
   factory EventEntity.fromMap(Map<String, dynamic> map) {
     return EventEntity(
-      eventName: map['eventName'],
+      action: map['action'],
       revenue: map['revenue'],
-      eventMoment: map['eventMoment'],
+      createdAt: map['createdAt'],
       currency: map['currency'],
       customData:
-          map['customData'] != null ? json.decode(map['customData']) : null,
+          map['customData'] != null ? jsonDecode(map['customData']) : null,
     );
-  }
-
-  Map<String, dynamic> toMap() {
-    return {
-      'eventName': eventName,
-      'eventMoment': eventMoment,
-      'revenue': revenue,
-      'currency': currency,
-      'customData': customData != null ? jsonEncode(customData) : null,
-    };
   }
 
   Map<String, dynamic> toJson() {
     final json = {
-      'action': eventName,
+      'action': action,
       'revenue': revenue,
       'currency': currency,
       'data': customData,
-      'created_at': eventMoment
+      'created_at': createdAt
     };
 
     json.removeWhere((key, value) => value == null);

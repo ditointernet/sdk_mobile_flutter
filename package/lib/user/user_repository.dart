@@ -1,6 +1,7 @@
 import 'dart:async';
 
-import '../data/dito_api_interface.dart';
+import '../api/dito_api_interface.dart';
+import 'user_dao.dart';
 import 'user_entity.dart';
 
 final class UserData extends UserEntity {
@@ -13,7 +14,8 @@ final class UserData extends UserEntity {
 
 class UserRepository {
   final _userData = UserData();
-  final DitoApiInterface api = DitoApiInterface();
+  final ApiInterface _api = ApiInterface();
+  final UserDAO _userDAO = UserDAO();
 
   /// This method get a user data on Static Data Object UserData
   /// Return a UserEntity Class
@@ -31,9 +33,10 @@ class UserRepository {
     if (user.birthday != null) _userData.birthday = user.birthday;
     if (user.address != null) _userData.address = user.address;
     if (user.customData != null) _userData.customData = user.customData;
+    if (user.token != null) _userData.token = user.token;
   }
 
-  /// This method enable user data save and send to DitoAPI
+  /// This method enable user data save and send to Dito
   /// Return bool with true when the identify was successes
   Future<bool> identify(UserEntity? user) async {
     if (user != null) _set(user);
@@ -42,9 +45,20 @@ class UserRepository {
       throw Exception('User registration id (userID) is required');
     }
 
-    return await api
-        .identify(user!)
-        .then((response) => true)
-        .catchError((error) => false);
+    final activities = [ApiActivities().identify(user!)];
+    return await _api.createRequest(activities).call;
+  }
+
+  /// This method enable user data save and send to Dito
+  /// Return bool with true when the identify was successes
+  Future<bool> login(UserEntity? user) async {
+    if (user != null) _set(user);
+
+    if (_userData.isNotValid) {
+      throw Exception('User id (userID) is required');
+    }
+
+    final activities = [ApiActivities().login(user!)];
+    return await _api.createRequest(activities).call;
   }
 }

@@ -1,15 +1,15 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 import 'notification_entity.dart';
-import 'notification_repository.dart';
 
 class NotificationController {
   late FlutterLocalNotificationsPlugin localNotificationsPlugin;
-  final NotificationRepository _repository = NotificationRepository();
-  Function(DataPayload)? _selectNotification;
+  Function(RemoteMessage)? _selectNotification;
 
   /// Android-specific notification details.
   AndroidNotificationDetails androidNotificationDetails =
@@ -44,7 +44,8 @@ class NotificationController {
   /// Initializes the local notifications plugin.
   ///
   /// [onSelectNotification] - Callback function to handle notification selection.
-  Future<void> initialize(Function(DataPayload) selectNotification) async {
+  Future<void> initialize(
+      Function(RemoteMessage) selectNotification) async {
     _selectNotification = selectNotification;
     localNotificationsPlugin = FlutterLocalNotificationsPlugin();
 
@@ -78,14 +79,25 @@ class NotificationController {
   ///
   /// [notification] - NotificationEntity object containing notification details.
   void showNotification(NotificationEntity notification) async {
+    PackageInfo packageInfo = await PackageInfo.fromPlatform();
+    final appName = packageInfo.appName;
+
+    final displayInfo = NotificationDisplayEntity(
+        id: notification.hashCode,
+        notificationId: notification.notification,
+        title: notification.details?.title ?? appName,
+        body: notification.details?.message ?? "",
+        image: notification.details?.image,
+        data: notification.details?.toJson());
+
     localNotificationsPlugin.show(
-      notification.id, // Notification ID.
-      notification.title, // Notification title.
-      notification.body, // Notification body.
+      displayInfo.id, // Notification ID.
+      displayInfo.title, // Notification title.
+      displayInfo.body, // Notification body.
       NotificationDetails(
           android: androidNotificationDetails, iOS: darwinNotificationDetails),
       payload:
-          jsonEncode(notification.payload?.toJson()), // Notification payload.
+          jsonEncode(notification.details?.toJson()), // Notification payload.
     );
   }
 
@@ -96,11 +108,7 @@ class NotificationController {
     final payload = response?.payload;
 
     if (payload != null && payload.isNotEmpty) {
-      final data = DataPayload.fromPayload(jsonDecode(payload));
-
-      await _repository.notifyOpenDeepLink(data.notification);
-
-      if (_selectNotification != null) _selectNotification!(data);
+      if (_selectNotification != null) _selectNotification!(jsonDecode(payload) as RemoteMessage);
     }
   }
 }
