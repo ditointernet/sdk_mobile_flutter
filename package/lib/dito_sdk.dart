@@ -1,6 +1,9 @@
 library dito_sdk;
 
+import 'dart:io';
+
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 import 'api/dito_api_interface.dart';
 import 'event/event_interface.dart';
@@ -14,6 +17,7 @@ class DitoSDK {
   final UserInterface _userInterface = UserInterface();
   final EventInterface _eventInterface = EventInterface();
   final NotificationInterface _notificationInterface = NotificationInterface();
+  final AppInfo _appInfo = AppInfo();
 
   static final DitoSDK _instance = DitoSDK._internal();
 
@@ -41,7 +45,15 @@ class DitoSDK {
   /// [apiKey] - The API key for the Dito platform.
   /// [secretKey] - The secret key for the Dito platform.
   void initialize({required String apiKey, required String secretKey}) async {
+    final packageInfo = await PackageInfo.fromPlatform();
     _api.setKeys(apiKey, secretKey);
+    _appInfo.platform = Platform.isAndroid ? 'Android' : 'Apple iPhone';
+    _appInfo.sdkLang = "Flutter";
+    _appInfo.sdkVersion = '2.0.0';
+    _appInfo.sdkBuild = '1';
+    _appInfo.build = packageInfo.buildNumber;
+    _appInfo.version = packageInfo.version;
+    _appInfo.id = packageInfo.packageName;
   }
 
   /// This method initializes the push notification service using Firebase.
@@ -56,7 +68,4 @@ class DitoSDK {
     await initializePushNotificationService();
     await _notificationInterface.onMessage(message);
   }
-
-
-
 }

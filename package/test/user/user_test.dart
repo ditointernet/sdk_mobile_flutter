@@ -1,5 +1,4 @@
 import 'package:dito_sdk/dito_sdk.dart';
-import 'package:dito_sdk/user/user_entity.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../utils.dart';
@@ -19,15 +18,14 @@ void main() {
     });
 
     test('Set User on memory', () async {
-      await dito.user
-          .identify(UserEntity(userID: id, email: "teste@teste.com"));
+      await dito.user.identify(userID: id, email: "teste@teste.com");
       expect(dito.user.data.id, id);
       expect(dito.user.data.email, "teste@teste.com");
     });
 
     test('Send identify', () async {
-      final result = await dito.user.identify(
-          UserEntity(userID: "11111111111", email: "teste@teste.com"));
+      final result = await dito.user
+          .identify(userID: "11111111111", email: "teste@teste.com");
       expect(result, true);
       expect(dito.user.data.id, "11111111111");
     });

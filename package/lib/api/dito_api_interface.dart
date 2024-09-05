@@ -13,23 +13,42 @@ import '../utils/sha1.dart';
 
 const url = 'http://10.0.2.2:8080/connect.sdk_rpcAPI.v1.SDKService/Activity';
 
+class AppInfoEntity {
+  String? build;
+  String? version;
+  String? id;
+  String? platform;
+  String? sdkVersion;
+  String? sdkBuild;
+  String? sdkLang;
+}
+
+final class AppInfo extends AppInfoEntity {
+  AppInfo._internal();
+
+  static final appInfo = AppInfo._internal();
+
+  factory AppInfo() => appInfo;
+}
+
 class ApiActivities {
   final UserInterface _userInterface = UserInterface();
+  final AppInfo _appInfo = AppInfo();
 
   rpcAPI.DeviceInfo get deviceToken => rpcAPI.DeviceInfo()
     ..os = rpcAPI.DeviceOs.DEVICE_OS_ANDROID
     ..token = _userInterface.data.token!;
 
   rpcAPI.SDKInfo get sdkInfo => rpcAPI.SDKInfo()
-    ..version = '2.0.0'
-    ..build = '1'
-    ..lang = 'flutter';
+    ..version = _appInfo.sdkVersion!
+    ..build = _appInfo.build!
+    ..lang = _appInfo.sdkLang!;
 
   rpcAPI.AppInfo get appInfo => rpcAPI.AppInfo()
-    ..id = 'app-id'
-    ..build = 'app-build'
-    ..platform = 'android'
-    ..version = '1.0.0';
+    ..id = _appInfo.id!
+    ..build = _appInfo.build!
+    ..platform = _appInfo.platform!
+    ..version = _appInfo.version!;
 
   rpcAPI.UserInfo get userInfo => rpcAPI.UserInfo()
     ..email = _userInterface.data.email ?? ""

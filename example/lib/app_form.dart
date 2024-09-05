@@ -1,6 +1,4 @@
 import 'package:dito_sdk/dito_sdk.dart';
-import 'package:dito_sdk/event/event_entity.dart';
-import 'package:dito_sdk/user/user_entity.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -24,14 +22,11 @@ class AppFormState extends State<AppForm> {
     String email = "teste.sdk-flutter@dito.com.br";
 
     identify() async {
-      final user = UserEntity(
+      await dito.user.identify(
           userID: "e400c65b1800bee5bf546c5b7bd37cd4f7452bb8",
           cpf: cpf,
           name: 'Teste SDK Flutter 33333333333',
           email: email);
-
-      await dito.user.identify(user);
-      await dito.notification.registryToken();
     }
 
     handleIdentify() async {
@@ -46,7 +41,7 @@ class AppFormState extends State<AppForm> {
 
     handleNotification() async {
       if (_formKey.currentState!.validate()) {
-        await dito.event.trackEvent(EventEntity(eventName: 'action-test'));
+        await dito.event.track(action: 'action-test');
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Evento de notificação solicitado')),
@@ -55,7 +50,7 @@ class AppFormState extends State<AppForm> {
     }
 
     handleDeleteToken() async {
-      await dito.notification.removeToken();
+      await dito.user.token.removeToken(dito.user.data.token);
     }
 
     return Form(

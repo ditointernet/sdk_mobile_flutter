@@ -1,67 +1,85 @@
 import 'dart:async';
 
-import 'package:dito_sdk/user/token_repository.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 
 import '../event/event_repository.dart';
 import '../utils/custom_data.dart';
 import 'address_entity.dart';
+import 'token_repository.dart';
 import 'user_entity.dart';
 import 'user_repository.dart';
 
-/// UserInterface is an interface for communication with the user repository
+/// `UserInterface` defines methods for interacting with the user repository,
+/// handling user identification and login flows, and managing related tokens.
 interface class UserInterface {
+  /// Repository instance for managing user-related operations.
   final UserRepository _repository = UserRepository();
+
+  /// Repository instance for managing event-related operations.
   final EventRepository _eventRepository = EventRepository();
 
-  /// Gets the user data from the repository.
+  /// Provides access to the current user's data by retrieving it from the repository.
   ///
-  /// Returns the UserEntity object containing user data.
+  /// Returns a [UserEntity] object representing the user's information.
   UserEntity get data => _repository.data;
-  TokenRepository get token => TokenRepository();
 
+  /// Provides access to the `TokenRepository` for handling token-related operations.
+  TokenRepository get token => TokenRepository();
 
   /// Identifies the user by saving their data and sending it to Dito.
   ///
-  /// [user] - The UserEntity object containing user data.
-  /// Returns a Future that completes with true if the identification was successful.
-  Future<bool> identify(
-      {required String userID,
-      String? name,
-      String? cpf,
-      String? email,
-      String? gender,
-      String? birthday,
-      String? city,
-      String? street,
-      String? state,
-      String? postalCode,
-      String? country,
-      String? mobileToken,
-      Map<String, dynamic>? customData}) async {
+  /// - [userID] is the required identifier of the user.
+  /// - Optional parameters like [name], [cpf], [email], [gender], [birthday], etc.,
+  ///   allow the specification of additional user details.
+  /// - [mobileToken] can be passed, or it will be fetched using FirebaseMessaging if not provided.
+  /// - [customData] allows sending extra information related to the user.
+  ///
+  /// Returns a [Future] that completes with `true` if the user identification is successful.
+  Future<bool> identify({
+    required String userID,
+    String? name,
+    String? cpf,
+    String? email,
+    String? gender,
+    String? birthday,
+    String? city,
+    String? street,
+    String? state,
+    String? postalCode,
+    String? country,
+    String? mobileToken,
+    Map<String, dynamic>? customData,
+  }) async {
+    // Retrieve the mobile token. Use the provided token if available; otherwise,
+    // fetch it from FirebaseMessaging.
     final String userCurrentToken =
         mobileToken ?? await FirebaseMessaging.instance.getToken() ?? "";
 
+    // Create an AddressEntity instance to hold the user's address information.
     final address = AddressEntity(
-        city: city,
-        street: street,
-        state: state,
-        postalCode: postalCode,
-        country: country);
+      city: city,
+      street: street,
+      state: state,
+      postalCode: postalCode,
+      country: country,
+    );
 
+    // Create a UserEntity instance with the provided user information.
     final user = UserEntity(
-        userID: userID,
-        name: name,
-        cpf: cpf,
-        email: email,
-        gender: gender,
-        birthday: birthday,
-        address: address,
-        token: userCurrentToken,
-        customData: customData);
+      userID: userID,
+      name: name,
+      cpf: cpf,
+      email: email,
+      gender: gender,
+      birthday: birthday,
+      address: address,
+      token: userCurrentToken,
+      customData: customData,
+    );
 
     try {
+      // Retrieve any custom data version and merge it with the user's custom data.
       final version = await customDataVersion;
       if (user.customData == null) {
         user.customData = version;
@@ -69,9 +87,11 @@ interface class UserInterface {
         user.customData?.addAll(version);
       }
 
+      // Identify the user in the repository and verify any pending events.
       final resultIdentify = await _repository.identify(user);
       _eventRepository.verifyPendingEvents();
 
+      // If a mobile token is available, register it and verify pending token events.
       if (userCurrentToken.isNotEmpty) {
         final resultTokenRegistry = await token.registryToken(userCurrentToken);
         token.verifyPendingEvents();
@@ -81,6 +101,7 @@ interface class UserInterface {
 
       return resultIdentify;
     } catch (e) {
+      // Log the error if running in debug mode.
       if (kDebugMode) {
         print('Error identifying user: $e');
       }
@@ -88,24 +109,29 @@ interface class UserInterface {
     }
   }
 
-  /// Send a login event of user to Dito.
+  /// Logs the user into the system by sending a login event to Dito.
   ///
-  /// [userID] - The UserEntity object containing user data.
-  /// [token] - Mobile Token of user is optional.
-  /// Returns a Future that completes with true if the login was successful.
+  /// - [userID] is the required identifier of the user.
+  /// - [mobileToken] is optional and, if not provided, it will be fetched using FirebaseMessaging.
+  ///
+  /// Returns a [Future] that completes with `true` if the login was successful.
   Future<bool> login({required String userID, String? mobileToken}) async {
+    // Retrieve the mobile token. Use the provided token if available; otherwise,
+    // fetch it from FirebaseMessaging.
     final String userCurrentToken =
         mobileToken ?? await FirebaseMessaging.instance.getToken() ?? "";
 
+    // Create a UserEntity instance with the user's ID and token.
     final user = UserEntity(userID: userID, token: userCurrentToken);
 
     try {
+      // Log the user in through the repository and verify any pending events.
       final resultLogin = await _repository.login(user);
       _eventRepository.verifyPendingEvents();
 
+      // If a mobile token is available, ping the token and verify pending token events.
       if (userCurrentToken.isNotEmpty) {
-        final resultTokenRegistry =
-            await token.pingToken(userCurrentToken);
+        final resultTokenRegistry = await token.pingToken(userCurrentToken);
         token.verifyPendingEvents();
 
         return resultLogin && resultTokenRegistry;
@@ -113,6 +139,7 @@ interface class UserInterface {
 
       return resultLogin;
     } catch (e) {
+      // Log the error if running in debug mode.
       if (kDebugMode) {
         print('Error identifying user: $e');
       }

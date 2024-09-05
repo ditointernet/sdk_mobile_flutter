@@ -1,7 +1,5 @@
 import 'package:dito_sdk/data/database.dart';
 import 'package:dito_sdk/dito_sdk.dart';
-import 'package:dito_sdk/event/event_entity.dart';
-import 'package:dito_sdk/user/user_entity.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
@@ -33,17 +31,15 @@ void main() async {
     });
 
     test('Send event without identify', () async {
-      await dito.event
-          .trackEvent(EventEntity(eventName: 'event-test-sdk-flutter'));
+      await dito.event.track(action: 'event-test-sdk-flutter');
       final events = await database.fetchAll("events");
       expect(events.length, 1);
       expect(events.first["eventName"], 'event-test-sdk-flutter');
     });
 
     test('Send event with identify', () async {
-      dito.user.identify(UserEntity(userID: id, email: "teste@teste.com"));
-      final result = await dito.event
-          .trackEvent(EventEntity(eventName: 'event-test-sdk-flutter'));
+      dito.user.identify(userID: id, email: "teste@teste.com");
+      final result = await dito.event.track(action: 'event-test-sdk-flutter');
       final events = await database.fetchAll("events");
 
       expect(events.length, 0);
@@ -51,13 +47,14 @@ void main() async {
     });
 
     test('Send event with custom data', () async {
-      dito.user.identify(UserEntity(userID: id, email: "teste@teste.com"));
-      final result = await dito.event.trackEvent(EventEntity(
-          eventName: 'event-test-sdk-flutter',
+      dito.user.identify(userID: id, email: "teste@teste.com");
+      final result = await dito.event.track(
+          action: 'event-test-sdk-flutter',
           customData: {
             "data do ultimo teste": DateTime.now().toIso8601String()
           },
-          revenue: 10));
+          revenue: 10);
+
       final events = await database.fetchAll("events");
 
       expect(events.length, 0);

@@ -39,7 +39,7 @@ void main() async {
 
   dito.notification.onMessageClick = (data) {
     if (kDebugMode) {
-      print(data.toJson());
+      print(data);
     }
   };
 
