@@ -21,31 +21,88 @@ class AppFormState extends State<AppForm> {
     String cpf = "33333333333";
     String email = "teste.sdk-flutter@dito.com.br";
 
-    identify() async {
-      await dito.user.identify(
+    identify() {
+      return dito.user.identify(
           userID: "e400c65b1800bee5bf546c5b7bd37cd4f7452bb8",
           cpf: cpf,
           name: 'Teste SDK Flutter 33333333333',
           email: email);
     }
 
+    login() {
+      return dito.user
+          .login(userID: "e400c65b1800bee5bf546c5b7bd37cd4f7452bb8");
+    }
+
     handleIdentify() async {
       if (_formKey.currentState!.validate()) {
-        await identify().then((response) => {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Usuário identificado')),
-              )
-            });
+        final bool response = await identify();
+
+        if (response) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Usuário identificado')),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+                content: Text('Ocorreu um erro!'),
+                backgroundColor: Colors.redAccent),
+          );
+        }
+      }
+    }
+
+    handleLogin() async {
+      if (_formKey.currentState!.validate()) {
+        final bool response = await login();
+
+        if (response) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Usuário logado')),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+                content: Text('Ocorreu um erro!'),
+                backgroundColor: Colors.redAccent),
+          );
+        }
       }
     }
 
     handleNotification() async {
       if (_formKey.currentState!.validate()) {
-        await dito.event.track(action: 'action-test');
+        final bool response = await dito.event.track(action: 'action-test');
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Evento de notificação solicitado')),
-        );
+        if (response) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Evento de notificação solicitado')),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+                content: Text('Ocorreu um erro!'),
+                backgroundColor: Colors.redAccent),
+          );
+        }
+      }
+    }
+
+    handleNavigation() async {
+      if (_formKey.currentState!.validate()) {
+        final bool response = await dito.event.navigate(name: 'home');
+
+        if (response) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Evento de notificação solicitado')),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+                content: Text('Ocorreu um erro!'),
+                backgroundColor: Colors.redAccent),
+          );
+        }
       }
     }
 
@@ -88,11 +145,19 @@ class AppFormState extends State<AppForm> {
                   child: Column(children: [
                     FilledButton(
                       onPressed: handleIdentify,
-                      child: const Text('Registrar Identify'),
+                      child: const Text('Registrar usuário'),
+                    ),
+                    FilledButton(
+                      onPressed: handleLogin,
+                      child: const Text('Logar usuário'),
                     ),
                     OutlinedButton(
                       onPressed: handleNotification,
-                      child: const Text('Receber Notification'),
+                      child: const Text('Evento de receber notificação'),
+                    ),
+                    OutlinedButton(
+                      onPressed: handleNavigation,
+                      child: const Text('Evento de navegação'),
                     ),
                     OutlinedButton(
                       onPressed: handleDeleteToken,

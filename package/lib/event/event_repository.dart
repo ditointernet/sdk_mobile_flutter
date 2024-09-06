@@ -32,7 +32,7 @@ class EventRepository {
     // Otherwise, send the event to the Dito API
     final activities = [ApiActivities().trackEvent(event)];
 
-    return await _api.createRequest(activities).call;
+    return await _api.createRequest(activities).call();
   }
 
   /// Tracks an event by saving it to the local database if the user is not registered,
@@ -50,7 +50,7 @@ class EventRepository {
     // Otherwise, send the event to the Dito API
     final activities = [ApiActivities().trackNavigation(navigation)];
 
-    return await _api.createRequest(activities).call;
+    return await _api.createRequest(activities).call();
   }
 
   /// Verifies and processes any pending events.

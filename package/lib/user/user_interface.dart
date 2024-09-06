@@ -51,34 +51,34 @@ interface class UserInterface {
     String? mobileToken,
     Map<String, dynamic>? customData,
   }) async {
-    // Retrieve the mobile token. Use the provided token if available; otherwise,
-    // fetch it from FirebaseMessaging.
-    final String userCurrentToken =
-        mobileToken ?? await FirebaseMessaging.instance.getToken() ?? "";
-
-    // Create an AddressEntity instance to hold the user's address information.
-    final address = AddressEntity(
-      city: city,
-      street: street,
-      state: state,
-      postalCode: postalCode,
-      country: country,
-    );
-
-    // Create a UserEntity instance with the provided user information.
-    final user = UserEntity(
-      userID: userID,
-      name: name,
-      cpf: cpf,
-      email: email,
-      gender: gender,
-      birthday: birthday,
-      address: address,
-      token: userCurrentToken,
-      customData: customData,
-    );
-
     try {
+      // Retrieve the mobile token. Use the provided token if available; otherwise,
+      // fetch it from FirebaseMessaging.
+      final String userCurrentToken =
+          mobileToken ?? await FirebaseMessaging.instance.getToken() ?? "";
+
+      // Create an AddressEntity instance to hold the user's address information.
+      final address = AddressEntity(
+        city: city,
+        street: street,
+        state: state,
+        postalCode: postalCode,
+        country: country,
+      );
+
+      // Create a UserEntity instance with the provided user information.
+      final user = UserEntity(
+        userID: userID,
+        name: name,
+        cpf: cpf,
+        email: email,
+        gender: gender,
+        birthday: birthday,
+        address: address,
+        token: userCurrentToken,
+        customData: customData,
+      );
+
       // Retrieve any custom data version and merge it with the user's custom data.
       final version = await customDataVersion;
       if (user.customData == null) {
@@ -90,14 +90,6 @@ interface class UserInterface {
       // Identify the user in the repository and verify any pending events.
       final resultIdentify = await _repository.identify(user);
       _eventRepository.verifyPendingEvents();
-
-      // If a mobile token is available, register it and verify pending token events.
-      if (userCurrentToken.isNotEmpty) {
-        final resultTokenRegistry = await token.registryToken(userCurrentToken);
-        token.verifyPendingEvents();
-
-        return resultIdentify && resultTokenRegistry;
-      }
 
       return resultIdentify;
     } catch (e) {
@@ -116,28 +108,11 @@ interface class UserInterface {
   ///
   /// Returns a [Future] that completes with `true` if the login was successful.
   Future<bool> login({required String userID, String? mobileToken}) async {
-    // Retrieve the mobile token. Use the provided token if available; otherwise,
-    // fetch it from FirebaseMessaging.
-    final String userCurrentToken =
-        mobileToken ?? await FirebaseMessaging.instance.getToken() ?? "";
-
-    // Create a UserEntity instance with the user's ID and token.
-    final user = UserEntity(userID: userID, token: userCurrentToken);
-
     try {
+      final token = await FirebaseMessaging.instance.getToken();
+      final user = UserEntity(userID: userID, token:  mobileToken ?? token);
       // Log the user in through the repository and verify any pending events.
-      final resultLogin = await _repository.login(user);
-      _eventRepository.verifyPendingEvents();
-
-      // If a mobile token is available, ping the token and verify pending token events.
-      if (userCurrentToken.isNotEmpty) {
-        final resultTokenRegistry = await token.pingToken(userCurrentToken);
-        token.verifyPendingEvents();
-
-        return resultLogin && resultTokenRegistry;
-      }
-
-      return resultLogin;
+      return await _repository.login(user);
     } catch (e) {
       // Log the error if running in debug mode.
       if (kDebugMode) {

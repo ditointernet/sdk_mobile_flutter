@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:uuid/uuid.dart';
 
@@ -7,11 +6,10 @@ import '../event/navigation_entity.dart';
 import '../notification/notification_entity.dart';
 import '../proto/api.pb.dart' as rpcAPI;
 import '../proto/google/protobuf/timestamp.pb.dart';
-import '../user/user_entity.dart';
 import '../user/user_interface.dart';
 import '../utils/sha1.dart';
 
-const url = 'http://10.0.2.2:8080/connect.sdk_rpcAPI.v1.SDKService/Activity';
+const url = 'http://10.0.2.2:3000/connect.sdk_api.v1.SDKService/Activity';
 
 class AppInfoEntity {
   String? build;
@@ -50,20 +48,65 @@ class ApiActivities {
     ..platform = _appInfo.platform!
     ..version = _appInfo.version!;
 
-  rpcAPI.UserInfo get userInfo => rpcAPI.UserInfo()
-    ..email = _userInterface.data.email ?? ""
-    ..ditoId = _userInterface.data.id ?? ""
-    ..name = _userInterface.data.name ?? ""
-    ..birthday = _userInterface.data.birthday ?? ""
-    ..gender = _userInterface.data.gender ?? ""
-    ..address = (rpcAPI.UserInfo_Address()
-      ..city = _userInterface.data.address?.city ?? ""
-      ..country = _userInterface.data.address?.country ?? ""
-      ..postalCode = _userInterface.data.address?.postalCode ?? ""
-      ..state = _userInterface.data.address?.state ?? ""
-      ..street = _userInterface.data.address?.street ?? "");
+  rpcAPI.UserInfo get userInfo {
+    final user = rpcAPI.UserInfo();
 
-  rpcAPI.Activity identify(UserEntity user) {
+    if (_userInterface.data.email != null &&
+        _userInterface.data.email!.isNotEmpty) {
+      user.email = _userInterface.data.email!;
+    }
+
+    if (_userInterface.data.id != null &&
+        _userInterface.data.id!.isNotEmpty) {
+      user.ditoId = _userInterface.data.id!;
+    }
+
+    if (_userInterface.data.name != null &&
+        _userInterface.data.name!.isNotEmpty) {
+      user.name = _userInterface.data.name!;
+    }
+
+    if (_userInterface.data.birthday != null &&
+        _userInterface.data.birthday!.isNotEmpty) {
+      user.birthday = _userInterface.data.birthday!;
+    }
+
+    if (_userInterface.data.gender != null &&
+        _userInterface.data.gender!.isNotEmpty) {
+      user.gender = _userInterface.data.gender!;
+    }
+
+    user.address = rpcAPI.UserInfo_Address();
+
+    if (_userInterface.data.address?.city != null &&
+        _userInterface.data.address!.city!.isNotEmpty) {
+      user.address.city = _userInterface.data.address!.city!;
+    }
+
+    if (_userInterface.data.address?.country != null &&
+        _userInterface.data.address!.country!.isNotEmpty) {
+      user.address.country = _userInterface.data.address!.country!;
+    }
+
+    if (_userInterface.data.address?.postalCode != null &&
+        _userInterface.data.address!.postalCode!.isNotEmpty) {
+      user.address.postalCode = _userInterface.data.address!.postalCode!;
+    }
+
+    if (_userInterface.data.address?.state != null &&
+        _userInterface.data.address!.state!.isNotEmpty) {
+      user.address.state = _userInterface.data.address!.state!;
+    }
+
+    if (_userInterface.data.address?.street != null &&
+        _userInterface.data.address!.street!.isNotEmpty) {
+      user.address.street = _userInterface.data.address!.street!;
+    }
+
+    return user;
+  }
+
+  rpcAPI.Activity identify() {
     const uuid = Uuid();
     final now = Timestamp.fromDateTime(DateTime.now());
 
@@ -74,7 +117,7 @@ class ApiActivities {
       ..userData = rpcAPI.Activity_UserDataActivity();
   }
 
-  rpcAPI.Activity login(UserEntity user) {
+  rpcAPI.Activity login() {
     const uuid = Uuid();
     final now = Timestamp.fromDateTime(DateTime.now());
 
@@ -82,7 +125,7 @@ class ApiActivities {
       ..timestamp = now
       ..id = uuid.v4()
       ..type = rpcAPI.ActivityType.ACTIVITY_TRACK
-      ..userLogin = rpcAPI.Activity_UserLoginActivity();
+      ..userLogin = (rpcAPI.Activity_UserLoginActivity()..utmSource = 'source');
   }
 
   rpcAPI.Activity trackEvent(EventEntity event) {
@@ -225,11 +268,11 @@ class ApiInterface {
 }
 
 class ApiRequest {
-  rpcAPI.Request request;
+  final rpcAPI.Request _request;
   final String? _apiKey;
   final String? _secretKey;
 
-  ApiRequest(this.request, this._apiKey, this._secretKey);
+  ApiRequest(this._request, this._apiKey, this._secretKey);
 
   void _checkConfiguration() {
     if (_apiKey == null || _secretKey == null) {
@@ -238,48 +281,38 @@ class ApiRequest {
     }
   }
 
-  Future<bool> get call async {
+  Future<bool> call() async {
     _checkConfiguration();
-
-    List<int> serializedRequest = request.writeToBuffer();
-
-    final headers = {
-      'Content-Type': 'application/proto',
-      'platform_rpcAPI_key': _apiKey!,
-      'sha1_signature': _secretKey!,
-    };
 
     final response = await http.post(
       Uri.parse(url),
-      headers: headers,
-      body: serializedRequest,
+      headers: {
+        'Content-Type': 'application/proto',
+        'platform_api_key': _apiKey!,
+        'sha1_signature': _secretKey!,
+      },
+      body: _request.writeToBuffer(),
     );
 
     if (response.statusCode == 200) {
       final responseProto = rpcAPI.Response.fromBuffer(response.bodyBytes);
       for (var responseData in responseProto.response) {
         if (responseData.hasError()) {
-          final activityId = responseData.id;
           final error = responseData.error;
 
-          if (kDebugMode) {
-            print('Activity: $activityId');
-            print('Error Code: ${error.code}');
-            print('Error Message: ${error.message}');
-            switch (error.code) {
-              case rpcAPI.ErrorCode.ERROR_INVALID_REQUEST:
-                throw ('Invalid request format.');
-              case rpcAPI.ErrorCode.ERROR_UNAUTHORIZED:
-                throw ('Unauthorized access.');
-              case rpcAPI.ErrorCode.ERROR_NOT_FOUND:
-                throw ('Resource not found.');
-              case rpcAPI.ErrorCode.ERROR_INTERNAL:
-                throw ('Internal server error.');
-              case rpcAPI.ErrorCode.ERROR_NOT_IMPLEMENTED:
-                throw ('Feature not implemented.');
-              default:
-                throw ('Unknown error occurred.');
-            }
+          switch (error.code) {
+            case rpcAPI.ErrorCode.ERROR_INVALID_REQUEST:
+              throw ('Invalid request format.');
+            case rpcAPI.ErrorCode.ERROR_UNAUTHORIZED:
+              throw ('Unauthorized access.');
+            case rpcAPI.ErrorCode.ERROR_NOT_FOUND:
+              throw ('Resource not found.');
+            case rpcAPI.ErrorCode.ERROR_INTERNAL:
+              throw ('Internal server error.');
+            case rpcAPI.ErrorCode.ERROR_NOT_IMPLEMENTED:
+              throw ('Feature not implemented.');
+            default:
+              throw ('Unknown error occurred.');
           }
         }
       }

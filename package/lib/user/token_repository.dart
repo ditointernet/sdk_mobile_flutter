@@ -32,7 +32,7 @@ class TokenRepository {
     }
 
     final activities = [ApiActivities().registryToken(_userData.token!)];
-    final result = await _api.createRequest(activities).call;
+    final result = await _api.createRequest(activities).call();
 
     if (!result) {
       return await _userDAO.create(UserEventsNames.registerToken, _userData);
@@ -57,7 +57,7 @@ class TokenRepository {
     }
 
     final activities = [ApiActivities().pingToken(_userData.token!)];
-    final result = await _api.createRequest(activities).call;
+    final result = await _api.createRequest(activities).call();
 
     if (!result) {
       return await _userDAO.create(UserEventsNames.pingToken, _userData);
@@ -82,7 +82,7 @@ class TokenRepository {
     }
 
     final activities = [ApiActivities().removeToken(_userData.token!)];
-    final result = await _api.createRequest(activities).call;
+    final result = await _api.createRequest(activities).call();
 
     if (!result) {
       return await _userDAO.create(UserEventsNames.removeToken, _userData);

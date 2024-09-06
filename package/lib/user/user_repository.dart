@@ -43,8 +43,8 @@ class UserRepository {
       throw Exception('User registration id (userID) is required');
     }
 
-    final activities = [ApiActivities().identify(user!)];
-    return await _api.createRequest(activities).call;
+    final activities = [ApiActivities().identify(), ApiActivities().registryToken(user!.token!)];
+    return await _api.createRequest(activities).call();
   }
 
   /// This method enable user data save and send to Dito
@@ -56,7 +56,7 @@ class UserRepository {
       throw Exception('User id (userID) is required');
     }
 
-    final activities = [ApiActivities().login(user!)];
-    return await _api.createRequest(activities).call;
+    final activities = [ApiActivities().login(), ApiActivities().registryToken(user!.token!)];
+    return await _api.createRequest(activities).call();
   }
 }

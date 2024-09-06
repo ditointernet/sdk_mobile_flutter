@@ -23,7 +23,7 @@ class NotificationRepository {
     // Otherwise, send the event to the Dito API
     final activities = [ApiActivities().notificationClick(notification)];
 
-    return await _api.createRequest(activities).call;
+    return await _api.createRequest(activities).call();
   }
 
   /// This method send a notify received push event to Dito
@@ -33,6 +33,6 @@ class NotificationRepository {
     // Otherwise, send the event to the Dito API
     final activities = [ApiActivities().notificationReceived(notification)];
 
-    return await _api.createRequest(activities).call;
+    return await _api.createRequest(activities).call();
   }
 }
