@@ -70,15 +70,15 @@ class LocalDatabase {
           name TEXT,
           type INT,
           event TEXT,
-          createdAt TEXT,
+          createdAt TEXT
         );
       ''');
       await db.execute('''
         CREATE TABLE user (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           name TEXT,
-          user TEXT
-          createdAt TEXT,
+          user TEXT,
+          createdAt TEXT
         );
       ''');
     } catch (e) {
