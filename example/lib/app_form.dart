@@ -34,8 +34,6 @@ class AppFormState extends State<AppForm> {
           .login(userID: '1575213826e164f73d28c4ed1b5fabaad4bd4a13');
     }
 
-
-
     handleIdentify() async {
       if (_formKey.currentState!.validate()) {
         final bool response = await identify();
@@ -110,7 +108,12 @@ class AppFormState extends State<AppForm> {
 
     handleClickNotification() async {
       if (_formKey.currentState!.validate()) {
-        final bool response = await dito.notification.click("notification-sdk-test", "identifier-sdk-test", "604021575213826e164f73d28c4ed1b5fabaad4bd4a13");
+        final bool response = await dito.notification.click(
+          identifier: 'identifier-not-sdk-test',
+          notification: 'notification-sdk-test',
+          notificationLogId: 'notification-dispatch-sdk-test',
+          reference: "reference-notification-sdk-test"
+        );
 
         if (response) {
           ScaffoldMessenger.of(context).showSnackBar(
