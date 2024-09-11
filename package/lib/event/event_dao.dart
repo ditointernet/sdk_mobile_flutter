@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:dito_sdk/notification/notification_entity.dart';
 import 'package:flutter/foundation.dart';
 
 import '../data/database.dart';
@@ -25,9 +26,11 @@ class EventDAO {
   /// Method to insert a new event into the events table.
   ///
   /// [event] - The EventEntity object to be inserted.
+  /// [navigation] - The NavigationEntity object to be inserted.
+  /// [notification] - The NotificationEntity object to be inserted.
   /// Returns a Future that completes with the row id of the inserted event.
   Future<bool> create(
-      {EventEntity? event, NavigationEntity? navigation}) async {
+      {EventEntity? event, NavigationEntity? navigation, NotificationEntity? notification}) async {
     try {
       if (event != null) {
         return await _database.insert(_table, {
@@ -46,6 +49,16 @@ class EventDAO {
               "type": "2",
               "createdAt": DateTime.now().toIso8601String()
             }) >
+            0;
+      }
+
+      if (notification != null) {
+        return await _database.insert(_table, {
+          "name": notification.notificationLogId,
+          "event": jsonEncode(notification.toJson()),
+          "type": "3",
+          "createdAt": DateTime.now().toIso8601String()
+        }) >
             0;
       }
 

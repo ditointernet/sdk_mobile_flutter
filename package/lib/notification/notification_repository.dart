@@ -4,10 +4,13 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 
 import '../api/dito_api_interface.dart';
 import 'notification_entity.dart';
+import '../user/user_repository.dart';
+import '../event/event_dao.dart';
 
 class NotificationRepository {
   final ApiInterface _api = ApiInterface();
-
+  final UserRepository _userRepository = UserRepository();
+  final _database = EventDAO();
   /// The broadcast stream for received notifications
   final StreamController<NotificationEntity> didReceiveLocalNotificationStream =
       StreamController<NotificationEntity>.broadcast();
@@ -20,6 +23,11 @@ class NotificationRepository {
   ///
   /// [notification] - Notification object.
   Future<bool> click(NotificationEntity notification) async {
+    // If the user is not registered, save the event to the local database
+    if (_userRepository.data.isNotValid) {
+      return await _database.create(notification: notification);
+    }
+
     // Otherwise, send the event to the Dito API
     final activities = [ApiActivities().notificationClick(notification)];
 

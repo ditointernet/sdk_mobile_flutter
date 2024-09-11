@@ -23,7 +23,7 @@ class AppFormState extends State<AppForm> {
 
     identify() {
       return dito.user.identify(
-          userID: "e400c65b1800bee5bf546c5b7bd37cd4f7452bb8",
+          userID: "1575213826e164f73d28c4ed1b5fabaad4bd4a13",
           cpf: cpf,
           name: 'Teste SDK Flutter 33333333333',
           email: email);
@@ -31,8 +31,10 @@ class AppFormState extends State<AppForm> {
 
     login() {
       return dito.user
-          .login(userID: "e400c65b1800bee5bf546c5b7bd37cd4f7452bb8");
+          .login(userID: '1575213826e164f73d28c4ed1b5fabaad4bd4a13');
     }
+
+
 
     handleIdentify() async {
       if (_formKey.currentState!.validate()) {
@@ -70,7 +72,7 @@ class AppFormState extends State<AppForm> {
       }
     }
 
-    handleNotification() async {
+    handleGenericTrack() async {
       if (_formKey.currentState!.validate()) {
         final bool response = await dito.event.track(action: 'action-test');
 
@@ -91,6 +93,24 @@ class AppFormState extends State<AppForm> {
     handleNavigation() async {
       if (_formKey.currentState!.validate()) {
         final bool response = await dito.event.navigate(name: 'home');
+
+        if (response) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Evento de notificação solicitado')),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+                content: Text('Ocorreu um erro!'),
+                backgroundColor: Colors.redAccent),
+          );
+        }
+      }
+    }
+
+    handleClickNotification() async {
+      if (_formKey.currentState!.validate()) {
+        final bool response = await dito.notification.click("notification-sdk-test", "identifier-sdk-test", "604021575213826e164f73d28c4ed1b5fabaad4bd4a13");
 
         if (response) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -152,14 +172,18 @@ class AppFormState extends State<AppForm> {
                       child: const Text('Logar usuário'),
                     ),
                     OutlinedButton(
-                      onPressed: handleNotification,
-                      child: const Text('Evento de receber notificação'),
+                      onPressed: handleGenericTrack,
+                      child: const Text('Registrar evento genérico'),
                     ),
                     OutlinedButton(
                       onPressed: handleNavigation,
-                      child: const Text('Evento de navegação'),
+                      child: const Text('Registrar evento de navegação'),
                     ),
                     OutlinedButton(
+                      onPressed: handleClickNotification,
+                      child: const Text('Registrar evento de click'),
+                    ),
+                    FilledButton(
                       onPressed: handleDeleteToken,
                       child: const Text('Deletar token'),
                     ),
