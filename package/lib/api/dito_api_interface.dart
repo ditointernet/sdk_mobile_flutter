@@ -76,33 +76,45 @@ class ApiActivities {
       user.gender = _userInterface.data.gender!;
     }
 
-    user.address = rpcAPI.UserInfo_Address();
+    final addressData = _userInterface.data.address;
+    if (addressData != null) {
+      final hasAddress = [
+        addressData.city,
+        addressData.country,
+        addressData.postalCode,
+        addressData.state,
+        addressData.street
+      ].any((field) => field != null && field.isNotEmpty);
 
-    if (_userInterface.data.address?.city != null &&
-        _userInterface.data.address!.city!.isNotEmpty) {
-      user.address.city = _userInterface.data.address!.city!;
+      if (hasAddress) {
+        user.address = rpcAPI.UserInfo_Address();
+
+        if (_userInterface.data.address?.city != null &&
+            _userInterface.data.address!.city!.isNotEmpty) {
+          user.address.city = _userInterface.data.address!.city!;
+        }
+
+        if (_userInterface.data.address?.country != null &&
+            _userInterface.data.address!.country!.isNotEmpty) {
+          user.address.country = _userInterface.data.address!.country!;
+        }
+
+        if (_userInterface.data.address?.postalCode != null &&
+            _userInterface.data.address!.postalCode!.isNotEmpty) {
+          user.address.postalCode = _userInterface.data.address!.postalCode!;
+        }
+
+        if (_userInterface.data.address?.state != null &&
+            _userInterface.data.address!.state!.isNotEmpty) {
+          user.address.state = _userInterface.data.address!.state!;
+        }
+
+        if (_userInterface.data.address?.street != null &&
+            _userInterface.data.address!.street!.isNotEmpty) {
+          user.address.street = _userInterface.data.address!.street!;
+        }
+      }
     }
-
-    if (_userInterface.data.address?.country != null &&
-        _userInterface.data.address!.country!.isNotEmpty) {
-      user.address.country = _userInterface.data.address!.country!;
-    }
-
-    if (_userInterface.data.address?.postalCode != null &&
-        _userInterface.data.address!.postalCode!.isNotEmpty) {
-      user.address.postalCode = _userInterface.data.address!.postalCode!;
-    }
-
-    if (_userInterface.data.address?.state != null &&
-        _userInterface.data.address!.state!.isNotEmpty) {
-      user.address.state = _userInterface.data.address!.state!;
-    }
-
-    if (_userInterface.data.address?.street != null &&
-        _userInterface.data.address!.street!.isNotEmpty) {
-      user.address.street = _userInterface.data.address!.street!;
-    }
-
     return user;
   }
 
