@@ -54,7 +54,7 @@ class EventDAO {
 
       if (notification != null) {
         return await _database.insert(_table, {
-          "name": notification.notificationLogId,
+          "name": notification.identifier,
           "event": jsonEncode(notification.toJson()),
           "type": "3",
           "createdAt": DateTime.now().toIso8601String()

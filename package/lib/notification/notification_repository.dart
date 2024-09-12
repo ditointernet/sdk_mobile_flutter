@@ -38,6 +38,11 @@ class NotificationRepository {
   ///
   /// [notification] - Notification object.
   Future<bool> received(NotificationEntity notification) async {
+    // If the user is not registered, save the event to the local database
+    if (_userRepository.data.isNotValid) {
+      return await _database.create(notification: notification);
+    }
+
     // Otherwise, send the event to the Dito API
     final activities = [ApiActivities().notificationReceived(notification)];
 

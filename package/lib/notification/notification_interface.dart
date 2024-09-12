@@ -162,19 +162,36 @@ class NotificationInterface {
   /// [notification] - The notification content.
   /// [identifier] - A unique identifier for the notification.
   /// [reference] - A reference to the notification.
-  Future<void> received(
-          String notification, String identifier, String reference) =>
-      _repository.received(NotificationEntity(
+  /// [details] - The DetailsEntity content.
+  /// Returns a `Future<bool>` that completes with `true` if the event was tracked successfully,
+  /// or `false` if there was an error.
+  Future<bool> received(
+      {required String notification,
+        required String identifier,
+        String? notificationLogId,
+        String? reference,
+        DetailsEntity? details}) async {
+    try {
+      return await _repository.received(NotificationEntity(
           reference: reference,
           identifier: identifier,
-          notification: notification));
+          notification: notification,
+          notificationLogId: notificationLogId,
+          details: details
+      ));
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error tracking click event: $e'); // Log the error in debug mode.
+      }
+      return false; // Return false if there was an error.
+    }
+  }
 
   /// Marks a notification as clicked in the repository.
   ///
   /// [notification] - The notification content.
   /// [identifier] - A unique identifier for the notification.
   /// [reference] - A reference to the notification.
-  /// [notificationLogId] - notification trigger id.
   /// [details] - The DetailsEntity content.
   /// Returns a `Future<bool>` that completes with `true` if the event was tracked successfully,
   /// or `false` if there was an error.

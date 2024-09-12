@@ -111,8 +111,27 @@ class AppFormState extends State<AppForm> {
         final bool response = await dito.notification.click(
           identifier: 'identifier-not-sdk-test',
           notification: 'notification-sdk-test',
-          notificationLogId: 'notification-dispatch-sdk-test',
-          reference: "reference-notification-sdk-test"
+        );
+
+        if (response) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Evento de notificação solicitado')),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+                content: Text('Ocorreu um erro!'),
+                backgroundColor: Colors.redAccent),
+          );
+        }
+      }
+    }
+
+    handleReceivedNotification() async {
+      if (_formKey.currentState!.validate()) {
+        final bool response = await dito.notification.received(
+            identifier: 'identifier-not-sdk-test',
+            notification: 'notification-sdk-test',
         );
 
         if (response) {
@@ -185,6 +204,10 @@ class AppFormState extends State<AppForm> {
                     OutlinedButton(
                       onPressed: handleClickNotification,
                       child: const Text('Registrar evento de click'),
+                    ),
+                    OutlinedButton(
+                      onPressed: handleReceivedNotification,
+                      child: const Text('Registrar evento de Entrega'),
                     ),
                     FilledButton(
                       onPressed: handleDeleteToken,
