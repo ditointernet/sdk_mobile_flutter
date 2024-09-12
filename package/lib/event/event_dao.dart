@@ -30,7 +30,10 @@ class EventDAO {
   /// [notification] - The NotificationEntity object to be inserted.
   /// Returns a Future that completes with the row id of the inserted event.
   Future<bool> create(
-      {EventEntity? event, NavigationEntity? navigation, NotificationEntity? notification}) async {
+      {EventEntity? event,
+        NavigationEntity? navigation,
+        NotificationEntity? notification,
+        String? activityType}) async {
     try {
       if (event != null) {
         return await _database.insert(_table, {
@@ -53,13 +56,23 @@ class EventDAO {
       }
 
       if (notification != null) {
-        return await _database.insert(_table, {
-          "name": notification.identifier,
-          "event": jsonEncode(notification.toJson()),
-          "type": "3",
-          "createdAt": DateTime.now().toIso8601String()
-        }) >
-            0;
+        if (activityType == "click") {
+          return await _database.insert(_table, {
+            "name": notification.identifier,
+            "event": jsonEncode(notification.toJson()),
+            "type": "3",
+            "createdAt": DateTime.now().toIso8601String()
+          }) >
+              0;
+        } else if (activityType == "received") {
+          return await _database.insert(_table, {
+            "name": notification.identifier,
+            "event": jsonEncode(notification.toJson()),
+            "type": "4",
+            "createdAt": DateTime.now().toIso8601String()
+          }) >
+              0;
+        }
       }
 
       return false;

@@ -25,7 +25,7 @@ class NotificationRepository {
   Future<bool> click(NotificationEntity notification) async {
     // If the user is not registered, save the event to the local database
     if (_userRepository.data.isNotValid) {
-      return await _database.create(notification: notification);
+      return await _database.create(notification: notification, activityType: "click");
     }
 
     // Otherwise, send the event to the Dito API
@@ -40,7 +40,7 @@ class NotificationRepository {
   Future<bool> received(NotificationEntity notification) async {
     // If the user is not registered, save the event to the local database
     if (_userRepository.data.isNotValid) {
-      return await _database.create(notification: notification);
+      return await _database.create(notification: notification, activityType: "received");
     }
 
     // Otherwise, send the event to the Dito API

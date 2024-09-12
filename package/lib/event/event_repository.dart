@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:dito_sdk/notification/notification_entity.dart';
 import 'package:flutter/foundation.dart';
 
 import '../api/dito_api_interface.dart';
@@ -65,10 +66,18 @@ class EventRepository {
         if (row["type"] == 1) {
           final event = EventEntity.fromMap(jsonDecode(row["event"] as String));
           activities.add(ApiActivities().trackEvent(event));
-        } else {
+        } else if  (row["type"] == 2) {
           final navigation =
               NavigationEntity.fromMap(jsonDecode(row["event"] as String));
           activities.add(ApiActivities().trackNavigation(navigation));
+        } else if (row["type"] == 3) {
+          final notification =
+              NotificationEntity.fromMap(jsonDecode(row["event"] as String));
+          activities.add(ApiActivities().notificationClick(notification));
+        } else if (row["type"] == 4) {
+          final notification =
+            NotificationEntity.fromMap(jsonDecode(row["event"] as String));
+          activities.add(ApiActivities().notificationReceived(notification));
         }
       }
 
