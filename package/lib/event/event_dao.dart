@@ -39,7 +39,7 @@ class EventDAO {
         return await _database.insert(_table, {
               "name": event.action,
               "event": jsonEncode(event.toJson()),
-              "type": "1",
+              "type": 1,
               "createdAt": DateTime.now().toIso8601String()
             }) >
             0;
@@ -49,7 +49,7 @@ class EventDAO {
         return await _database.insert(_table, {
               "name": navigation.pageName,
               "event": jsonEncode(navigation.toJson()),
-              "type": "2",
+              "type": 2,
               "createdAt": DateTime.now().toIso8601String()
             }) >
             0;
@@ -58,17 +58,17 @@ class EventDAO {
       if (notification != null) {
         if (activityType == "click") {
           return await _database.insert(_table, {
-            "name": notification.identifier,
+            "name": notification.notification,
             "event": jsonEncode(notification.toJson()),
-            "type": "3",
+            "type": 3,
             "createdAt": DateTime.now().toIso8601String()
           }) >
               0;
         } else if (activityType == "received") {
           return await _database.insert(_table, {
-            "name": notification.identifier,
+            "name": notification.notification,
             "event": jsonEncode(notification.toJson()),
-            "type": "4",
+            "type": 4,
             "createdAt": DateTime.now().toIso8601String()
           }) >
               0;

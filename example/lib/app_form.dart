@@ -152,6 +152,10 @@ class AppFormState extends State<AppForm> {
       await dito.user.token.removeToken(dito.user.data.token);
     }
 
+    handlePingToken() async {
+      await dito.user.token.pingToken(dito.user.data.token);
+    }
+
     return Form(
       key: _formKey,
       child: Column(
@@ -212,6 +216,10 @@ class AppFormState extends State<AppForm> {
                     FilledButton(
                       onPressed: handleDeleteToken,
                       child: const Text('Deletar token'),
+                    ),
+                    FilledButton(
+                      onPressed: handlePingToken,
+                      child: const Text('Ping token'),
                     ),
                   ])))
         ],

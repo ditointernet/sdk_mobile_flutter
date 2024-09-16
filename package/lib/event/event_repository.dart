@@ -81,9 +81,9 @@ class EventRepository {
         }
       }
 
-      await _api.createRequest(activities).call;
+      await _api.createRequest(activities).call();
 
-      await _database.clearDatabase();
+      return await _database.clearDatabase();
     } catch (e) {
       if (kDebugMode) {
         print('Error verifying pending events: $e');
