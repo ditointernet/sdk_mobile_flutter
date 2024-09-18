@@ -11,6 +11,7 @@ class NotificationRepository {
   final ApiInterface _api = ApiInterface();
   final UserRepository _userRepository = UserRepository();
   final _database = EventDAO();
+
   /// The broadcast stream for received notifications
   final StreamController<NotificationEntity> didReceiveLocalNotificationStream =
       StreamController<NotificationEntity>.broadcast();
@@ -25,7 +26,8 @@ class NotificationRepository {
   Future<bool> click(NotificationEntity notification) async {
     // If the user is not registered, save the event to the local database
     if (_userRepository.data.isNotValid) {
-      return await _database.create(notification: notification, activityType: "click");
+      return await _database.create(EventsNames.click,
+          notification: notification);
     }
 
     // Otherwise, send the event to the Dito API
@@ -40,7 +42,8 @@ class NotificationRepository {
   Future<bool> received(NotificationEntity notification) async {
     // If the user is not registered, save the event to the local database
     if (_userRepository.data.isNotValid) {
-      return await _database.create(notification: notification, activityType: "received");
+      return await _database.create(EventsNames.received,
+          notification: notification);
     }
 
     // Otherwise, send the event to the Dito API

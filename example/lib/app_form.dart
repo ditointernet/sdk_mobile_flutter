@@ -25,7 +25,7 @@ class AppFormState extends State<AppForm> {
       return dito.user.identify(
           userID: "1575213826e164f73d28c4ed1b5fabaad4bd4a13",
           cpf: cpf,
-          name: 'Teste SDK Flutter 33333333333',
+          name: 'Usuário SDK FLutter - Teste',
           email: email);
     }
 
@@ -149,11 +149,48 @@ class AppFormState extends State<AppForm> {
     }
 
     handleDeleteToken() async {
-      await dito.user.token.removeToken(dito.user.data.token);
+      final bool response = await dito.user.token.removeToken(dito.user.data.token);
+      if (response) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Evento de notificação solicitado')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('Ocorreu um erro!'),
+              backgroundColor: Colors.redAccent),
+        );
+      }
+    }
+
+    handleRegistryToken() async {
+      final bool response =  await dito.user.token.registryToken(dito.user.data.token);
+      if (response) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Evento de notificação solicitado')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('Ocorreu um erro!'),
+              backgroundColor: Colors.redAccent),
+        );
+      }
     }
 
     handlePingToken() async {
-      await dito.user.token.pingToken(dito.user.data.token);
+      final bool response = await dito.user.token.pingToken(dito.user.data.token);
+      if (response) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Evento de notificação solicitado')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('Ocorreu um erro!'),
+              backgroundColor: Colors.redAccent),
+        );
+      }
     }
 
     return Form(
@@ -191,7 +228,7 @@ class AppFormState extends State<AppForm> {
                   child: Column(children: [
                     FilledButton(
                       onPressed: handleIdentify,
-                      child: const Text('Registrar usuário'),
+                      child: const Text('Alterar cadastro'),
                     ),
                     FilledButton(
                       onPressed: handleLogin,
@@ -214,12 +251,16 @@ class AppFormState extends State<AppForm> {
                       child: const Text('Registrar evento de Entrega'),
                     ),
                     FilledButton(
+                      onPressed: handleRegistryToken,
+                      child: const Text('Registrar token'),
+                    ),
+                    FilledButton(
                       onPressed: handleDeleteToken,
                       child: const Text('Deletar token'),
                     ),
                     FilledButton(
                       onPressed: handlePingToken,
-                      child: const Text('Ping token'),
+                      child: const Text('Validar token'),
                     ),
                   ])))
         ],

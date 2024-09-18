@@ -167,18 +167,17 @@ class NotificationInterface {
   /// or `false` if there was an error.
   Future<bool> received(
       {required String notification,
-        required String identifier,
-        String? notificationLogId,
-        String? reference,
-        DetailsEntity? details}) async {
+      required String identifier,
+      String? notificationLogId,
+      String? reference,
+      DetailsEntity? details}) async {
     try {
       return await _repository.received(NotificationEntity(
           reference: reference,
           identifier: identifier,
           notification: notification,
           notificationLogId: notificationLogId,
-          details: details
-      ));
+          details: details));
     } catch (e) {
       if (kDebugMode) {
         print('Error tracking click event: $e'); // Log the error in debug mode.
@@ -193,21 +192,27 @@ class NotificationInterface {
   /// [identifier] - A unique identifier for the notification.
   /// [reference] - A reference to the notification.
   /// [details] - The DetailsEntity content.
+  /// [createdAt] - The navigation event creation time, defaults to the current UTC time if not provided.
   /// Returns a `Future<bool>` that completes with `true` if the event was tracked successfully,
   /// or `false` if there was an error.
   Future<bool> click(
       {required String notification,
-        required String identifier,
-        String? reference,
-        String? notificationLogId,
-        DetailsEntity? details}) async {
+      required String identifier,
+      String? reference,
+      String? notificationLogId, 
+      String? createdAt,
+      DetailsEntity? details}) async {
     try {
+      DateTime localDateTime = DateTime.now();
+      DateTime utcDateTime = localDateTime.toUtc();
+      
       return await _repository.click(NotificationEntity(
-          identifier: identifier,
-          notification: notification,
-          reference: reference,
-          notificationLogId: notificationLogId,
-          details: details,
+        identifier: identifier,
+        notification: notification,
+        reference: reference,
+        notificationLogId: notificationLogId,
+        details: details,
+        createdAt: createdAt ?? utcDateTime.toIso8601String(), // Default to current UTC time if not provided.
       ));
     } catch (e) {
       if (kDebugMode) {

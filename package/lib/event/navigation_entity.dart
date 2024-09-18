@@ -2,12 +2,13 @@ import 'dart:convert';
 
 class NavigationEntity {
   String pageName;
-  String createdAt;
+  String? createdAt;
   Map<String, dynamic>? customData;
+
 
   NavigationEntity({
     required this.pageName,
-    required this.createdAt,
+    this.createdAt,
     this.customData,
   });
 
@@ -23,7 +24,7 @@ class NavigationEntity {
   Map<String, dynamic> toJson() {
     return {
       'pageName': pageName,
-      'created_at': createdAt,
+      'createdAt': createdAt,
       'data': customData,
     };
   }

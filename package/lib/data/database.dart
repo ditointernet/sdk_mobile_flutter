@@ -68,7 +68,6 @@ class LocalDatabase {
         CREATE TABLE events (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           name TEXT,
-          type INT,
           event TEXT,
           createdAt TEXT
         );

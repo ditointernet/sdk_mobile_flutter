@@ -24,6 +24,7 @@ class NotificationEntity {
   final String? reference;
   final String? notificationLogId;
   final DetailsEntity? details;
+  final String? createdAt;
 
   NotificationEntity({
     required this.identifier,
@@ -31,6 +32,7 @@ class NotificationEntity {
     this.reference,
     this.notificationLogId,
     this.details,
+    this.createdAt,
   });
 
   factory NotificationEntity.fromMap(dynamic json) {
@@ -56,6 +58,7 @@ class NotificationEntity {
         notification: json["data"]["notification"],
         notificationLogId: json["data"]["notification_log_id"],
         identifier: json["data"]["user_id"],
+        createdAt: json["data"]["createdAt"],
         details: details);
   }
 
@@ -67,6 +70,7 @@ class NotificationEntity {
       notification: json["notification"],
       notificationLogId: json["notificationLogId"],
       identifier: json["identifier"],
+      createdAt: json["createdAt"],
       details: DetailsEntity.fromJson(json["details"]),
     );
   }
@@ -76,7 +80,8 @@ class NotificationEntity {
         'identifier': identifier,
         'notification': notification,
         'notificationLogId': notificationLogId,
-        'details': details
+        'details': details,
+        'createdAt': createdAt,
       };
 }
 

@@ -90,6 +90,7 @@ interface class UserInterface {
       // Identify the user in the repository and verify any pending events.
       final resultIdentify = await _repository.identify(user);
       await _eventRepository.verifyPendingEvents();
+      await token.verifyPendingEvents();
 
       return resultIdentify;
     } catch (e) {

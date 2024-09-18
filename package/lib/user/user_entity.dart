@@ -40,6 +40,7 @@ class UserEntity {
         email: map['email'],
         gender: map['gender'],
         birthday: map['birthday'],
+        token: map['token'],
         address: map['address'],
         customData: map['customData'] != null
             ? (json.decode(map['customData']) as Map<String, dynamic>)
@@ -55,6 +56,7 @@ class UserEntity {
       'email': email,
       'gender': gender,
       'birthday': birthday,
+      'token': token,
       'address': address != null ? jsonEncode(address) : null,
       'data': customData != null ? jsonEncode(customData) : null,
     };

@@ -7,6 +7,8 @@ import '../data/database.dart';
 import 'event_entity.dart';
 import 'navigation_entity.dart';
 
+enum EventsNames { click, received, navigate, track }
+
 /// EventDatabaseService is a singleton class that provides methods to interact with a SQLite database
 /// for storing and managing events.
 class EventDAO {
@@ -29,17 +31,15 @@ class EventDAO {
   /// [navigation] - The NavigationEntity object to be inserted.
   /// [notification] - The NotificationEntity object to be inserted.
   /// Returns a Future that completes with the row id of the inserted event.
-  Future<bool> create(
+  Future<bool> create(EventsNames eventType,
       {EventEntity? event,
-        NavigationEntity? navigation,
-        NotificationEntity? notification,
-        String? activityType}) async {
+      NavigationEntity? navigation,
+      NotificationEntity? notification}) async {
     try {
       if (event != null) {
         return await _database.insert(_table, {
-              "name": event.action,
+              "name": eventType.name,
               "event": jsonEncode(event.toJson()),
-              "type": 1,
               "createdAt": DateTime.now().toIso8601String()
             }) >
             0;
@@ -47,32 +47,20 @@ class EventDAO {
 
       if (navigation != null) {
         return await _database.insert(_table, {
-              "name": navigation.pageName,
+              "name": eventType.name,
               "event": jsonEncode(navigation.toJson()),
-              "type": 2,
               "createdAt": DateTime.now().toIso8601String()
             }) >
             0;
       }
 
       if (notification != null) {
-        if (activityType == "click") {
-          return await _database.insert(_table, {
-            "name": notification.notification,
-            "event": jsonEncode(notification.toJson()),
-            "type": 3,
-            "createdAt": DateTime.now().toIso8601String()
-          }) >
-              0;
-        } else if (activityType == "received") {
-          return await _database.insert(_table, {
-            "name": notification.notification,
-            "event": jsonEncode(notification.toJson()),
-            "type": 4,
-            "createdAt": DateTime.now().toIso8601String()
-          }) >
-              0;
-        }
+        return await _database.insert(_table, {
+              "name": eventType.name,
+              "event": jsonEncode(notification.toJson()),
+              "createdAt": DateTime.now().toIso8601String()
+            }) >
+            0;
       }
 
       return false;

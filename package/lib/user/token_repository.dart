@@ -11,8 +11,8 @@ import 'user_entity.dart';
 
 class TokenRepository {
   final ApiInterface _api = ApiInterface();
-  final UserDAO _userDAO = UserDAO();
   final UserRepository _userRepository = UserRepository();
+  final UserDAO _userDAO = UserDAO();
 
   UserEntity get _userData => _userRepository.data;
 
@@ -28,14 +28,14 @@ class TokenRepository {
     if (token.isNotEmpty) _userData.token = token;
 
     if (_userData.isNotValid) {
-      return await _userDAO.create(UserEventsNames.registerToken, _userData);
+      return await _userDAO.create(UserEventsNames.registryToken, _userData);
     }
 
     final activities = [ApiActivities().registryToken(_userData.token!)];
     final result = await _api.createRequest(activities).call();
 
     if (!result) {
-      return await _userDAO.create(UserEventsNames.registerToken, _userData);
+      return await _userDAO.create(UserEventsNames.registryToken, _userData);
     }
 
     return result;
@@ -100,17 +100,17 @@ class TokenRepository {
       List<Activity> activities = [];
 
       for (final event in events) {
-        final eventName = event["eventName"] as UserEventsNames;
+        final eventName = event["name"] as String;
         final user = UserEntity.fromMap(jsonDecode(event["user"] as String));
 
         switch (eventName) {
-          case UserEventsNames.registerToken:
+          case 'registryToken':
             activities.add(ApiActivities().registryToken(user.token!));
             break;
-          case UserEventsNames.removeToken:
+          case 'removeToken':
             activities.add(ApiActivities().removeToken(user.token!));
             break;
-          case UserEventsNames.pingToken:
+          case 'pingToken':
             activities.add(ApiActivities().pingToken(user.token!));
             break;
           default:
@@ -118,7 +118,7 @@ class TokenRepository {
         }
       }
 
-      await _api.createRequest(activities).call;
+      await _api.createRequest(activities).call();
       await _userDAO.clearDatabase();
     } catch (e) {
       if (kDebugMode) {

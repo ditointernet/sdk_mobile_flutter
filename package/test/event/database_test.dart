@@ -25,7 +25,7 @@ void main() {
         customData: {'key': 'value'},
       );
 
-      final success = await eventDAO.create(event: event);
+      final success = await eventDAO.create(EventsNames.track, event: event);
 
       expect(success, true);
 
@@ -42,7 +42,7 @@ void main() {
         customData: {'key': 'value'},
       );
 
-      await eventDAO.create(event: event);
+      await eventDAO.create(EventsNames.track, event: event);
       await eventDAO.clearDatabase();
 
       final events = await eventDAO.fetchAll();
@@ -64,8 +64,8 @@ void main() {
         customData: {'key': 'value2'},
       );
 
-      await eventDAO.create(event: event1);
-      await eventDAO.create(event: event2);
+      await eventDAO.create(EventsNames.track, event: event1);
+      await eventDAO.create(EventsNames.track, event: event2);
 
       final events = await eventDAO.fetchAll();
 

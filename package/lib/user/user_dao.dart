@@ -5,13 +5,7 @@ import 'package:flutter/foundation.dart';
 import '../data/database.dart';
 import 'user_entity.dart';
 
-enum UserEventsNames {
-  login,
-  identify,
-  registerToken,
-  pingToken,
-  removeToken
-}
+enum UserEventsNames { login, identify, registryToken, pingToken, removeToken }
 
 /// EventDatabaseService is a singleton class that provides methods to interact with a SQLite database
 /// for storing and managing notification.
@@ -36,9 +30,8 @@ class UserDAO {
   Future<bool> create(UserEventsNames event, UserEntity user) async {
     try {
       return await _database.insert(_dataTable!, {
-            "name": event,
+            "name": event.name,
             "user": jsonEncode(user.toJson()),
-            "createdAt": DateTime.timestamp()
           }) >
           0;
     } catch (e) {

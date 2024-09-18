@@ -43,7 +43,7 @@ class UserRepository {
       throw Exception('User registration id (userID) is required');
     }
 
-    final activities = [ApiActivities().identify(), ApiActivities().registryToken(user!.token!)];
+    final activities = [ApiActivities().identify()];
     return await _api.createRequest(activities).call();
   }
 
@@ -56,7 +56,7 @@ class UserRepository {
       throw Exception('User id (userID) is required');
     }
 
-    final activities = [ApiActivities().login(), ApiActivities().registryToken(user!.token!)];
+    final activities = [ApiActivities().login()];
     return await _api.createRequest(activities).call();
   }
 }
