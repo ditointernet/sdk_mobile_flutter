@@ -94,7 +94,6 @@ class EventRepository {
       return await _database.clearDatabase();
     } catch (e) {
       if (kDebugMode) {
-        await _database.clearDatabase();
         print('Error verifying pending events on notification: $e');
       }
       rethrow;
