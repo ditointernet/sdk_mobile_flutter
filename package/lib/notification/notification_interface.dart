@@ -105,6 +105,7 @@ class NotificationInterface {
 
       // Mark the notification as received in the repository.
       await _repository.received(NotificationEntity(
+					contactId: receivedNotification.contactId,
           reference: receivedNotification.reference,
           identifier: receivedNotification.identifier,
           notification: receivedNotification.notification));
@@ -120,7 +121,8 @@ class NotificationInterface {
       final notification = NotificationEntity(
           notification: data["notification"],
           identifier: data["identifier"]!,
-          reference: data["reference"]);
+          reference: data["reference"],
+					contatId: message.messageId);
 
       // Mark the notification as clicked in the repository.
       await _repository.click(notification);
@@ -162,6 +164,7 @@ class NotificationInterface {
   /// [notification] - The notification content.
   /// [identifier] - A unique identifier for the notification.
   /// [reference] - A reference to the notification.
+  /// [contactId] - The ID for this contact message, usually is the Firebase RemoteMessage.messageId.
   /// [details] - The DetailsEntity content.
   /// Returns a `Future<bool>` that completes with `true` if the event was tracked successfully,
   /// or `false` if there was an error.
@@ -170,10 +173,12 @@ class NotificationInterface {
       required String identifier,
       String? notificationLogId,
       String? reference,
+			String? contactId,
       DetailsEntity? details}) async {
     try {
       return await _repository.received(NotificationEntity(
           reference: reference,
+					contactId: contactId,
           identifier: identifier,
           notification: notification,
           notificationLogId: notificationLogId,
@@ -191,6 +196,7 @@ class NotificationInterface {
   /// [notification] - The notification content.
   /// [identifier] - A unique identifier for the notification.
   /// [reference] - A reference to the notification.
+  /// [contactId] - The ID for this contact message, usually is the Firebase RemoteMessage.messageId.
   /// [details] - The DetailsEntity content.
   /// [createdAt] - The navigation event creation time, defaults to the current UTC time if not provided.
   /// Returns a `Future<bool>` that completes with `true` if the event was tracked successfully,
@@ -199,6 +205,7 @@ class NotificationInterface {
       {required String notification,
       required String identifier,
       String? reference,
+			String? contactId,
       String? notificationLogId, 
       String? createdAt,
       DetailsEntity? details}) async {
@@ -207,6 +214,7 @@ class NotificationInterface {
       DateTime utcDateTime = localDateTime.toUtc();
       
       return await _repository.click(NotificationEntity(
+				contactId: contactId,
         identifier: identifier,
         notification: notification,
         reference: reference,

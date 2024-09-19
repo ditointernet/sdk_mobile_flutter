@@ -184,7 +184,8 @@ class ApiActivities {
       ..trackPushClick = (rpcAPI.Activity_TrackPushClickActivity()
         ..notification = (rpcAPI.NotificationInfo()
           ..notificationId = notification.notification
-          ..dispatchId = notification.identifier)
+          ..dispatchId = notification.identifier
+					..contactId = notification.contactId)
         ..utmSource = 'source');
   }
 
@@ -199,7 +200,8 @@ class ApiActivities {
       ..trackPushReceipt = (rpcAPI.Activity_TrackPushReceiptActivity()
         ..notification = (rpcAPI.NotificationInfo()
           ..notificationId = notification.notification
-          ..dispatchId = notification.identifier)
+          ..dispatchId = notification.identifier
+					..contactId = notification.contactId)
         ..utmSource = 'source');
   }
 

@@ -19,6 +19,7 @@ class DetailsEntity {
 }
 
 class NotificationEntity {
+	final String contactId;
   final String notification;
   final String identifier;
   final String? reference;
@@ -54,6 +55,7 @@ class NotificationEntity {
     final DetailsEntity details = DetailsEntity(title, message, link, image);
 
     return NotificationEntity(
+				contactId: json["messageId"],
         reference: json["data"]["reference"],
         notification: json["data"]["notification"],
         notificationLogId: json["data"]["notification_log_id"],
@@ -76,6 +78,7 @@ class NotificationEntity {
   }
 
   Map<String, dynamic> toJson() => {
+				'contactId': contactId,
         'reference': reference,
         'identifier': identifier,
         'notification': notification,
