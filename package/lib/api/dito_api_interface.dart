@@ -185,7 +185,7 @@ class ApiActivities {
         ..notification = (rpcAPI.NotificationInfo()
           ..notificationId = notification.notification
           ..dispatchId = notification.identifier
-					..contactId = notification.contactId)
+					..contactId = notification.contactId ?? "")
         ..utmSource = 'source');
   }
 
@@ -201,7 +201,7 @@ class ApiActivities {
         ..notification = (rpcAPI.NotificationInfo()
           ..notificationId = notification.notification
           ..dispatchId = notification.identifier
-					..contactId = notification.contactId)
+					..contactId = notification.contactId ?? "")
         ..utmSource = 'source');
   }
 

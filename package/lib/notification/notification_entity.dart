@@ -19,10 +19,10 @@ class DetailsEntity {
 }
 
 class NotificationEntity {
-	final String contactId;
   final String notification;
   final String identifier;
   final String? reference;
+  final String? contactId;
   final String? notificationLogId;
   final DetailsEntity? details;
   final String? createdAt;
@@ -31,6 +31,7 @@ class NotificationEntity {
     required this.identifier,
     required this.notification,
     this.reference,
+    this.contactId,
     this.notificationLogId,
     this.details,
     this.createdAt,
@@ -69,6 +70,7 @@ class NotificationEntity {
 
     return NotificationEntity(
       reference: json["reference"],
+      contactId: json["contactId"],
       notification: json["notification"],
       notificationLogId: json["notificationLogId"],
       identifier: json["identifier"],

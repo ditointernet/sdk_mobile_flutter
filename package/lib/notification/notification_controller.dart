@@ -9,7 +9,7 @@ import 'notification_entity.dart';
 
 class NotificationController {
   late FlutterLocalNotificationsPlugin localNotificationsPlugin;
-  Function(RemoteMessage)? _selectNotification;
+  Function(NotificationEntity)? _selectNotification;
 
   /// Android-specific notification details.
   AndroidNotificationDetails androidNotificationDetails =
@@ -45,7 +45,7 @@ class NotificationController {
   ///
   /// [onSelectNotification] - Callback function to handle notification selection.
   Future<void> initialize(
-      Function(RemoteMessage) selectNotification) async {
+      Function(NotificationEntity) selectNotification) async {
     _selectNotification = selectNotification;
     localNotificationsPlugin = FlutterLocalNotificationsPlugin();
 
@@ -94,10 +94,11 @@ class NotificationController {
       displayInfo.id, // Notification ID.
       displayInfo.title, // Notification title.
       displayInfo.body, // Notification body.
+
       NotificationDetails(
           android: androidNotificationDetails, iOS: darwinNotificationDetails),
       payload:
-          jsonEncode(notification.details?.toJson()), // Notification payload.
+          jsonEncode(notification.toJson()), // Notification payload.
     );
   }
 
@@ -108,7 +109,7 @@ class NotificationController {
     final payload = response?.payload;
 
     if (payload != null && payload.isNotEmpty) {
-      if (_selectNotification != null) _selectNotification!(jsonDecode(payload) as RemoteMessage);
+      if (_selectNotification != null) _selectNotification!(NotificationEntity.fromPayload(jsonDecode(payload)));
     }
   }
 }

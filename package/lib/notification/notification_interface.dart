@@ -15,7 +15,7 @@ import 'notification_repository.dart';
 /// and listening for notification events. It integrates with Firebase Messaging and custom notification flows.
 class NotificationInterface {
   /// Callback to be invoked when a notification is clicked.
-  late void Function(RemoteMessage message) onMessageClick;
+  late void Function(NotificationEntity message) onMessageClick;
 
   /// Notification repository to manage notification-related data.
   final NotificationRepository _repository = NotificationRepository();
@@ -113,22 +113,15 @@ class NotificationInterface {
 
     // Listen for selected notifications (e.g., when a user taps on a notification).
     _repository.selectNotificationStream.stream
-        .listen((RemoteMessage message) async {
+        .listen((NotificationEntity notification) async {
       // Trigger a click event in the notification events system.
-      _notificationEvents.stream.fire(MessageClickedEvent(message));
-
-      final data = message.data;
-      final notification = NotificationEntity(
-          notification: data["notification"],
-          identifier: data["identifier"]!,
-          reference: data["reference"],
-					contatId: message.messageId);
+      _notificationEvents.stream.fire(MessageClickedEvent(notification));
 
       // Mark the notification as clicked in the repository.
       await _repository.click(notification);
 
       // Trigger the onMessageClick callback when the notification is selected.
-      onMessageClick(message);
+      onMessageClick(notification);
     });
   }
 
@@ -241,7 +234,7 @@ class NotificationInterface {
   /// Handles notification selection events and triggers appropriate actions.
   ///
   /// [message] - The selected [RemoteMessage] from Firebase.
-  void onSelectNotification(RemoteMessage message) {
+  void onSelectNotification(NotificationEntity message) {
     _repository.selectNotificationStream.add(message);
   }
 }

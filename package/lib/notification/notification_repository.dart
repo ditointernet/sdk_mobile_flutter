@@ -17,8 +17,8 @@ class NotificationRepository {
       StreamController<NotificationEntity>.broadcast();
 
   /// The broadcast stream for selected notifications
-  final StreamController<RemoteMessage> selectNotificationStream =
-      StreamController<RemoteMessage>.broadcast();
+  final StreamController<NotificationEntity> selectNotificationStream =
+      StreamController<NotificationEntity>.broadcast();
 
   /// This method send a notify click on push event to Dito
   ///
