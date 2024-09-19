@@ -118,6 +118,7 @@ class TokenRepository {
         }
       }
 
+      // verificar se tem atividades antes de realizar a request
       await _api.createRequest(activities).call();
       await _userDAO.clearDatabase();
     } catch (e) {

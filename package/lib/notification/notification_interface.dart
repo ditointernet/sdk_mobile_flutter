@@ -15,7 +15,7 @@ import 'notification_repository.dart';
 /// and listening for notification events. It integrates with Firebase Messaging and custom notification flows.
 class NotificationInterface {
   /// Callback to be invoked when a notification is clicked.
-  late void Function(RemoteMessage message) onMessageClick;
+  late void Function(NotificationEntity message) onMessageClick;
 
   /// Notification repository to manage notification-related data.
   final NotificationRepository _repository = NotificationRepository();
@@ -105,6 +105,7 @@ class NotificationInterface {
 
       // Mark the notification as received in the repository.
       await _repository.received(NotificationEntity(
+					contactId: receivedNotification.contactId,
           reference: receivedNotification.reference,
           identifier: receivedNotification.identifier,
           notification: receivedNotification.notification));
@@ -112,21 +113,15 @@ class NotificationInterface {
 
     // Listen for selected notifications (e.g., when a user taps on a notification).
     _repository.selectNotificationStream.stream
-        .listen((RemoteMessage message) async {
+        .listen((NotificationEntity notification) async {
       // Trigger a click event in the notification events system.
-      _notificationEvents.stream.fire(MessageClickedEvent(message));
-
-      final data = message.data;
-      final notification = NotificationEntity(
-          notification: data["notification"],
-          identifier: data["identifier"]!,
-          reference: data["reference"]);
+      _notificationEvents.stream.fire(MessageClickedEvent(notification));
 
       // Mark the notification as clicked in the repository.
       await _repository.click(notification);
 
       // Trigger the onMessageClick callback when the notification is selected.
-      onMessageClick(message);
+      onMessageClick(notification);
     });
   }
 
@@ -162,6 +157,7 @@ class NotificationInterface {
   /// [notification] - The notification content.
   /// [identifier] - A unique identifier for the notification.
   /// [reference] - A reference to the notification.
+  /// [contactId] - The ID for this contact message, usually is the Firebase RemoteMessage.messageId.
   /// [details] - The DetailsEntity content.
   /// Returns a `Future<bool>` that completes with `true` if the event was tracked successfully,
   /// or `false` if there was an error.
@@ -170,10 +166,12 @@ class NotificationInterface {
       required String identifier,
       String? notificationLogId,
       String? reference,
+			String? contactId,
       DetailsEntity? details}) async {
     try {
       return await _repository.received(NotificationEntity(
           reference: reference,
+					contactId: contactId,
           identifier: identifier,
           notification: notification,
           notificationLogId: notificationLogId,
@@ -191,6 +189,7 @@ class NotificationInterface {
   /// [notification] - The notification content.
   /// [identifier] - A unique identifier for the notification.
   /// [reference] - A reference to the notification.
+  /// [contactId] - The ID for this contact message, usually is the Firebase RemoteMessage.messageId.
   /// [details] - The DetailsEntity content.
   /// [createdAt] - The navigation event creation time, defaults to the current UTC time if not provided.
   /// Returns a `Future<bool>` that completes with `true` if the event was tracked successfully,
@@ -199,6 +198,7 @@ class NotificationInterface {
       {required String notification,
       required String identifier,
       String? reference,
+			String? contactId,
       String? notificationLogId, 
       String? createdAt,
       DetailsEntity? details}) async {
@@ -207,6 +207,7 @@ class NotificationInterface {
       DateTime utcDateTime = localDateTime.toUtc();
       
       return await _repository.click(NotificationEntity(
+				contactId: contactId,
         identifier: identifier,
         notification: notification,
         reference: reference,
@@ -233,7 +234,7 @@ class NotificationInterface {
   /// Handles notification selection events and triggers appropriate actions.
   ///
   /// [message] - The selected [RemoteMessage] from Firebase.
-  void onSelectNotification(RemoteMessage message) {
+  void onSelectNotification(NotificationEntity message) {
     _repository.selectNotificationStream.add(message);
   }
 }
