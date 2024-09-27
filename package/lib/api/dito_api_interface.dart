@@ -10,7 +10,7 @@ import '../proto/google/protobuf/timestamp.pb.dart';
 import '../user/user_interface.dart';
 import '../utils/sha1.dart';
 
-const url = 'http://10.0.2.2:8080/connect.sdk_api.v1.SDKService/Activity';
+const url = 'https://sdk.dito.com.br/connect.sdk_api.v1.SDKService/Activity';
 
 class AppInfoEntity {
   String? build;
