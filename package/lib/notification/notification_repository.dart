@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:uuid/uuid.dart';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 
@@ -24,14 +25,16 @@ class NotificationRepository {
   ///
   /// [notification] - Notification object.
   Future<bool> click(NotificationEntity notification) async {
+    final uuid = Uuid().v4();
+
     // If the user is not registered, save the event to the local database
     if (_userRepository.data.isNotValid) {
-      return await _database.create(EventsNames.click,
+      return await _database.create(EventsNames.click, uuid,
           notification: notification);
     }
 
     // Otherwise, send the event to the Dito API
-    final activities = [ApiActivities().notificationClick(notification)];
+    final activities = [ApiActivities().notificationClick(notification, uuid: uuid)];
 
     return await _api.createRequest(activities).call();
   }
@@ -40,14 +43,16 @@ class NotificationRepository {
   ///
   /// [notification] - Notification object.
   Future<bool> received(NotificationEntity notification) async {
+    final uuid = Uuid().v4();
+
     // If the user is not registered, save the event to the local database
     if (_userRepository.data.isNotValid) {
-      return await _database.create(EventsNames.received,
+      return await _database.create(EventsNames.received, uuid,
           notification: notification);
     }
 
     // Otherwise, send the event to the Dito API
-    final activities = [ApiActivities().notificationReceived(notification)];
+    final activities = [ApiActivities().notificationReceived(notification, uuid: uuid)];
 
     return await _api.createRequest(activities).call();
   }

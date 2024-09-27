@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:uuid/uuid.dart';
 
 import 'package:dito_sdk/notification/notification_entity.dart';
 import 'package:flutter/foundation.dart';
@@ -24,13 +25,15 @@ class EventRepository {
   /// Returns a Future that completes with true if the event was successfully tracked,
   /// or false if an error occurred.
   Future<bool> track(EventEntity event) async {
+    final uuid = Uuid().v4();
+
     // If the user is not registered, save the event to the local database
     if (_userRepository.data.isNotValid) {
-      return await _database.create(EventsNames.track, event: event);
+      return await _database.create(EventsNames.track, uuid, event: event);
     }
 
     // Otherwise, send the event to the Dito API
-    final activities = [ApiActivities().trackEvent(event)];
+    final activities = [ApiActivities().trackEvent(event, uuid: uuid)];
 
     return await _api.createRequest(activities).call();
   }
@@ -42,14 +45,16 @@ class EventRepository {
   /// Returns a Future that completes with true if the event was successfully tracked,
   /// or false if an error occurred.
   Future<bool> navigate(NavigationEntity navigation) async {
+    final uuid = Uuid().v4();
+
     // If the user is not registered, save the event to the local database
     if (_userRepository.data.isNotValid) {
-      return await _database.create(EventsNames.navigate,
+      return await _database.create(EventsNames.navigate, uuid,
           navigation: navigation);
     }
 
     // Otherwise, send the event to the Dito API
-    final activities = [ApiActivities().trackNavigation(navigation)];
+    final activities = [ApiActivities().trackNavigation(navigation, uuid: uuid)];
 
     return await _api.createRequest(activities).call();
   }
@@ -64,33 +69,39 @@ class EventRepository {
 
       for (final row in rows) {
         final eventName = row["name"];
+        final uuid = row["uuid"] as String? ?? null;
+        final time = row["createdAt"] as String? ?? null;
+
         switch (eventName) {
           case 'track':
             final event =
                 EventEntity.fromMap(jsonDecode(row["event"] as String));
-            activities.add(ApiActivities().trackEvent(event));
+            activities.add(ApiActivities().trackEvent(event, uuid: uuid, time: time));
             break;
           case 'received':
             final event =
                 NotificationEntity.fromMap(jsonDecode(row["event"] as String));
-            activities.add(ApiActivities().notificationReceived(event));
+            activities.add(ApiActivities().notificationReceived(event, uuid: uuid, time: time));
             break;
           case 'click':
             final event =
                 NotificationEntity.fromMap(jsonDecode(row["event"] as String));
-            activities.add(ApiActivities().notificationClick(event));
+            activities.add(ApiActivities().notificationClick(event, uuid: uuid, time: time));
             break;
           case 'navigate':
             final event =
                 NavigationEntity.fromMap(jsonDecode(row["event"] as String));
-            activities.add(ApiActivities().trackNavigation(event));
+            activities.add(ApiActivities().trackNavigation(event, uuid: uuid, time: time));
             break;
           default:
             break;
         }
       }
 
-      await _api.createRequest(activities).call();
+      if (activities.isNotEmpty) {
+        await _api.createRequest(activities).call();
+      }
+
       return await _database.clearDatabase();
     } catch (e) {
       if (kDebugMode) {

@@ -69,6 +69,7 @@ class LocalDatabase {
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           name TEXT,
           event TEXT,
+          uuid TEXT,
           createdAt TEXT
         );
       ''');
@@ -77,6 +78,7 @@ class LocalDatabase {
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           name TEXT,
           user TEXT,
+          uuid TEXT,
           createdAt TEXT
         );
       ''');

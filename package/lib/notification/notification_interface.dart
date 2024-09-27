@@ -33,7 +33,7 @@ class NotificationInterface {
   bool initialized = false;
 
   /// Retrieves the current Firebase Messaging token.
-  get token => FirebaseMessaging.instance.getToken();
+  Future<String?> get token async => await FirebaseMessaging.instance.getToken();
 
   /// Initializes the notification interface, including Firebase Messaging,
   /// setting up token management, and listening for notification events.
@@ -105,9 +105,10 @@ class NotificationInterface {
 
       // Mark the notification as received in the repository.
       await _repository.received(NotificationEntity(
-          reference: receivedNotification.reference,
-          identifier: receivedNotification.identifier,
-          notification: receivedNotification.notification));
+          notification: receivedNotification.notification,
+          notificationLogId: receivedNotification.notificationLogId,
+          contactId: receivedNotification.contactId,
+          name: receivedNotification.name));
     });
 
     // Listen for selected notifications (e.g., when a user taps on a notification).
@@ -119,8 +120,9 @@ class NotificationInterface {
       final data = message.data;
       final notification = NotificationEntity(
           notification: data["notification"],
-          identifier: data["identifier"]!,
-          reference: data["reference"]);
+          notificationLogId: data["notificationLogId"]!,
+          contactId: data["contactId"],
+          name: data["name"]);
 
       // Mark the notification as clicked in the repository.
       await _repository.click(notification);
@@ -159,25 +161,23 @@ class NotificationInterface {
 
   /// Marks a notification as received in the repository.
   ///
-  /// [notification] - The notification content.
-  /// [identifier] - A unique identifier for the notification.
-  /// [reference] - A reference to the notification.
-  /// [details] - The DetailsEntity content.
+  /// [notification] - The notification identifier.
+  /// [notificationLogId] - The dispatch identifier.
+  /// [contactId] - The contact identifier.
+  /// [name] - The name of notification.
   /// Returns a `Future<bool>` that completes with `true` if the event was tracked successfully,
   /// or `false` if there was an error.
   Future<bool> received(
       {required String notification,
-      required String identifier,
       String? notificationLogId,
-      String? reference,
-      DetailsEntity? details}) async {
+      String? contactId,
+      String? name}) async {
     try {
       return await _repository.received(NotificationEntity(
-          reference: reference,
-          identifier: identifier,
           notification: notification,
           notificationLogId: notificationLogId,
-          details: details));
+          contactId: contactId,
+          name: name));
     } catch (e) {
       if (kDebugMode) {
         print('Error tracking click event: $e'); // Log the error in debug mode.
@@ -188,30 +188,28 @@ class NotificationInterface {
 
   /// Marks a notification as clicked in the repository.
   ///
-  /// [notification] - The notification content.
-  /// [identifier] - A unique identifier for the notification.
-  /// [reference] - A reference to the notification.
-  /// [details] - The DetailsEntity content.
+  /// [notification] - The notification identifier.
+  /// [notificationLogId] - The dispatch identifier.
+  /// [contactId] - The contact identifier.
+  /// [name] - The name of notification.
   /// [createdAt] - The navigation event creation time, defaults to the current UTC time if not provided.
   /// Returns a `Future<bool>` that completes with `true` if the event was tracked successfully,
   /// or `false` if there was an error.
   Future<bool> click(
       {required String notification,
-      required String identifier,
-      String? reference,
-      String? notificationLogId, 
-      String? createdAt,
-      DetailsEntity? details}) async {
+      String? notificationLogId,
+      String? contactId,
+      String? name,
+      String? createdAt}) async {
     try {
       DateTime localDateTime = DateTime.now();
       DateTime utcDateTime = localDateTime.toUtc();
       
       return await _repository.click(NotificationEntity(
-        identifier: identifier,
         notification: notification,
-        reference: reference,
         notificationLogId: notificationLogId,
-        details: details,
+        contactId: contactId,
+        name: name,
         createdAt: createdAt ?? utcDateTime.toIso8601String(), // Default to current UTC time if not provided.
       ));
     } catch (e) {

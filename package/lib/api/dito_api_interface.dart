@@ -1,5 +1,6 @@
 import 'package:http/http.dart' as http;
 import 'package:uuid/uuid.dart';
+import 'dart:io';
 
 import '../event/event_entity.dart';
 import '../event/navigation_entity.dart';
@@ -9,7 +10,7 @@ import '../proto/google/protobuf/timestamp.pb.dart';
 import '../user/user_interface.dart';
 import '../utils/sha1.dart';
 
-const url = 'http://10.0.2.2:3000/connect.sdk_api.v1.SDKService/Activity';
+const url = 'http://10.0.2.2:8080/connect.sdk_api.v1.SDKService/Activity';
 
 class AppInfoEntity {
   String? build;
@@ -33,8 +34,16 @@ class ApiActivities {
   final UserInterface _userInterface = UserInterface();
   final AppInfo _appInfo = AppInfo();
 
+  rpcAPI.DeviceOs _getPlatform() {
+    if (Platform.isIOS) {
+      return rpcAPI.DeviceOs.DEVICE_OS_IOS;
+    } else {
+      return rpcAPI.DeviceOs.DEVICE_OS_ANDROID;
+    }
+  }
+
   rpcAPI.DeviceInfo get deviceToken => rpcAPI.DeviceInfo()
-    ..os = rpcAPI.DeviceOs.DEVICE_OS_ANDROID
+    ..os = _getPlatform()
     ..token = _userInterface.data.token!;
 
   rpcAPI.SDKInfo get sdkInfo => rpcAPI.SDKInfo()
@@ -71,9 +80,27 @@ class ApiActivities {
       user.birthday = _userInterface.data.birthday!;
     }
 
+    if (_userInterface.data.phone != null &&
+        _userInterface.data.phone!.isNotEmpty) {
+      user.phone = _userInterface.data.phone!;
+    }
+
     if (_userInterface.data.gender != null &&
         _userInterface.data.gender!.isNotEmpty) {
       user.gender = _userInterface.data.gender!;
+    }
+
+    if (_userInterface.data.cpf != null && _userInterface.data.cpf!.isNotEmpty) {
+      user.customData['cpf'] = rpcAPI.UserInfo_CustomData(format: 'string', value: _userInterface.data.cpf);
+    }
+
+    if (_userInterface.data.customData != null && _userInterface.data.customData!.isNotEmpty) {
+      user.customData.addAll(
+        _userInterface.data.customData!.map((key, value) {
+          final customDataValue = rpcAPI.UserInfo_CustomData(format: 'string', value: value);
+          return MapEntry(key, customDataValue);
+        })
+      );
     }
 
     final addressData = _userInterface.data.address;
@@ -118,35 +145,41 @@ class ApiActivities {
     return user;
   }
 
-  rpcAPI.Activity identify() {
-    const uuid = Uuid();
-    final now = Timestamp.fromDateTime(DateTime.now());
+  rpcAPI.Activity identify({String? uuid, String? time}) {
+    final generatedUuid = uuid ?? Uuid().v4();
+    final generatedTime = time != null 
+      ? Timestamp.fromDateTime(DateTime.parse(time))
+      : Timestamp.fromDateTime(DateTime.now());
 
     return rpcAPI.Activity()
-      ..timestamp = now
-      ..id = uuid.v4()
+      ..timestamp = generatedTime
+      ..id = generatedUuid
       ..type = rpcAPI.ActivityType.ACTIVITY_IDENTIFY
       ..userData = rpcAPI.Activity_UserDataActivity();
   }
 
-  rpcAPI.Activity login() {
-    const uuid = Uuid();
-    final now = Timestamp.fromDateTime(DateTime.now());
+  rpcAPI.Activity login({String? uuid, String? time}) {
+    final generatedUuid = uuid ?? Uuid().v4();
+    final generatedTime = time != null 
+      ? Timestamp.fromDateTime(DateTime.parse(time))
+      : Timestamp.fromDateTime(DateTime.now());
 
     return rpcAPI.Activity()
-      ..timestamp = now
-      ..id = uuid.v4()
+      ..timestamp = generatedTime
+      ..id = generatedUuid
       ..type = rpcAPI.ActivityType.ACTIVITY_TRACK
       ..userLogin = (rpcAPI.Activity_UserLoginActivity()..utmSource = 'source');
   }
 
-  rpcAPI.Activity trackEvent(EventEntity event) {
-    const uuid = Uuid();
-    final now = Timestamp.fromDateTime(DateTime.now());
+  rpcAPI.Activity trackEvent(EventEntity event, {String? uuid, String? time}) {
+    final generatedUuid = uuid ?? Uuid().v4();
+    final generatedTime = time != null 
+      ? Timestamp.fromDateTime(DateTime.parse(time))
+      : Timestamp.fromDateTime(DateTime.now());
 
     return rpcAPI.Activity()
-      ..timestamp = now
-      ..id = uuid.v4()
+      ..timestamp = generatedTime
+      ..id = generatedUuid
       ..type = rpcAPI.ActivityType.ACTIVITY_TRACK
       ..track = (rpcAPI.Activity_TrackActivity()
         ..event = event.action
@@ -158,13 +191,15 @@ class ApiActivities {
             {}));
   }
 
-  rpcAPI.Activity trackNavigation(NavigationEntity navigation) {
-    const uuid = Uuid();
-    final now = Timestamp.fromDateTime(DateTime.now());
+  rpcAPI.Activity trackNavigation(NavigationEntity navigation, {String? uuid, String? time}) {
+    final generatedUuid = uuid ?? Uuid().v4();
+    final generatedTime = time != null 
+      ? Timestamp.fromDateTime(DateTime.parse(time))
+      : Timestamp.fromDateTime(DateTime.now());
 
     return rpcAPI.Activity()
-      ..timestamp = now
-      ..id = uuid.v4()
+      ..timestamp = generatedTime
+      ..id = generatedUuid
       ..type = rpcAPI.ActivityType.ACTIVITY_TRACK
       ..trackNavigation = (rpcAPI.Activity_TrackNavigationActivity()
         ..pageIdentifier = navigation.pageName
@@ -173,69 +208,85 @@ class ApiActivities {
             {}));
   }
 
-  rpcAPI.Activity notificationClick(NotificationEntity notification) {
-    const uuid = Uuid();
-    final now = Timestamp.fromDateTime(DateTime.now());
+  rpcAPI.Activity notificationClick(NotificationEntity notification, {String? uuid, String? time}) {
+    final generatedUuid = uuid ?? Uuid().v4();
+    final generatedTime = time != null 
+      ? Timestamp.fromDateTime(DateTime.parse(time))
+      : Timestamp.fromDateTime(DateTime.now());
 
     return rpcAPI.Activity()
-      ..timestamp = now
-      ..id = uuid.v4()
+      ..timestamp = generatedTime
+      ..id = generatedUuid
       ..type = rpcAPI.ActivityType.ACTIVITY_TRACK
       ..trackPushClick = (rpcAPI.Activity_TrackPushClickActivity()
         ..notification = (rpcAPI.NotificationInfo()
           ..notificationId = notification.notification
-          ..dispatchId = notification.identifier)
+          ..dispatchId = notification.notificationLogId ?? ""
+          ..contactId = notification.contactId ?? ""
+          ..name = notification.name ?? ""
+          ..channel = 'mobile')
         ..utmSource = 'source');
   }
 
-  rpcAPI.Activity notificationReceived(NotificationEntity notification) {
-    const uuid = Uuid();
-    final now = Timestamp.fromDateTime(DateTime.now());
+  rpcAPI.Activity notificationReceived(NotificationEntity notification, {String? uuid, String? time}) {
+    final generatedUuid = uuid ?? Uuid().v4();
+    final generatedTime = time != null 
+      ? Timestamp.fromDateTime(DateTime.parse(time))
+      : Timestamp.fromDateTime(DateTime.now());
 
     return rpcAPI.Activity()
-      ..timestamp = now
-      ..id = uuid.v4()
+      ..timestamp = generatedTime
+      ..id = generatedUuid
       ..type = rpcAPI.ActivityType.ACTIVITY_TRACK
       ..trackPushReceipt = (rpcAPI.Activity_TrackPushReceiptActivity()
         ..notification = (rpcAPI.NotificationInfo()
           ..notificationId = notification.notification
-          ..dispatchId = notification.identifier)
+          ..dispatchId = notification.notificationLogId ?? ""
+          ..contactId = notification.contactId ?? ""
+          ..name = notification.name ?? ""
+          ..channel = 'mobile')
         ..utmSource = 'source');
   }
 
-  rpcAPI.Activity registryToken(String token) {
-    const uuid = Uuid();
-    final now = Timestamp.fromDateTime(DateTime.now());
+  rpcAPI.Activity registryToken(String token, {String? uuid, String? time}) {
+    final generatedUuid = uuid ?? Uuid().v4();
+    final generatedTime = time != null 
+      ? Timestamp.fromDateTime(DateTime.parse(time))
+      : Timestamp.fromDateTime(DateTime.now());
 
     return rpcAPI.Activity()
-      ..timestamp = now
-      ..id = uuid.v4()
+      ..timestamp = generatedTime
+      ..id = generatedUuid
       ..type = rpcAPI.ActivityType.ACTIVITY_REGISTER
       ..tokenRegister = (rpcAPI.Activity_TokenRegisterActivity()
         ..token = token
         ..provider = rpcAPI.PushProvider.PROVIDER_FCM);
   }
 
-  rpcAPI.Activity pingToken(String token) {
-    const uuid = Uuid();
-    final now = Timestamp.fromDateTime(DateTime.now());
+  rpcAPI.Activity pingToken(String token, {String? uuid, String? time}) {
+    final generatedUuid = uuid ?? Uuid().v4();
+    final generatedTime = time != null 
+      ? Timestamp.fromDateTime(DateTime.parse(time))
+      : Timestamp.fromDateTime(DateTime.now());
 
     return rpcAPI.Activity()
-      ..timestamp = now
-      ..id = uuid.v4()
+      ..timestamp = generatedTime
+      ..id = generatedUuid
       ..type = rpcAPI.ActivityType.ACTIVITY_REGISTER
       ..tokenPing = (rpcAPI.Activity_TokenPingActivity()
         ..token = token
         ..provider = rpcAPI.PushProvider.PROVIDER_FCM);
   }
 
-  rpcAPI.Activity removeToken(String token) {
-    const uuid = Uuid();
-    final now = Timestamp.fromDateTime(DateTime.now());
+  rpcAPI.Activity removeToken(String token, {String? uuid, String? time}) {
+    final generatedUuid = uuid ?? Uuid().v4();
+    final generatedTime = time != null 
+      ? Timestamp.fromDateTime(DateTime.parse(time))
+      : Timestamp.fromDateTime(DateTime.now());
 
     return rpcAPI.Activity()
-      ..timestamp = now
-      ..id = uuid.v4()
+      ..timestamp = generatedTime
+      ..id = generatedUuid
       ..type = rpcAPI.ActivityType.ACTIVITY_REGISTER
       ..tokenUnregister = (rpcAPI.Activity_TokenUnregisterActivity()
         ..token = token
