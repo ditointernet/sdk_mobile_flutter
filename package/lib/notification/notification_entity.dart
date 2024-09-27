@@ -66,7 +66,7 @@ class NotificationEntity {
         contactId: json["messageId"],
         reference: json["data"]["reference"],
         userId: json["data"]["user_id"],
-        name: json["data"]["name"],
+        name: json["data"]["notification_name"],
         createdAt: utcDateTime.toIso8601String(),
         details: details);
   }
