@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:uuid/uuid.dart';
 
 import 'package:dito_sdk/user/user_repository.dart';
 import 'package:flutter/foundation.dart';
@@ -34,18 +33,18 @@ class TokenRepository {
 
     if (token.isNotEmpty) _userData.token = token;
 
-    final uuid = Uuid().v4();
+    final activity = ApiActivities().registryToken(_userData.token!);
 
     if (_userData.isNotValid) {
-      return await _userDAO.create(UserEventsNames.registryToken, _userData, uuid);
-    }
-
-    final activities = [ApiActivities().registryToken(_userData.token!, uuid: uuid)];
+      return await _userDAO.create(
+          UserEventsNames.registryToken, _userData, activity.id);
+    }    
 
     try {
-      return await _api.createRequest(activities).call();
+      return await _api.createRequest([activity]).call();
     } catch (e) {
-      return await _userDAO.create(UserEventsNames.registryToken, _userData, uuid);
+      return await _userDAO.create(
+          UserEventsNames.registryToken, _userData, activity.id);
     }
   }
 
@@ -64,18 +63,16 @@ class TokenRepository {
 
     if (token.isNotEmpty) _userData.token = token;
 
-    final uuid = Uuid().v4();
+    final activity = ApiActivities().pingToken(_userData.token!);
 
     if (_userData.isNotValid) {
-      return await _userDAO.create(UserEventsNames.pingToken, _userData, uuid);
-    }
+      return await _userDAO.create(UserEventsNames.pingToken, _userData, activity.id);
+    }    
 
-    final activities = [ApiActivities().pingToken(_userData.token!, uuid: uuid)];
-    
     try {
-      return await _api.createRequest(activities).call();
+      return await _api.createRequest([activity]).call();
     } catch (e) {
-      return await _userDAO.create(UserEventsNames.pingToken, _userData, uuid);
+      return await _userDAO.create(UserEventsNames.pingToken, _userData, activity.id);
     }
   }
 
@@ -87,7 +84,7 @@ class TokenRepository {
     if (token == null || token.isEmpty) {
       token = await _notification.token;
     }
-    
+
     if (token!.isEmpty && _userData.token != null && _userData.token!.isEmpty) {
       throw Exception('User registration token is required');
     }
@@ -98,8 +95,8 @@ class TokenRepository {
 
     if (token.isNotEmpty) _userData.token = token;
 
-    final activities = [ApiActivities().removeToken(_userData.token!)];
-    final result = await _api.createRequest(activities).call();
+    final activity = ApiActivities().removeToken(_userData.token!);
+    final result = await _api.createRequest([activity]).call();
 
     return result;
   }
@@ -120,10 +117,12 @@ class TokenRepository {
 
         switch (eventName) {
           case 'registryToken':
-            activities.add(ApiActivities().registryToken(user.token!, uuid: uuid, time: time));
+            activities.add(ApiActivities()
+                .registryToken(user.token!, uuid: uuid, time: time));
             break;
           case 'pingToken':
-            activities.add(ApiActivities().pingToken(user.token!, uuid: uuid, time: time));
+            activities.add(
+                ApiActivities().pingToken(user.token!, uuid: uuid, time: time));
             break;
           default:
             break;
@@ -133,7 +132,7 @@ class TokenRepository {
       if (activities.isNotEmpty) {
         await _api.createRequest(activities).call();
       }
-      
+
       return await _userDAO.clearDatabase();
     } catch (e) {
       if (kDebugMode) {

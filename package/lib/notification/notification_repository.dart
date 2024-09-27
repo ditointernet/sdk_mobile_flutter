@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:uuid/uuid.dart';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 
@@ -25,35 +24,41 @@ class NotificationRepository {
   ///
   /// [notification] - Notification object.
   Future<bool> click(NotificationEntity notification) async {
-    final uuid = Uuid().v4();
+    final activity = ApiActivities().notificationClick(notification);
 
     // If the user is not registered, save the event to the local database
     if (_userRepository.data.isNotValid) {
-      return await _database.create(EventsNames.click, uuid,
+      return await _database.create(EventsNames.click, activity.id,
           notification: notification);
     }
 
     // Otherwise, send the event to the Dito API
-    final activities = [ApiActivities().notificationClick(notification, uuid: uuid)];
-
-    return await _api.createRequest(activities).call();
+    try {
+      return await _api.createRequest([activity]).call();
+    } catch (e) {
+      return await _database.create(EventsNames.click, activity.id,
+          notification: notification);
+    }
   }
 
   /// This method send a notify received push event to Dito
   ///
   /// [notification] - Notification object.
   Future<bool> received(NotificationEntity notification) async {
-    final uuid = Uuid().v4();
+    final activity = ApiActivities().notificationReceived(notification);
 
     // If the user is not registered, save the event to the local database
     if (_userRepository.data.isNotValid) {
-      return await _database.create(EventsNames.received, uuid,
+      return await _database.create(EventsNames.received, activity.id,
           notification: notification);
     }
 
     // Otherwise, send the event to the Dito API
-    final activities = [ApiActivities().notificationReceived(notification, uuid: uuid)];
-
-    return await _api.createRequest(activities).call();
+    try {
+      return await _api.createRequest([activity]).call();
+    } catch (e) {
+      return await _database.create(EventsNames.received, activity.id,
+          notification: notification);
+    }
   }
 }

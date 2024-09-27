@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:uuid/uuid.dart';
 
 import 'package:dito_sdk/notification/notification_entity.dart';
 import 'package:flutter/foundation.dart';
@@ -25,17 +24,15 @@ class EventRepository {
   /// Returns a Future that completes with true if the event was successfully tracked,
   /// or false if an error occurred.
   Future<bool> track(EventEntity event) async {
-    final uuid = Uuid().v4();
+    final activity = ApiActivities().trackEvent(event);
 
     // If the user is not registered, save the event to the local database
     if (_userRepository.data.isNotValid) {
-      return await _database.create(EventsNames.track, uuid, event: event);
+      return await _database.create(EventsNames.track, activity.id, event: event);
     }
 
     // Otherwise, send the event to the Dito API
-    final activities = [ApiActivities().trackEvent(event, uuid: uuid)];
-
-    return await _api.createRequest(activities).call();
+    return await _api.createRequest([activity]).call();
   }
 
   /// Tracks an event by saving it to the local database if the user is not registered,
@@ -45,18 +42,16 @@ class EventRepository {
   /// Returns a Future that completes with true if the event was successfully tracked,
   /// or false if an error occurred.
   Future<bool> navigate(NavigationEntity navigation) async {
-    final uuid = Uuid().v4();
+    final activity = ApiActivities().trackNavigation(navigation);
 
     // If the user is not registered, save the event to the local database
     if (_userRepository.data.isNotValid) {
-      return await _database.create(EventsNames.navigate, uuid,
+      return await _database.create(EventsNames.navigate, activity.id,
           navigation: navigation);
     }
 
     // Otherwise, send the event to the Dito API
-    final activities = [ApiActivities().trackNavigation(navigation, uuid: uuid)];
-
-    return await _api.createRequest(activities).call();
+    return await _api.createRequest([activity]).call();
   }
 
   /// Verifies and processes any pending events.

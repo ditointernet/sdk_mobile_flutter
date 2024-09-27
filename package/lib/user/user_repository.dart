@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:uuid/uuid.dart';
 
 import 'package:flutter/foundation.dart';
 import '../api/dito_api_interface.dart';
@@ -49,13 +48,12 @@ class UserRepository {
       throw Exception('User registration id (userID) is required');
     }
 
-    final uuid = Uuid().v4();
-    final activities = [ApiActivities().identify(uuid: uuid)];
+    final activity = ApiActivities().identify();
 
     try {
-      return await _api.createRequest(activities).call();
+      return await _api.createRequest([activity]).call();
     } catch (e) {
-      return await _userDAO.create(UserEventsNames.identify, _userData, uuid);
+      return await _userDAO.create(UserEventsNames.identify, _userData, activity.id);
     }
   }
 
@@ -68,13 +66,12 @@ class UserRepository {
       throw Exception('User id (userID) is required');
     }
 
-    final uuid = Uuid().v4();
-    final activities = [ApiActivities().login(uuid: uuid)];
+    final activity = ApiActivities().login();
 
     try {
-      return await _api.createRequest(activities).call();
+      return await _api.createRequest([activity]).call();
     } catch (e) {
-      return await _userDAO.create(UserEventsNames.login, _userData, uuid);
+      return await _userDAO.create(UserEventsNames.login, _userData, activity.id);
     }
   }
 
