@@ -35,9 +35,9 @@ class UserEntity {
 
   // Factory method to instance a user from a JSON object
   factory UserEntity.fromMap(Map<String, dynamic> map) {
-    final address = map['address'] != null 
-      ? AddressEntity.fromMap(map['address'] as Map<String, dynamic>) 
-      : null;
+    final address = map['address'] != null
+        ? AddressEntity.fromMap(map['address'] as Map<String, dynamic>)
+        : null;
     return UserEntity(
         userID: map['userID'],
         name: map['name'],

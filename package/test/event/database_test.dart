@@ -2,6 +2,7 @@ import 'package:dito_sdk/event/event_dao.dart';
 import 'package:dito_sdk/event/event_entity.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:uuid/uuid.dart';
 
 void main() {
   setUpAll(() {
@@ -25,7 +26,9 @@ void main() {
         customData: {'key': 'value'},
       );
 
-      final success = await eventDAO.create(EventsNames.track, event: event);
+      final uuid = Uuid().v4();
+
+      final success = await eventDAO.create(EventsNames.track, uuid,  event: event);
 
       expect(success, true);
 
@@ -42,7 +45,9 @@ void main() {
         customData: {'key': 'value'},
       );
 
-      await eventDAO.create(EventsNames.track, event: event);
+      final uuid = Uuid().v4();
+
+      await eventDAO.create(EventsNames.track, uuid, event: event);
       await eventDAO.clearDatabase();
 
       final events = await eventDAO.fetchAll();
@@ -64,8 +69,11 @@ void main() {
         customData: {'key': 'value2'},
       );
 
-      await eventDAO.create(EventsNames.track, event: event1);
-      await eventDAO.create(EventsNames.track, event: event2);
+      final uuid = Uuid().v4();
+      final uuid2 = Uuid().v4();
+
+      await eventDAO.create(EventsNames.track, uuid, event: event1);
+      await eventDAO.create(EventsNames.track, uuid2, event: event2);
 
       final events = await eventDAO.fetchAll();
 

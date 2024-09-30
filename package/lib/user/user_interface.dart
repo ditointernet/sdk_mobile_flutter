@@ -1,10 +1,10 @@
 import 'dart:async';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/foundation.dart';
 
 import '../event/event_repository.dart';
 import '../utils/custom_data.dart';
+import '../utils/logger.dart';
 import 'address_entity.dart';
 import 'token_repository.dart';
 import 'user_entity.dart';
@@ -13,10 +13,7 @@ import 'user_repository.dart';
 /// `UserInterface` defines methods for interacting with the user repository,
 /// handling user identification and login flows, and managing related tokens.
 interface class UserInterface {
-  /// Repository instance for managing user-related operations.
   final UserRepository _repository = UserRepository();
-
-  /// Repository instance for managing event-related operations.
   final EventRepository _eventRepository = EventRepository();
 
   /// Provides access to the current user's data by retrieving it from the repository.
@@ -53,12 +50,9 @@ interface class UserInterface {
     Map<String, dynamic>? customData,
   }) async {
     try {
-      // Retrieve the mobile token. Use the provided token if available; otherwise,
-      // fetch it from FirebaseMessaging.
       final String userCurrentToken =
           mobileToken ?? await FirebaseMessaging.instance.getToken() ?? "";
 
-      // Create an AddressEntity instance to hold the user's address information.
       final address = AddressEntity(
         city: city,
         street: street,
@@ -67,7 +61,6 @@ interface class UserInterface {
         country: country,
       );
 
-      // Create a UserEntity instance with the provided user information.
       final user = UserEntity(
         userID: userID,
         name: name,
@@ -81,7 +74,6 @@ interface class UserInterface {
         customData: customData,
       );
 
-      // Retrieve any custom data version and merge it with the user's custom data.
       final version = await customDataVersion;
       if (user.customData == null) {
         user.customData = version;
@@ -89,17 +81,14 @@ interface class UserInterface {
         user.customData?.addAll(version);
       }
 
-      // Identify the user in the repository and verify any pending events.
       final resultIdentify = await _repository.identify(user);
       await _eventRepository.verifyPendingEvents();
       await token.verifyPendingEvents();
 
       return resultIdentify;
     } catch (e) {
-      // Log the error if running in debug mode.
-      if (kDebugMode) {
-        print('Error identifying user: $e');
-      }
+      loggerError('Error identifying user: $e');
+
       return false;
     }
   }
@@ -112,15 +101,18 @@ interface class UserInterface {
   /// Returns a [Future] that completes with `true` if the login was successful.
   Future<bool> login({required String userID, String? mobileToken}) async {
     try {
-      final token = await FirebaseMessaging.instance.getToken();
-      final user = UserEntity(userID: userID, token:  mobileToken ?? token);
-      // Log the user in through the repository and verify any pending events.
-      return await _repository.login(user);
+      final String userCurrentToken =
+          mobileToken ?? await FirebaseMessaging.instance.getToken() ?? "";
+      final user = UserEntity(userID: userID, token: userCurrentToken);
+
+      final result = await _repository.login(user);
+      await _eventRepository.verifyPendingEvents();
+      await token.verifyPendingEvents();
+
+      return result;
     } catch (e) {
-      // Log the error if running in debug mode.
-      if (kDebugMode) {
-        print('Error identifying user: $e');
-      }
+      loggerError('Error identifying user: $e');
+
       return false;
     }
   }

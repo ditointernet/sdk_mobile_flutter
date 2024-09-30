@@ -29,5 +29,11 @@ void main() {
       expect(result, true);
       expect(dito.user.data.id, "11111111111");
     });
+
+    test('Send login', () async {
+      final result = await dito.user.login(userID: "11111111111");
+      expect(result, true);
+      expect(dito.user.data.id, "11111111111");
+    });
   });
 }

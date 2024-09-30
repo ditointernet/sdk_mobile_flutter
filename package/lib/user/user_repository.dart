@@ -1,10 +1,10 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import '../api/dito_api_interface.dart';
-import '../proto/api.pb.dart';
-import 'user_entity.dart';
+import '../proto/sdkapi/v1/api.pb.dart';
+import '../utils/logger.dart';
 import 'user_dao.dart';
+import 'user_entity.dart';
 
 final class UserData extends UserEntity {
   UserData._internal();
@@ -53,7 +53,8 @@ class UserRepository {
     try {
       return await _api.createRequest([activity]).call();
     } catch (e) {
-      return await _userDAO.create(UserEventsNames.identify, _userData, activity.id);
+      return await _userDAO.create(
+          UserEventsNames.identify, _userData, activity.id);
     }
   }
 
@@ -71,7 +72,8 @@ class UserRepository {
     try {
       return await _api.createRequest([activity]).call();
     } catch (e) {
-      return await _userDAO.create(UserEventsNames.login, _userData, activity.id);
+      return await _userDAO.create(
+          UserEventsNames.login, _userData, activity.id);
     }
   }
 
@@ -81,7 +83,7 @@ class UserRepository {
       List<Activity> activities = [];
 
       for (final event in events) {
-        final eventName = event["name"] as String;        
+        final eventName = event["name"] as String;
         final uuid = event["uuid"] as String? ?? null;
         final time = event["createdAt"] as String? ?? null;
 
@@ -100,12 +102,11 @@ class UserRepository {
       if (activities.isNotEmpty) {
         await _api.createRequest(activities).call();
       }
-      
+
       return await _userDAO.clearDatabase();
     } catch (e) {
-      if (kDebugMode) {
-        print('Error verifying pending events on notification: $e');
-      }
+      loggerError('Error verifying pending events on notification: $e');
+
       rethrow;
     }
   }

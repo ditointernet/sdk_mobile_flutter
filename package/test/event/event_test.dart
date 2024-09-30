@@ -46,6 +46,15 @@ void main() async {
       expect(result, true);
     });
 
+    test('Send navigation event', () async {
+      dito.user.identify(userID: id, email: "teste@teste.com");
+      final result = await dito.event.navigate(name: 'home');
+      final events = await database.fetchAll("events");
+
+      expect(events.length, 0);
+      expect(result, true);
+    });
+
     test('Send event with custom data', () async {
       dito.user.identify(userID: id, email: "teste@teste.com");
       final result = await dito.event.track(

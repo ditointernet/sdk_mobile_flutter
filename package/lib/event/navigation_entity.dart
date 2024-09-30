@@ -5,7 +5,6 @@ class NavigationEntity {
   String? createdAt;
   Map<String, dynamic>? customData;
 
-
   NavigationEntity({
     required this.pageName,
     this.createdAt,

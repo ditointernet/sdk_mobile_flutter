@@ -1,9 +1,9 @@
 import 'dart:convert';
 
 import 'package:dito_sdk/notification/notification_entity.dart';
-import 'package:flutter/foundation.dart';
 
 import '../data/database.dart';
+import '../utils/logger.dart';
 import 'event_entity.dart';
 import 'navigation_entity.dart';
 
@@ -69,9 +69,7 @@ class EventDAO {
 
       return false;
     } catch (e) {
-      if (kDebugMode) {
-        print('Error inserting event: $e');
-      }
+      loggerError('Error inserting event: $e');
       rethrow;
     }
   }
@@ -89,9 +87,8 @@ class EventDAO {
           ) >
           0;
     } catch (e) {
-      if (kDebugMode) {
-        print('Error deleting event: $e');
-      }
+      loggerError('Error deleting event: $e');
+
       rethrow;
     }
   }
@@ -102,9 +99,8 @@ class EventDAO {
     try {
       return await _database.fetchAll(_table);
     } catch (e) {
-      if (kDebugMode) {
-        print('Error retrieving events: $e');
-      }
+      loggerError('Error retrieving events: $e');
+
       rethrow;
     }
   }
@@ -115,9 +111,7 @@ class EventDAO {
     try {
       return _database.clearDatabase(_table);
     } catch (e) {
-      if (kDebugMode) {
-        print('Error clearing database: $e');
-      }
+      loggerError('Error clearing database: $e');
       rethrow;
     }
   }

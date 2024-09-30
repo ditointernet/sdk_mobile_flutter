@@ -44,8 +44,7 @@ class NotificationController {
   /// Initializes the local notifications plugin.
   ///
   /// [onSelectNotification] - Callback function to handle notification selection.
-  Future<void> initialize(
-      Function(RemoteMessage) selectNotification) async {
+  Future<void> initialize(Function(RemoteMessage) selectNotification) async {
     _selectNotification = selectNotification;
     localNotificationsPlugin = FlutterLocalNotificationsPlugin();
 
@@ -108,7 +107,8 @@ class NotificationController {
     final payload = response?.payload;
 
     if (payload != null && payload.isNotEmpty) {
-      if (_selectNotification != null) _selectNotification!(jsonDecode(payload) as RemoteMessage);
+      if (_selectNotification != null)
+        _selectNotification!(jsonDecode(payload) as RemoteMessage);
     }
   }
 }

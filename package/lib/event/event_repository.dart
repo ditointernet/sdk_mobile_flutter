@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:dito_sdk/notification/notification_entity.dart';
-import 'package:flutter/foundation.dart';
 import '../api/dito_api_interface.dart';
-import '../proto/api.pb.dart';
+import '../notification/notification_entity.dart';
+import '../proto/sdkapi/v1/api.pb.dart';
 import '../user/user_repository.dart';
+import '../utils/logger.dart';
 import 'event_dao.dart';
 import 'event_entity.dart';
 import 'navigation_entity.dart';
@@ -28,7 +28,8 @@ class EventRepository {
 
     // If the user is not registered, save the event to the local database
     if (_userRepository.data.isNotValid) {
-      return await _database.create(EventsNames.track, activity.id, event: event);
+      return await _database.create(EventsNames.track, activity.id,
+          event: event);
     }
 
     // Otherwise, send the event to the Dito API
@@ -71,22 +72,26 @@ class EventRepository {
           case 'track':
             final event =
                 EventEntity.fromMap(jsonDecode(row["event"] as String));
-            activities.add(ApiActivities().trackEvent(event, uuid: uuid, time: time));
+            activities
+                .add(ApiActivities().trackEvent(event, uuid: uuid, time: time));
             break;
           case 'received':
             final event =
                 NotificationEntity.fromMap(jsonDecode(row["event"] as String));
-            activities.add(ApiActivities().notificationReceived(event, uuid: uuid, time: time));
+            activities.add(ApiActivities()
+                .notificationReceived(event, uuid: uuid, time: time));
             break;
           case 'click':
             final event =
                 NotificationEntity.fromMap(jsonDecode(row["event"] as String));
-            activities.add(ApiActivities().notificationClick(event, uuid: uuid, time: time));
+            activities.add(ApiActivities()
+                .notificationClick(event, uuid: uuid, time: time));
             break;
           case 'navigate':
             final event =
                 NavigationEntity.fromMap(jsonDecode(row["event"] as String));
-            activities.add(ApiActivities().trackNavigation(event, uuid: uuid, time: time));
+            activities.add(
+                ApiActivities().trackNavigation(event, uuid: uuid, time: time));
             break;
           default:
             break;
@@ -99,9 +104,8 @@ class EventRepository {
 
       return await _database.clearDatabase();
     } catch (e) {
-      if (kDebugMode) {
-        print('Error verifying pending events on notification: $e');
-      }
+      loggerError('Error verifying pending events on notification: $e');
+
       rethrow;
     }
   }

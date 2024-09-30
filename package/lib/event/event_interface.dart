@@ -1,5 +1,4 @@
-import 'package:flutter/foundation.dart';
-
+import '../utils/logger.dart';
 import 'event_entity.dart';
 import 'event_repository.dart';
 import 'navigation_entity.dart';
@@ -22,10 +21,10 @@ interface class EventInterface {
   /// or `false` if there was an error.
   Future<bool> track(
       {required String action,
-        String? createdAt,
-        double? revenue,
-        String? currency,
-        Map<String, dynamic>? customData}) async {
+      String? createdAt,
+      double? revenue,
+      String? currency,
+      Map<String, dynamic>? customData}) async {
     try {
       // Get the current local time and convert it to UTC for accurate event logging.
       DateTime localDateTime = DateTime.now();
@@ -34,7 +33,9 @@ interface class EventInterface {
       // Create an event entity using the provided data.
       final event = EventEntity(
           action: action,
-          createdAt: createdAt ?? utcDateTime.toIso8601String(),  // Default to current UTC time if not provided.
+          createdAt: createdAt ??
+              utcDateTime
+                  .toIso8601String(), // Default to current UTC time if not provided.
           revenue: revenue,
           currency: currency,
           customData: customData);
@@ -42,10 +43,9 @@ interface class EventInterface {
       // Track the event using the repository and return the result.
       return await _repository.track(event);
     } catch (e) {
-      if (kDebugMode) {
-        print('Error tracking event: $e');  // Log the error in debug mode.
-      }
-      return false;  // Return false if there was an error.
+      loggerError('Error tracking event: $e'); // Log the error in debug mode.
+
+      return false; // Return false if there was an error.
     }
   }
 
@@ -59,8 +59,8 @@ interface class EventInterface {
   /// or `false` if there was an error.
   Future<bool> navigate(
       {required String name,
-        String? createdAt,
-        Map<String, dynamic>? customData}) async {
+      String? createdAt,
+      Map<String, dynamic>? customData}) async {
     try {
       // Get the current local time and convert it to UTC for accurate navigation logging.
       DateTime localDateTime = DateTime.now();
@@ -69,16 +69,18 @@ interface class EventInterface {
       // Create a navigation entity with the provided data.
       final navigation = NavigationEntity(
           pageName: name,
-          createdAt: createdAt ?? utcDateTime.toIso8601String(),  // Default to current UTC time if not provided.
+          createdAt: createdAt ??
+              utcDateTime
+                  .toIso8601String(), // Default to current UTC time if not provided.
           customData: customData);
 
       // Track the navigation event using the repository and return the result.
       return await _repository.navigate(navigation);
     } catch (e) {
-      if (kDebugMode) {
-        print('Error tracking navigation event: $e');  // Log the error in debug mode.
-      }
-      return false;  // Return false if there was an error.
+      loggerError(
+          'Error tracking navigation event: $e'); // Log the error in debug mode.
+
+      return false; // Return false if there was an error.
     }
   }
 }

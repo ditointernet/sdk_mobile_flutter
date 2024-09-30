@@ -1,12 +1,13 @@
+import 'dart:io';
+
 import 'package:http/http.dart' as http;
 import 'package:uuid/uuid.dart';
-import 'dart:io';
 
 import '../event/event_entity.dart';
 import '../event/navigation_entity.dart';
 import '../notification/notification_entity.dart';
-import '../proto/api.pb.dart' as rpcAPI;
 import '../proto/google/protobuf/timestamp.pb.dart';
+import '../proto/sdkapi/v1/api.pb.dart' as rpcAPI;
 import '../user/user_interface.dart';
 import '../utils/sha1.dart';
 
@@ -33,6 +34,12 @@ final class AppInfo extends AppInfoEntity {
 class ApiActivities {
   final UserInterface _userInterface = UserInterface();
   final AppInfo _appInfo = AppInfo();
+
+  Timestamp _parseToTimestamp(String? time) {
+    return time != null
+        ? Timestamp.fromDateTime(DateTime.parse(time))
+        : Timestamp.fromDateTime(DateTime.now());
+  }
 
   rpcAPI.DeviceOs _getPlatform() {
     if (Platform.isIOS) {
@@ -65,8 +72,7 @@ class ApiActivities {
       user.email = _userInterface.data.email!;
     }
 
-    if (_userInterface.data.id != null &&
-        _userInterface.data.id!.isNotEmpty) {
+    if (_userInterface.data.id != null && _userInterface.data.id!.isNotEmpty) {
       user.ditoId = _userInterface.data.id!;
     }
 
@@ -90,17 +96,19 @@ class ApiActivities {
       user.gender = _userInterface.data.gender!;
     }
 
-    if (_userInterface.data.cpf != null && _userInterface.data.cpf!.isNotEmpty) {
-      user.customData['cpf'] = rpcAPI.UserInfo_CustomData(format: 'string', value: _userInterface.data.cpf);
+    if (_userInterface.data.cpf != null &&
+        _userInterface.data.cpf!.isNotEmpty) {
+      user.customData['cpf'] = rpcAPI.UserInfo_CustomData(
+          format: 'string', value: _userInterface.data.cpf);
     }
 
-    if (_userInterface.data.customData != null && _userInterface.data.customData!.isNotEmpty) {
-      user.customData.addAll(
-        _userInterface.data.customData!.map((key, value) {
-          final customDataValue = rpcAPI.UserInfo_CustomData(format: 'string', value: value);
-          return MapEntry(key, customDataValue);
-        })
-      );
+    if (_userInterface.data.customData != null &&
+        _userInterface.data.customData!.isNotEmpty) {
+      user.customData.addAll(_userInterface.data.customData!.map((key, value) {
+        final customDataValue =
+            rpcAPI.UserInfo_CustomData(format: 'string', value: value);
+        return MapEntry(key, customDataValue);
+      }));
     }
 
     final addressData = _userInterface.data.address;
@@ -147,9 +155,7 @@ class ApiActivities {
 
   rpcAPI.Activity identify({String? uuid, String? time}) {
     final generatedUuid = uuid ?? Uuid().v4();
-    final generatedTime = time != null 
-      ? Timestamp.fromDateTime(DateTime.parse(time))
-      : Timestamp.fromDateTime(DateTime.now());
+    final generatedTime = _parseToTimestamp(time);
 
     return rpcAPI.Activity()
       ..timestamp = generatedTime
@@ -160,9 +166,7 @@ class ApiActivities {
 
   rpcAPI.Activity login({String? uuid, String? time}) {
     final generatedUuid = uuid ?? Uuid().v4();
-    final generatedTime = time != null 
-      ? Timestamp.fromDateTime(DateTime.parse(time))
-      : Timestamp.fromDateTime(DateTime.now());
+    final generatedTime = _parseToTimestamp(time);
 
     return rpcAPI.Activity()
       ..timestamp = generatedTime
@@ -173,9 +177,7 @@ class ApiActivities {
 
   rpcAPI.Activity trackEvent(EventEntity event, {String? uuid, String? time}) {
     final generatedUuid = uuid ?? Uuid().v4();
-    final generatedTime = time != null 
-      ? Timestamp.fromDateTime(DateTime.parse(time))
-      : Timestamp.fromDateTime(DateTime.now());
+    final generatedTime = _parseToTimestamp(time);
 
     return rpcAPI.Activity()
       ..timestamp = generatedTime
@@ -191,11 +193,10 @@ class ApiActivities {
             {}));
   }
 
-  rpcAPI.Activity trackNavigation(NavigationEntity navigation, {String? uuid, String? time}) {
+  rpcAPI.Activity trackNavigation(NavigationEntity navigation,
+      {String? uuid, String? time}) {
     final generatedUuid = uuid ?? Uuid().v4();
-    final generatedTime = time != null 
-      ? Timestamp.fromDateTime(DateTime.parse(time))
-      : Timestamp.fromDateTime(DateTime.now());
+    final generatedTime = _parseToTimestamp(time);
 
     return rpcAPI.Activity()
       ..timestamp = generatedTime
@@ -208,11 +209,10 @@ class ApiActivities {
             {}));
   }
 
-  rpcAPI.Activity notificationClick(NotificationEntity notification, {String? uuid, String? time}) {
+  rpcAPI.Activity notificationClick(NotificationEntity notification,
+      {String? uuid, String? time}) {
     final generatedUuid = uuid ?? Uuid().v4();
-    final generatedTime = time != null 
-      ? Timestamp.fromDateTime(DateTime.parse(time))
-      : Timestamp.fromDateTime(DateTime.now());
+    final generatedTime = _parseToTimestamp(time);
 
     return rpcAPI.Activity()
       ..timestamp = generatedTime
@@ -228,11 +228,10 @@ class ApiActivities {
         ..utmSource = 'source');
   }
 
-  rpcAPI.Activity notificationReceived(NotificationEntity notification, {String? uuid, String? time}) {
+  rpcAPI.Activity notificationReceived(NotificationEntity notification,
+      {String? uuid, String? time}) {
     final generatedUuid = uuid ?? Uuid().v4();
-    final generatedTime = time != null 
-      ? Timestamp.fromDateTime(DateTime.parse(time))
-      : Timestamp.fromDateTime(DateTime.now());
+    final generatedTime = _parseToTimestamp(time);
 
     return rpcAPI.Activity()
       ..timestamp = generatedTime
@@ -250,9 +249,7 @@ class ApiActivities {
 
   rpcAPI.Activity registryToken(String token, {String? uuid, String? time}) {
     final generatedUuid = uuid ?? Uuid().v4();
-    final generatedTime = time != null 
-      ? Timestamp.fromDateTime(DateTime.parse(time))
-      : Timestamp.fromDateTime(DateTime.now());
+    final generatedTime = _parseToTimestamp(time);
 
     return rpcAPI.Activity()
       ..timestamp = generatedTime
@@ -265,9 +262,7 @@ class ApiActivities {
 
   rpcAPI.Activity pingToken(String token, {String? uuid, String? time}) {
     final generatedUuid = uuid ?? Uuid().v4();
-    final generatedTime = time != null 
-      ? Timestamp.fromDateTime(DateTime.parse(time))
-      : Timestamp.fromDateTime(DateTime.now());
+    final generatedTime = _parseToTimestamp(time);
 
     return rpcAPI.Activity()
       ..timestamp = generatedTime
@@ -280,9 +275,7 @@ class ApiActivities {
 
   rpcAPI.Activity removeToken(String token, {String? uuid, String? time}) {
     final generatedUuid = uuid ?? Uuid().v4();
-    final generatedTime = time != null 
-      ? Timestamp.fromDateTime(DateTime.parse(time))
-      : Timestamp.fromDateTime(DateTime.now());
+    final generatedTime = _parseToTimestamp(time);
 
     return rpcAPI.Activity()
       ..timestamp = generatedTime

@@ -1,8 +1,7 @@
 import 'dart:convert';
 
-import 'package:flutter/foundation.dart';
-
 import '../data/database.dart';
+import '../utils/logger.dart';
 import 'user_entity.dart';
 
 enum UserEventsNames { login, identify, registryToken, pingToken, removeToken }
@@ -28,7 +27,8 @@ class UserDAO {
   /// [user] - The User entity to be inserted.
   /// [uuid] - Event Identifier.
   /// Returns a Future that completes with the row id of the inserted event.
-  Future<bool> create(UserEventsNames event, UserEntity user, String uuid) async {
+  Future<bool> create(
+      UserEventsNames event, UserEntity user, String uuid) async {
     try {
       return await _database.insert(_dataTable!, {
             "name": event.name,
@@ -38,9 +38,8 @@ class UserDAO {
           }) >
           0;
     } catch (e) {
-      if (kDebugMode) {
-        print('Error inserting event: $e');
-      }
+      loggerError('Error inserting event: $e');
+
       rethrow;
     }
   }
@@ -58,9 +57,8 @@ class UserDAO {
           ) >
           0;
     } catch (e) {
-      if (kDebugMode) {
-        print('Error deleting event: $e');
-      }
+      loggerError('Error deleting event: $e');
+
       rethrow;
     }
   }
@@ -71,9 +69,8 @@ class UserDAO {
     try {
       return await _database.fetchAll(_dataTable!);
     } catch (e) {
-      if (kDebugMode) {
-        print('Error retrieving notification: $e');
-      }
+      loggerError('Error retrieving notification: $e');
+
       rethrow;
     }
   }
@@ -84,9 +81,8 @@ class UserDAO {
     try {
       return _database.clearDatabase(_dataTable!);
     } catch (e) {
-      if (kDebugMode) {
-        print('Error clearing database: $e');
-      }
+      loggerError('Error clearing database: $e');
+
       rethrow;
     }
   }

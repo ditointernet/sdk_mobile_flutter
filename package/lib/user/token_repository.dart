@@ -2,11 +2,11 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:dito_sdk/user/user_repository.dart';
-import 'package:flutter/foundation.dart';
 
 import '../api/dito_api_interface.dart';
 import '../notification/notification_interface.dart';
-import '../proto/api.pb.dart';
+import '../proto/sdkapi/v1/api.pb.dart';
+import '../utils/logger.dart';
 import 'user_dao.dart';
 import 'user_entity.dart';
 
@@ -38,7 +38,7 @@ class TokenRepository {
     if (_userData.isNotValid) {
       return await _userDAO.create(
           UserEventsNames.registryToken, _userData, activity.id);
-    }    
+    }
 
     try {
       return await _api.createRequest([activity]).call();
@@ -66,13 +66,15 @@ class TokenRepository {
     final activity = ApiActivities().pingToken(_userData.token!);
 
     if (_userData.isNotValid) {
-      return await _userDAO.create(UserEventsNames.pingToken, _userData, activity.id);
-    }    
+      return await _userDAO.create(
+          UserEventsNames.pingToken, _userData, activity.id);
+    }
 
     try {
       return await _api.createRequest([activity]).call();
     } catch (e) {
-      return await _userDAO.create(UserEventsNames.pingToken, _userData, activity.id);
+      return await _userDAO.create(
+          UserEventsNames.pingToken, _userData, activity.id);
     }
   }
 
@@ -135,9 +137,8 @@ class TokenRepository {
 
       return await _userDAO.clearDatabase();
     } catch (e) {
-      if (kDebugMode) {
-        print('Error verifying pending events on notification: $e');
-      }
+      loggerError('Error verifying pending events on notification: $e');
+
       rethrow;
     }
   }
