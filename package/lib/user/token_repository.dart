@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:dito_sdk/user/user_repository.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 import '../api/dito_api_interface.dart';
 import '../notification/notification_interface.dart';
@@ -16,6 +18,10 @@ class TokenRepository {
   final UserDAO _userDAO = UserDAO();
   final NotificationInterface _notification = NotificationInterface();
 
+  Future<String?> get data async =>
+      !Platform.environment.containsKey('FLUTTER_TEST')
+          ? await FirebaseMessaging.instance.getToken()
+          : "";
   UserEntity get _userData => _userRepository.data;
 
   /// Registers the FCM token with the server.
@@ -40,12 +46,15 @@ class TokenRepository {
           UserEventsNames.registryToken, _userData, activity.id);
     }
 
-    try {
-      return await _api.createRequest([activity]).call();
-    } catch (e) {
-      return await _userDAO.create(
+    final result = await _api.createRequest([activity]).call();
+
+    if (result >= 400 && result < 500) {
+      await _userDAO.create(
           UserEventsNames.registryToken, _userData, activity.id);
+      return false;
     }
+
+    return true;
   }
 
   /// Registers the FCM token with the server.
@@ -70,12 +79,14 @@ class TokenRepository {
           UserEventsNames.pingToken, _userData, activity.id);
     }
 
-    try {
-      return await _api.createRequest([activity]).call();
-    } catch (e) {
-      return await _userDAO.create(
-          UserEventsNames.pingToken, _userData, activity.id);
+    final result = await _api.createRequest([activity]).call();
+
+    if (result >= 400 && result < 500) {
+      await _userDAO.create(UserEventsNames.pingToken, _userData, activity.id);
+      return false;
     }
+
+    return true;
   }
 
   /// Removes the FCM token from the server.
@@ -100,7 +111,13 @@ class TokenRepository {
     final activity = ApiActivities().removeToken(_userData.token!);
     final result = await _api.createRequest([activity]).call();
 
-    return result;
+    if (result >= 400 && result < 500) {
+      await _userDAO.create(
+          UserEventsNames.pingToken, _userData, activity.id);
+      return false;
+    }
+
+    return true;
   }
 
   /// Verifies and processes any pending events.

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dito_sdk/event/event_dao.dart';
 import 'package:dito_sdk/event/event_entity.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -34,7 +36,7 @@ void main() {
 
       final events = await eventDAO.fetchAll();
       expect(events.length, 1);
-      expect(events.first["action"], 'Test Event');
+      expect(jsonDecode(events.first["event"])["action"], 'Test Event');
     });
 
     test('should delete an event', () async {
@@ -78,8 +80,8 @@ void main() {
       final events = await eventDAO.fetchAll();
 
       expect(events.length, 2);
-      expect(events.first["action"], 'Test Event 1');
-      expect(events.last["action"], 'Test Event 2');
+      expect(jsonDecode(events.first["event"])["action"], 'Test Event 1');
+      expect(jsonDecode(events.last["event"])["action"], 'Test Event 2');
     });
   });
 }

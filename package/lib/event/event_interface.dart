@@ -41,7 +41,7 @@ interface class EventInterface {
           customData: customData);
 
       // Track the event using the repository and return the result.
-      return await _repository.track(event);
+      return _repository.track(event);
     } catch (e) {
       loggerError('Error tracking event: $e'); // Log the error in debug mode.
 
@@ -75,7 +75,7 @@ interface class EventInterface {
           customData: customData);
 
       // Track the navigation event using the repository and return the result.
-      return await _repository.navigate(navigation);
+      return _repository.navigate(navigation);
     } catch (e) {
       loggerError(
           'Error tracking navigation event: $e'); // Log the error in debug mode.

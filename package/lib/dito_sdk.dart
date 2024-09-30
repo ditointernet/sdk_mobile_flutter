@@ -45,15 +45,15 @@ class DitoSDK {
   /// [apiKey] - The API key for the Dito platform.
   /// [secretKey] - The secret key for the Dito platform.
   void initialize({required String apiKey, required String secretKey}) async {
-    final packageInfo = await PackageInfo.fromPlatform();
+    final packageInfo = !Platform.environment.containsKey('FLUTTER_TEST') ? await PackageInfo.fromPlatform(): null;
     _api.setKeys(apiKey, secretKey);
     _appInfo.platform = Platform.isAndroid ? 'Android' : 'Apple iPhone';
     _appInfo.sdkLang = "Flutter";
     _appInfo.sdkVersion = '2.0.0';
     _appInfo.sdkBuild = '1';
-    _appInfo.build = packageInfo.buildNumber;
-    _appInfo.version = packageInfo.version;
-    _appInfo.id = packageInfo.packageName;
+    _appInfo.build = packageInfo?.buildNumber ?? '1';
+    _appInfo.version = packageInfo?.version ?? '1.0.0';
+    _appInfo.id = packageInfo?.packageName ?? '';
   }
 
   /// This method initializes the push notification service using Firebase.

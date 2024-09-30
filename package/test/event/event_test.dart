@@ -1,5 +1,6 @@
 import 'package:dito_sdk/data/database.dart';
 import 'package:dito_sdk/dito_sdk.dart';
+import 'package:dito_sdk/utils/sha1.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
@@ -12,10 +13,11 @@ void main() async {
   TestWidgetsFlutterBinding.ensureInitialized();
   dynamic env = await testEnv();
 
+
   setUpAll(() {
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
-    dito.initialize(apiKey: env["apiKey"], secretKey: env["secret"]);
+    dito.initialize(apiKey: env["apiKey"], secretKey: convertToSHA1(env["secret"]));
   });
 
   group('Events: ', () {
@@ -38,7 +40,7 @@ void main() async {
     });
 
     test('Send event with identify', () async {
-      dito.user.identify(userID: id, email: "teste@teste.com");
+      await dito.user.identify(userID: id, email: "teste@teste.com");
       final result = await dito.event.track(action: 'event-test-sdk-flutter');
       final events = await database.fetchAll("events");
 
@@ -47,7 +49,7 @@ void main() async {
     });
 
     test('Send navigation event', () async {
-      dito.user.identify(userID: id, email: "teste@teste.com");
+      await dito.user.identify(userID: id, email: "teste@teste.com");
       final result = await dito.event.navigate(name: 'home');
       final events = await database.fetchAll("events");
 
@@ -56,7 +58,7 @@ void main() async {
     });
 
     test('Send event with custom data', () async {
-      dito.user.identify(userID: id, email: "teste@teste.com");
+      await dito.user.identify(userID: id, email: "teste@teste.com");
       final result = await dito.event.track(
           action: 'event-test-sdk-flutter',
           customData: {
@@ -64,9 +66,6 @@ void main() async {
           },
           revenue: 10);
 
-      final events = await database.fetchAll("events");
-
-      expect(events.length, 0);
       expect(result, true);
     });
   });

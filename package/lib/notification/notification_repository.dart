@@ -3,9 +3,9 @@ import 'dart:async';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
 import '../api/dito_api_interface.dart';
-import 'notification_entity.dart';
-import '../user/user_repository.dart';
 import '../event/event_dao.dart';
+import '../user/user_repository.dart';
+import 'notification_entity.dart';
 
 class NotificationRepository {
   final ApiInterface _api = ApiInterface();
@@ -26,19 +26,21 @@ class NotificationRepository {
   Future<bool> click(NotificationEntity notification) async {
     final activity = ApiActivities().notificationClick(notification);
 
-    // If the user is not registered, save the event to the local database
     if (_userRepository.data.isNotValid) {
       return await _database.create(EventsNames.click, activity.id,
           notification: notification);
     }
 
-    // Otherwise, send the event to the Dito API
-    try {
-      return await _api.createRequest([activity]).call();
-    } catch (e) {
-      return await _database.create(EventsNames.click, activity.id,
+    final result = await _api.createRequest([activity]).call();
+
+    if (result >= 400 && result < 500) {
+      await _database.create(EventsNames.click, activity.id,
           notification: notification);
+
+      return false;
     }
+
+    return true;
   }
 
   /// This method send a notify received push event to Dito
@@ -47,18 +49,20 @@ class NotificationRepository {
   Future<bool> received(NotificationEntity notification) async {
     final activity = ApiActivities().notificationReceived(notification);
 
-    // If the user is not registered, save the event to the local database
     if (_userRepository.data.isNotValid) {
       return await _database.create(EventsNames.received, activity.id,
           notification: notification);
     }
 
-    // Otherwise, send the event to the Dito API
-    try {
-      return await _api.createRequest([activity]).call();
-    } catch (e) {
-      return await _database.create(EventsNames.received, activity.id,
+    final result = await _api.createRequest([activity]).call();
+
+    if (result >= 400 && result < 500) {
+      await _database.create(EventsNames.received, activity.id,
           notification: notification);
+
+      return false;
     }
+
+    return true;
   }
 }

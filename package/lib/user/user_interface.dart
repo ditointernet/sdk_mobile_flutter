@@ -1,7 +1,5 @@
 import 'dart:async';
 
-import 'package:firebase_messaging/firebase_messaging.dart';
-
 import '../event/event_repository.dart';
 import '../utils/custom_data.dart';
 import '../utils/logger.dart';
@@ -50,8 +48,7 @@ interface class UserInterface {
     Map<String, dynamic>? customData,
   }) async {
     try {
-      final String userCurrentToken =
-          mobileToken ?? await FirebaseMessaging.instance.getToken() ?? "";
+      final String userCurrentToken = mobileToken ?? await token.data ?? "";
 
       final address = AddressEntity(
         city: city,
@@ -101,8 +98,7 @@ interface class UserInterface {
   /// Returns a [Future] that completes with `true` if the login was successful.
   Future<bool> login({required String userID, String? mobileToken}) async {
     try {
-      final String userCurrentToken =
-          mobileToken ?? await FirebaseMessaging.instance.getToken() ?? "";
+      final String userCurrentToken = mobileToken ?? await token.data ?? "";
       final user = UserEntity(userID: userID, token: userCurrentToken);
 
       final result = await _repository.login(user);

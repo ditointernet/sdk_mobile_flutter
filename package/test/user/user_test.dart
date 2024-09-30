@@ -1,4 +1,5 @@
 import 'package:dito_sdk/dito_sdk.dart';
+import 'package:dito_sdk/utils/sha1.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../utils.dart';
@@ -6,10 +7,13 @@ import '../utils.dart';
 final DitoSDK dito = DitoSDK();
 const id = '22222222222';
 
-void main() {
-  setUp(() async {
-    dynamic env = await testEnv();
-    dito.initialize(apiKey: env["apiKey"], secretKey: env["secret"]);
+void main() async {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  dynamic env = await testEnv();
+
+
+  setUpAll(() {
+    dito.initialize(apiKey: env["apiKey"], secretKey: convertToSHA1(env["secret"]));
   });
 
   group('User interface', () {
@@ -25,15 +29,15 @@ void main() {
 
     test('Send identify', () async {
       final result = await dito.user
-          .identify(userID: "11111111111", email: "teste@teste.com");
+          .identify(userID: id, email: "teste@teste.com");
       expect(result, true);
-      expect(dito.user.data.id, "11111111111");
+      expect(dito.user.data.id, id);
     });
 
     test('Send login', () async {
-      final result = await dito.user.login(userID: "11111111111");
+      final result = await dito.user.login(userID: id);
       expect(result, true);
-      expect(dito.user.data.id, "11111111111");
+      expect(dito.user.data.id, id);
     });
   });
 }

@@ -49,13 +49,14 @@ class UserRepository {
     }
 
     final activity = ApiActivities().identify();
+    final result = await _api.createRequest([activity]).call();
 
-    try {
-      return await _api.createRequest([activity]).call();
-    } catch (e) {
-      return await _userDAO.create(
-          UserEventsNames.identify, _userData, activity.id);
+    if (result >= 400 && result < 500) {
+      await _userDAO.create(UserEventsNames.login, _userData, activity.id);
+      return false;
     }
+
+    return true;
   }
 
   /// This method enable user data save and send to Dito
@@ -68,13 +69,14 @@ class UserRepository {
     }
 
     final activity = ApiActivities().login();
+    final result = await _api.createRequest([activity]).call();
 
-    try {
-      return await _api.createRequest([activity]).call();
-    } catch (e) {
-      return await _userDAO.create(
-          UserEventsNames.login, _userData, activity.id);
+    if (result >= 400 && result < 500) {
+      await _userDAO.create(UserEventsNames.login, _userData, activity.id);
+      return false;
     }
+
+    return true;
   }
 
   Future<void> verifyPendingEvents() async {

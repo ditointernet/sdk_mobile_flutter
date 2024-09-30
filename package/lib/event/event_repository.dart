@@ -26,14 +26,21 @@ class EventRepository {
   Future<bool> track(EventEntity event) async {
     final activity = ApiActivities().trackEvent(event);
 
-    // If the user is not registered, save the event to the local database
     if (_userRepository.data.isNotValid) {
       return await _database.create(EventsNames.track, activity.id,
           event: event);
     }
 
-    // Otherwise, send the event to the Dito API
-    return await _api.createRequest([activity]).call();
+    final result = await _api.createRequest([activity]).call();
+
+    print(result);
+
+    if (result >= 400 && result < 500) {
+      await _database.create(EventsNames.track, activity.id, event: event);
+      return false;
+    }
+
+    return true;
   }
 
   /// Tracks an event by saving it to the local database if the user is not registered,
@@ -45,14 +52,20 @@ class EventRepository {
   Future<bool> navigate(NavigationEntity navigation) async {
     final activity = ApiActivities().trackNavigation(navigation);
 
-    // If the user is not registered, save the event to the local database
     if (_userRepository.data.isNotValid) {
       return await _database.create(EventsNames.navigate, activity.id,
           navigation: navigation);
     }
 
-    // Otherwise, send the event to the Dito API
-    return await _api.createRequest([activity]).call();
+    final result = await _api.createRequest([activity]).call();
+
+    if (result >= 400 && result < 500) {
+      await _database.create(EventsNames.navigate, activity.id,
+          navigation: navigation);
+      return false;
+    }
+
+    return true;
   }
 
   /// Verifies and processes any pending events.

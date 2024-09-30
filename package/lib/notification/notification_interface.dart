@@ -128,7 +128,7 @@ class NotificationInterface {
       String? contactId,
       String? name}) async {
     try {
-      return await _repository.received(NotificationEntity(
+      return _repository.received(NotificationEntity(
           notification: notification,
           notificationLogId: notificationLogId,
           contactId: contactId,

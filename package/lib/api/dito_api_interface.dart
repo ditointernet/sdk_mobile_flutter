@@ -337,7 +337,7 @@ class ApiRequest {
     }
   }
 
-  Future<bool> call() async {
+  Future<int> call() async {
     _checkConfiguration();
 
     final response = await http.post(
@@ -373,7 +373,7 @@ class ApiRequest {
         }
       }
 
-      return true;
+      return response.statusCode;
     }
 
     throw ('Unknown error occurred.');
