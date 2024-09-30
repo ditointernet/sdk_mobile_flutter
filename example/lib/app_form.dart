@@ -109,7 +109,6 @@ class AppFormState extends State<AppForm> {
     handleClickNotification() async {
       if (_formKey.currentState!.validate()) {
         final bool response = await dito.notification.click(
-          identifier: 'identifier-not-sdk-test',
           notification: 'notification-sdk-test',
         );
 
@@ -130,7 +129,6 @@ class AppFormState extends State<AppForm> {
     handleReceivedNotification() async {
       if (_formKey.currentState!.validate()) {
         final bool response = await dito.notification.received(
-            identifier: 'identifier-not-sdk-test',
             notification: 'notification-sdk-test',
         );
 

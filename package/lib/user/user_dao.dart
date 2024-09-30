@@ -26,12 +26,15 @@ class UserDAO {
   ///
   /// [event] - The event name to be inserted.
   /// [user] - The User entity to be inserted.
+  /// [uuid] - Event Identifier.
   /// Returns a Future that completes with the row id of the inserted event.
-  Future<bool> create(UserEventsNames event, UserEntity user) async {
+  Future<bool> create(UserEventsNames event, UserEntity user, String uuid) async {
     try {
       return await _database.insert(_dataTable!, {
             "name": event.name,
             "user": jsonEncode(user.toJson()),
+            "uuid": uuid,
+            "createdAt": DateTime.now().toIso8601String()
           }) >
           0;
     } catch (e) {

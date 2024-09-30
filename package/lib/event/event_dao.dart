@@ -30,8 +30,9 @@ class EventDAO {
   /// [event] - The EventEntity object to be inserted.
   /// [navigation] - The NavigationEntity object to be inserted.
   /// [notification] - The NotificationEntity object to be inserted.
+  /// [uuid] - Event Identifier.
   /// Returns a Future that completes with the row id of the inserted event.
-  Future<bool> create(EventsNames eventType,
+  Future<bool> create(EventsNames eventType, String uuid,
       {EventEntity? event,
       NavigationEntity? navigation,
       NotificationEntity? notification}) async {
@@ -40,6 +41,7 @@ class EventDAO {
         return await _database.insert(_table, {
               "name": eventType.name,
               "event": jsonEncode(event.toJson()),
+              "uuid": uuid,
               "createdAt": DateTime.now().toIso8601String()
             }) >
             0;
@@ -49,6 +51,7 @@ class EventDAO {
         return await _database.insert(_table, {
               "name": eventType.name,
               "event": jsonEncode(navigation.toJson()),
+              "uuid": uuid,
               "createdAt": DateTime.now().toIso8601String()
             }) >
             0;
@@ -58,6 +61,7 @@ class EventDAO {
         return await _database.insert(_table, {
               "name": eventType.name,
               "event": jsonEncode(notification.toJson()),
+              "uuid": uuid,
               "createdAt": DateTime.now().toIso8601String()
             }) >
             0;

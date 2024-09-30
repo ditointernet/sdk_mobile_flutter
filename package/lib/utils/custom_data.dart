@@ -5,7 +5,7 @@ import 'package:flutter/foundation.dart';
 /// Returns a Future that completes with a Map containing the version information.
 Future<Map<String, dynamic>> get customDataVersion async {
   try {
-    return {"dito_sdk_version": "Flutter SDK - 0.5.3"};
+    return {"dito_sdk_version": "Flutter SDK - 2.0.0"};
   } catch (e) {
     if (kDebugMode) {
       print('Error retrieving package info: $e');

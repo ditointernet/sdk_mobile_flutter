@@ -21,8 +21,7 @@ const secretKey = String.fromEnvironment(
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
   DitoSDK dito = DitoSDK();
-  dito.initialize(
-      apiKey: apiKey, secretKey: secretKey);
+  dito.initialize(apiKey: apiKey, secretKey: secretKey);
   dito.onBackgroundPushNotificationHandler(message: message);
 }
 
@@ -31,8 +30,7 @@ void main() async {
   await Firebase.initializeApp();
 
   DitoSDK dito = DitoSDK();
-  dito.initialize(
-      apiKey: apiKey, secretKey: secretKey);
+  dito.initialize(apiKey: apiKey, secretKey: secretKey);
   await dito.initializePushNotificationService();
 
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);

@@ -20,17 +20,21 @@ class DetailsEntity {
 
 class NotificationEntity {
   final String notification;
-  final String identifier;
-  final String? reference;
   final String? notificationLogId;
+  final String? contactId;
+  final String? reference;
+  final String? userId;
+  final String? name;
   final DetailsEntity? details;
   final String? createdAt;
 
   NotificationEntity({
-    required this.identifier,
     required this.notification,
-    this.reference,
     this.notificationLogId,
+    this.contactId,
+    this.reference,
+    this.userId,
+    this.name,
     this.details,
     this.createdAt,
   });
@@ -53,12 +57,17 @@ class NotificationEntity {
 
     final DetailsEntity details = DetailsEntity(title, message, link, image);
 
+    DateTime localDateTime = DateTime.now();
+    DateTime utcDateTime = localDateTime.toUtc();
+
     return NotificationEntity(
-        reference: json["data"]["reference"],
         notification: json["data"]["notification"],
-        notificationLogId: json["data"]["notification_log_id"],
-        identifier: json["data"]["user_id"],
-        createdAt: json["data"]["createdAt"],
+        notificationLogId: json["data"]["log_id"],
+        contactId: json["messageId"],
+        reference: json["data"]["reference"],
+        userId: json["data"]["user_id"],
+        name: json["data"]["notification_name"],
+        createdAt: utcDateTime.toIso8601String(),
         details: details);
   }
 
@@ -66,22 +75,26 @@ class NotificationEntity {
     assert(json is Map);
 
     return NotificationEntity(
-      reference: json["reference"],
       notification: json["notification"],
       notificationLogId: json["notificationLogId"],
-      identifier: json["identifier"],
+      contactId: json["contactId"],
+      reference: json["reference"],
+      userId: json["userId"],
+      name: json["name"],
       createdAt: json["createdAt"],
       details: DetailsEntity.fromJson(json["details"]),
     );
   }
 
   Map<String, dynamic> toJson() => {
-        'reference': reference,
-        'identifier': identifier,
         'notification': notification,
         'notificationLogId': notificationLogId,
-        'details': details,
+        'contactId': contactId,
+        'reference': reference,
+        'userId': userId,
+        'name': name,
         'createdAt': createdAt,
+        'details': details,
       };
 }
 

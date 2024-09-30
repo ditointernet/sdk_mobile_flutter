@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "719280351201",
+    "project_id": "teste-dito-sdk",
+    "storage_bucket": "teste-dito-sdk.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:719280351201:android:9407ea403f310b34a854a0",
+        "android_client_info": {
+          "package_name": "com.example.flutter_sdk_test"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCSJRyVepSWw3QopOI1kdsOQ-snsVMrPGY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
