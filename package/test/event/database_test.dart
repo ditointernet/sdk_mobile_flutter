@@ -1,7 +1,10 @@
-import 'package:dito_sdk/data/database.dart';
+import 'dart:convert';
+
+import 'package:dito_sdk/event/event_dao.dart';
 import 'package:dito_sdk/event/event_entity.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:uuid/uuid.dart';
 
 void main() {
   setUpAll(() {
@@ -10,73 +13,75 @@ void main() {
   });
 
   group('EventDatabaseService Tests', () {
-    final LocalDatabase eventDatabaseService = LocalDatabase();
-
-    setUp(() async {
-      await eventDatabaseService.database;
-    });
+    final EventDAO eventDAO = EventDAO();
 
     tearDown(() async {
-      await eventDatabaseService.clearDatabase("events");
-      await eventDatabaseService.closeDatabase();
+      await eventDAO.clearDatabase();
+      await eventDAO.closeDatabase();
     });
 
     test('should insert an event', () async {
       final event = EventEntity(
-        eventName: 'Test Event',
-        eventMoment: '2024-06-01T12:34:56Z',
+        action: 'Test Event',
+        createdAt: '2024-06-01T12:34:56Z',
         revenue: 100.0,
         customData: {'key': 'value'},
-      ).toMap();
+      );
 
-      final success = await eventDatabaseService.insert("events", event);
+      final uuid = Uuid().v4();
+
+      final success = await eventDAO.create(EventsNames.track, uuid,  event: event);
 
       expect(success, true);
 
-      final events = await eventDatabaseService.fetchAll("events");
+      final events = await eventDAO.fetchAll();
       expect(events.length, 1);
-      expect(events.first["eventName"], 'Test Event');
+      expect(jsonDecode(events.first["event"])["action"], 'Test Event');
     });
 
     test('should delete an event', () async {
       final event = EventEntity(
-        eventName: 'Test Event',
-        eventMoment: '2024-06-01T12:34:56Z',
+        action: 'Test Event',
+        createdAt: '2024-06-01T12:34:56Z',
         revenue: 100.0,
         customData: {'key': 'value'},
-      ).toMap();
+      );
 
-      await eventDatabaseService.insert("events", event);
-      await eventDatabaseService.clearDatabase("events");
+      final uuid = Uuid().v4();
 
-      final events = await eventDatabaseService.fetchAll("events");
+      await eventDAO.create(EventsNames.track, uuid, event: event);
+      await eventDAO.clearDatabase();
+
+      final events = await eventDAO.fetchAll();
       expect(events.isEmpty, true);
     });
 
     test('should fetch all events', () async {
       final event1 = EventEntity(
-        eventName: 'Test Event 1',
-        eventMoment: '2024-06-01T12:34:56Z',
+        action: 'Test Event 1',
+        createdAt: '2024-06-01T12:34:56Z',
         revenue: 100.0,
         customData: {'key': 'value1'},
-      ).toMap();
+      );
 
       final event2 = EventEntity(
-        eventName: 'Test Event 2',
-        eventMoment: '2024-06-02T12:34:56Z',
+        action: 'Test Event 2',
+        createdAt: '2024-06-02T12:34:56Z',
         revenue: 200.0,
         customData: {'key': 'value2'},
-      ).toMap();
+      );
 
-      await eventDatabaseService.insert("events", event1);
-      await eventDatabaseService.insert("events", event2);
+      final uuid = Uuid().v4();
+      final uuid2 = Uuid().v4();
 
-      final events = await eventDatabaseService.fetchAll("events");
+      await eventDAO.create(EventsNames.track, uuid, event: event1);
+      await eventDAO.create(EventsNames.track, uuid2, event: event2);
+
+      final events = await eventDAO.fetchAll();
 
       expect(events.length, 2);
-      expect(events.first["eventName"], 'Test Event 1');
-      expect(events.last["eventName"], 'Test Event 2');
+      expect(jsonDecode(events.first["event"])["action"], 'Test Event 1');
+      expect(jsonDecode(events.last["event"])["action"], 'Test Event 2');
     });
-
   });
 }

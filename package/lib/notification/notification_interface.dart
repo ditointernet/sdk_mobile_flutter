@@ -3,37 +3,37 @@ import 'dart:io';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/foundation.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 
-import '../data/dito_api.dart';
 import '../user/user_interface.dart';
+import '../utils/logger.dart';
 import 'notification_controller.dart';
 import 'notification_entity.dart';
 import 'notification_events.dart';
 import 'notification_repository.dart';
 
-/// NotificationInterface is an interface for communication with the notification repository and notification controller
+/// `NotificationInterface` manages notifications, handling initialization, token management,
+/// and listening for notification events. It integrates with Firebase Messaging and custom notification flows.
 class NotificationInterface {
-  late void Function(DataPayload payload) onMessageClick;
+  late void Function(RemoteMessage message) onMessageClick;
   final NotificationRepository _repository = NotificationRepository();
   final NotificationController _controller = NotificationController();
   final NotificationEvents _notificationEvents = NotificationEvents();
-  final DitoApi _api = DitoApi();
   final UserInterface _userInterface = UserInterface();
   bool initialized = false;
+  Future<String?> get token async =>
+      await FirebaseMessaging.instance.getToken();
 
-  /// This method initializes notification controller and notification repository.
-  /// Start listening to notifications
+  /// Initializes the notification interface, including Firebase Messaging,
+  /// setting up token management, and listening for notification events.
   Future<void> initialize() async {
     if (Firebase.apps.isEmpty) {
       throw 'Firebase not initialized';
     }
 
     if (initialized) return;
-
     await FirebaseMessaging.instance.setAutoInitEnabled(true);
 
+    // For iOS, set notification presentation options.
     if (Platform.isIOS) {
       await FirebaseMessaging.instance
           .setForegroundNotificationPresentationOptions(
@@ -41,140 +41,154 @@ class NotificationInterface {
     }
 
     FirebaseMessaging.onMessage.listen(onMessage);
-
     _handleToken();
-
     await _controller.initialize(onSelectNotification);
+
     _listenStream();
+
     initialized = true;
   }
 
   void _handleToken() async {
-    _userInterface.data.token = await getFirebaseToken();
+    _userInterface.data.token = await token;
+
     FirebaseMessaging.instance.onTokenRefresh.listen((token) {
-      final lastToken = _userInterface.data.token;
-      if (lastToken != token) {
-        if (lastToken != null && lastToken.isNotEmpty) {
-          removeToken(lastToken);
-        }
-        registryToken(token);
-        _userInterface.data.token = token;
-      }
+      _userInterface.data.token = token;
+      _userInterface.token.pingToken(token);
     }).onError((err) {
-      if (kDebugMode) {
-        print('Error getting token: $err');
-      }
+      loggerError(err);
     });
   }
 
-  /// Gets the current FCM token for the device.
-  ///
-  /// Returns the token as a String or null if not available.
-  Future<String?> getFirebaseToken() => FirebaseMessaging.instance.getToken();
-
-  // This method turns off the streams when this class is unmounted
+  /// Disposes of notification streams, ensuring that all resources are released.
   void dispose() {
     _repository.didReceiveLocalNotificationStream.close();
     _repository.selectNotificationStream.close();
   }
 
-  // This method initializes the listeners on streams
+  /// Listens for events in the notification streams and triggers appropriate actions.
   _listenStream() {
     _repository.didReceiveLocalNotificationStream.stream
         .listen((NotificationEntity receivedNotification) async {
       _controller.showNotification(receivedNotification);
-      await notifyReceivedNotification(receivedNotification.notificationId!);
+
+      await _repository.received(NotificationEntity(
+          notification: receivedNotification.notification,
+          notificationLogId: receivedNotification.notificationLogId,
+          contactId: receivedNotification.contactId,
+          name: receivedNotification.name));
     });
+
     _repository.selectNotificationStream.stream
-        .listen((DataPayload data) async {
-      _notificationEvents.stream.fire(MessageClickedEvent(data));
+        .listen((RemoteMessage message) async {
+      _notificationEvents.stream.fire(MessageClickedEvent(message));
 
-      // Only sends the event if the message is linked to a notification
-      if (data.notification != null &&
-          data.identifier != null &&
-          data.reference != null) {
-        await _api.openNotification(
-            data.notification!, data.identifier!, data.reference!);
+      final data = message.data;
+      final notification = NotificationEntity(
+          notification: data["notification"],
+          notificationLogId: data["notificationLogId"]!,
+          contactId: data["contactId"],
+          name: data["name"]);
 
-        onMessageClick(data);
-      }
+      await _repository.click(notification);
+      onMessageClick(message);
     });
   }
 
-  /// This method is a handler for new remote messages.
-  /// Check permissions and add notification to the stream.
+  /// Handles incoming messages from Firebase and triggers appropriate actions based on the content.
   ///
-  /// [message] - RemoteMessage object.
+  /// [message] - The incoming [RemoteMessage] from Firebase.
   Future<void> onMessage(RemoteMessage message) async {
     if (message.data.isEmpty) {
-      if (kDebugMode) {
-        print("Data is not defined: $message");
-      }
+      loggerError("Data is not defined: $message");
     }
 
-    final notification = DataPayload.fromMap(message.toMap());
+    final notification = NotificationEntity.fromMap(message.toMap());
+
+    _repository.received(notification);
+
     final messagingAllowed = await _checkPermissions();
 
-    PackageInfo packageInfo = await PackageInfo.fromPlatform();
-    final appName = packageInfo.appName;
-
-    if (messagingAllowed && notification.details.message.isNotEmpty) {
-      _repository.didReceiveLocalNotificationStream.add((NotificationEntity(
-          id: message.hashCode,
-          notificationId: notification.notification,
-          title: notification.details.title ?? appName,
-          body: notification.details.message,
-          image: notification.details.image,
-          payload: notification)));
+    if (messagingAllowed && notification.details?.message != null) {
+      _repository.didReceiveLocalNotificationStream.add(notification);
     }
   }
 
-  /// This method send a notify received push event to Dito
+  /// Marks a notification as received in the repository.
   ///
-  /// [notificationId] - DataPayload object.
-  Future<void> notifyReceivedNotification(String notificationId) =>
-      _repository.notifyReceivedNotification(notificationId);
+  /// [notification] - The notification identifier.
+  /// [notificationLogId] - The dispatch identifier.
+  /// [contactId] - The contact identifier.
+  /// [name] - The name of notification.
+  /// Returns a `Future<bool>` that completes with `true` if the event was tracked successfully,
+  /// or `false` if there was an error.
+  Future<bool> received(
+      {required String notification,
+      String? notificationLogId,
+      String? contactId,
+      String? name}) async {
+    try {
+      return _repository.received(NotificationEntity(
+          notification: notification,
+          notificationLogId: notificationLogId,
+          contactId: contactId,
+          name: name));
+    } catch (e) {
+      loggerError(
+          'Error tracking click event: $e'); // Log the error in debug mode.
 
-  /// This method send a open unsubscribe from notification event to Dito
-  Future<void> unsubscribeFromNotifications() =>
-      _repository.unsubscribeFromNotifications();
+      return false; // Return false if there was an error.
+    }
+  }
 
-  /// This method send a open deeplink event to Dito
-  Future<void> notifyOpenDeepLink(String notificationId) =>
-      _repository.notifyOpenDeepLink(notificationId);
-
-  /// Requests permission to show notifications.
+  /// Marks a notification as clicked in the repository.
   ///
-  /// Returns a boolean indicating if permission was granted.
+  /// [notification] - The notification identifier.
+  /// [notificationLogId] - The dispatch identifier.
+  /// [contactId] - The contact identifier.
+  /// [name] - The name of notification.
+  /// [createdAt] - The navigation event creation time, defaults to the current UTC time if not provided.
+  /// Returns a `Future<bool>` that completes with `true` if the event was tracked successfully,
+  /// or `false` if there was an error.
+  Future<bool> click(
+      {required String notification,
+      String? notificationLogId,
+      String? contactId,
+      String? name,
+      String? createdAt}) async {
+    try {
+      DateTime localDateTime = DateTime.now();
+      DateTime utcDateTime = localDateTime.toUtc();
+
+      return await _repository.click(NotificationEntity(
+        notification: notification,
+        notificationLogId: notificationLogId,
+        contactId: contactId,
+        name: name,
+        createdAt: createdAt ??
+            utcDateTime
+                .toIso8601String(), // Default to current UTC time if not provided.
+      ));
+    } catch (e) {
+      loggerError(
+          'Error tracking click event: $e'); // Log the error in debug mode.
+
+      return false; // Return false if there was an error.
+    }
+  }
+
+  /// Checks if the user has granted permissions for receiving notifications.
+  ///
+  /// Returns `true` if notifications are authorized, `false` otherwise.
   Future<bool> _checkPermissions() async {
     final settings = await FirebaseMessaging.instance.requestPermission();
     return settings.authorizationStatus == AuthorizationStatus.authorized;
   }
 
-  /// This method adds a selected notification to stream
+  /// Handles notification selection events and triggers appropriate actions.
   ///
-  /// [data] - DataPayload object.
-  Future<void> onSelectNotification(DataPayload? data) async {
-    if (data != null) {
-      _repository.selectNotificationStream.add(data);
-    }
-  }
-
-  /// This method registers a mobile token for push notifications.
-  ///
-  /// [token] - The mobile token to be registered.
-  /// Returns an http.Response.
-  registryToken(String? token) async {
-    String? newToken = token ?? await getFirebaseToken();
-    if (newToken != null) _repository.registryToken(newToken);
-  }
-
-  /// This method removes a mobile token for push notifications.
-  ///
-  /// [token] - The mobile token to be removed.
-  /// Returns an http.Response.
-  removeToken(String? token) async {
-    String? newToken = token ?? await getFirebaseToken();
-    if (newToken != null) _repository.removeToken(newToken);
+  /// [message] - The selected [RemoteMessage] from Firebase.
+  void onSelectNotification(RemoteMessage message) {
+    _repository.selectNotificationStream.add(message);
   }
 }

@@ -1,8 +1,11 @@
 library dito_sdk;
 
-import 'package:firebase_messaging/firebase_messaging.dart';
+import 'dart:io';
 
-import 'data/dito_api.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+
+import 'api/dito_api_interface.dart';
 import 'event/event_interface.dart';
 import 'notification/notification_interface.dart';
 import 'user/user_interface.dart';
@@ -10,10 +13,11 @@ import 'user/user_interface.dart';
 /// DitoSDK is a singleton class that provides various methods to interact with Dito API
 /// and manage user data, events, and push notifications.
 class DitoSDK {
-  final DitoApi _api = DitoApi();
+  final ApiInterface _api = ApiInterface();
   final UserInterface _userInterface = UserInterface();
   final EventInterface _eventInterface = EventInterface();
   final NotificationInterface _notificationInterface = NotificationInterface();
+  final AppInfo _appInfo = AppInfo();
 
   static final DitoSDK _instance = DitoSDK._internal();
 
@@ -41,7 +45,15 @@ class DitoSDK {
   /// [apiKey] - The API key for the Dito platform.
   /// [secretKey] - The secret key for the Dito platform.
   void initialize({required String apiKey, required String secretKey}) async {
+    final packageInfo = !Platform.environment.containsKey('FLUTTER_TEST') ? await PackageInfo.fromPlatform(): null;
     _api.setKeys(apiKey, secretKey);
+    _appInfo.platform = Platform.isAndroid ? 'Android' : 'Apple iPhone';
+    _appInfo.sdkLang = "Flutter";
+    _appInfo.sdkVersion = '2.0.0';
+    _appInfo.sdkBuild = '1';
+    _appInfo.build = packageInfo?.buildNumber ?? '1';
+    _appInfo.version = packageInfo?.version ?? '1.0.0';
+    _appInfo.id = packageInfo?.packageName ?? '';
   }
 
   /// This method initializes the push notification service using Firebase.

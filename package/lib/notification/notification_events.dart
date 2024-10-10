@@ -1,10 +1,10 @@
-import 'package:dito_sdk/notification/notification_entity.dart';
 import 'package:event_bus/event_bus.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 class MessageClickedEvent {
-  DataPayload data;
+  RemoteMessage message;
 
-  MessageClickedEvent(this.data);
+  MessageClickedEvent(this.message);
 }
 
 class NotificationEvents {

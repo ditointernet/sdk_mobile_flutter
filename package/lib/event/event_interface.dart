@@ -1,38 +1,86 @@
-import 'package:flutter/foundation.dart';
-
-import '../utils/custom_data.dart';
+import '../utils/logger.dart';
 import 'event_entity.dart';
 import 'event_repository.dart';
+import 'navigation_entity.dart';
 
-/// EventInterface is an interface for managing events and communicating with the event repository
+/// `EventInterface` provides an interface for tracking user events and navigation actions.
+/// It interacts with the `EventRepository` to save these events in the backend.
 interface class EventInterface {
+  /// Repository that handles the communication for event tracking.
   final EventRepository _repository = EventRepository();
 
-  /// Tracks an event by saving and sending it to the event repository.
+  /// Tracks a user event.
   ///
-  /// [event] - The EventEntity object containing event data.
-  /// Returns a Future that completes with true if the event was successfully tracked.
-  Future<bool> trackEvent(EventEntity event) async {
+  /// [action] - The action name (e.g., a button click or form submission).
+  /// [createdAt] - The event creation time, defaults to the current UTC time if not provided.
+  /// [revenue] - The revenue amount associated with the event, optional.
+  /// [currency] - The currency for the revenue, optional.
+  /// [customData] - A map of additional custom data related to the event, optional.
+  ///
+  /// Returns a `Future<bool>` that completes with `true` if the event was tracked successfully,
+  /// or `false` if there was an error.
+  Future<bool> track(
+      {required String action,
+      String? createdAt,
+      double? revenue,
+      String? currency,
+      Map<String, dynamic>? customData}) async {
     try {
+      // Get the current local time and convert it to UTC for accurate event logging.
       DateTime localDateTime = DateTime.now();
       DateTime utcDateTime = localDateTime.toUtc();
-      String eventMoment = utcDateTime.toIso8601String();
 
-      event.eventMoment ??= eventMoment;
+      // Create an event entity using the provided data.
+      final event = EventEntity(
+          action: action,
+          createdAt: createdAt ??
+              utcDateTime
+                  .toIso8601String(), // Default to current UTC time if not provided.
+          revenue: revenue,
+          currency: currency,
+          customData: customData);
 
-      final version = await customDataVersion;
-      if (event.customData == null) {
-        event.customData = version;
-      } else {
-        event.customData?.addAll(version);
-      }
-
-      return await _repository.trackEvent(event);
+      // Track the event using the repository and return the result.
+      return _repository.track(event);
     } catch (e) {
-      if (kDebugMode) {
-        print('Error tracking event: $e');
-      }
-      return false;
+      loggerError('Error tracking event: $e'); // Log the error in debug mode.
+
+      return false; // Return false if there was an error.
+    }
+  }
+
+  /// Tracks a navigation event when the user navigates to a new page or screen.
+  ///
+  /// [name] - The name of the page the user navigated to.
+  /// [createdAt] - The navigation event creation time, defaults to the current UTC time if not provided.
+  /// [customData] - A map of additional custom data related to the navigation event, optional.
+  ///
+  /// Returns a `Future<bool>` that completes with `true` if the navigation event was tracked successfully,
+  /// or `false` if there was an error.
+  Future<bool> navigate(
+      {required String name,
+      String? createdAt,
+      Map<String, dynamic>? customData}) async {
+    try {
+      // Get the current local time and convert it to UTC for accurate navigation logging.
+      DateTime localDateTime = DateTime.now();
+      DateTime utcDateTime = localDateTime.toUtc();
+
+      // Create a navigation entity with the provided data.
+      final navigation = NavigationEntity(
+          pageName: name,
+          createdAt: createdAt ??
+              utcDateTime
+                  .toIso8601String(), // Default to current UTC time if not provided.
+          customData: customData);
+
+      // Track the navigation event using the repository and return the result.
+      return _repository.navigate(navigation);
+    } catch (e) {
+      loggerError(
+          'Error tracking navigation event: $e'); // Log the error in debug mode.
+
+      return false; // Return false if there was an error.
     }
   }
 }

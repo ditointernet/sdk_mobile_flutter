@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'address_entity.dart';
+
 class UserEntity {
   String? userID;
   String? name;
@@ -7,7 +9,8 @@ class UserEntity {
   String? email;
   String? gender;
   String? birthday;
-  String? location;
+  String? phone;
+  AddressEntity? address;
   String? token;
   Map<String, dynamic>? customData;
 
@@ -18,7 +21,8 @@ class UserEntity {
       this.email,
       this.gender,
       this.birthday,
-      this.location,
+      this.phone,
+      this.address,
       this.token,
       this.customData});
 
@@ -31,6 +35,9 @@ class UserEntity {
 
   // Factory method to instance a user from a JSON object
   factory UserEntity.fromMap(Map<String, dynamic> map) {
+    final address = map['address'] != null
+        ? AddressEntity.fromMap(map['address'] as Map<String, dynamic>)
+        : null;
     return UserEntity(
         userID: map['userID'],
         name: map['name'],
@@ -38,7 +45,9 @@ class UserEntity {
         email: map['email'],
         gender: map['gender'],
         birthday: map['birthday'],
-        location: map['location'],
+        phone: map['phone'],
+        token: map['token'],
+        address: address,
         customData: map['customData'] != null
             ? (json.decode(map['customData']) as Map<String, dynamic>)
                 .map((key, value) => MapEntry(key, value as String))
@@ -53,8 +62,15 @@ class UserEntity {
       'email': email,
       'gender': gender,
       'birthday': birthday,
-      'location': location,
+      'phone': phone,
+      'token': token,
+      'address': address?.toJson() ?? {},
       'data': customData != null ? jsonEncode(customData) : null,
     };
+  }
+
+  // Factory method to convert a user to Map object
+  Map<String, dynamic> toMap() {
+    return toJson();
   }
 }

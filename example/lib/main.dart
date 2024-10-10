@@ -6,14 +6,22 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'app.dart';
-import 'constants.dart';
+
+const apiKey = String.fromEnvironment(
+  'API_KEY',
+  defaultValue: '',
+);
+
+const secretKey = String.fromEnvironment(
+  'SECRET_KEY',
+  defaultValue: '',
+);
 
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
   DitoSDK dito = DitoSDK();
-  dito.initialize(
-      apiKey: Constants.ditoApiKey, secretKey: Constants.ditoSecretKey);
+  dito.initialize(apiKey: apiKey, secretKey: secretKey);
   dito.onBackgroundPushNotificationHandler(message: message);
 }
 
@@ -22,15 +30,14 @@ void main() async {
   await Firebase.initializeApp();
 
   DitoSDK dito = DitoSDK();
-  dito.initialize(
-      apiKey: Constants.ditoApiKey, secretKey: Constants.ditoSecretKey);
+  dito.initialize(apiKey: apiKey, secretKey: secretKey);
   await dito.initializePushNotificationService();
 
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
   dito.notification.onMessageClick = (data) {
     if (kDebugMode) {
-      print(data.toJson());
+      print(data);
     }
   };
 

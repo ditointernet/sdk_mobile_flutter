@@ -1,15 +1,20 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:flutter/foundation.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+
+import '../utils/logger.dart';
 
 /// EventDatabaseService is a singleton class that provides methods to interact with a SQLite database
 /// for storing and managing events.
 class LocalDatabase {
   static const String _dbName = 'dito-offline.db';
   static Database? _database;
-  final tables = {"notification": "notification", "events": "events"};
+  final tables = {
+    "notification": "notification",
+    "events": "events",
+    "user": "user"
+  };
 
   static final LocalDatabase _instance = LocalDatabase._internal();
 
@@ -51,9 +56,7 @@ class LocalDatabase {
         onCreate: _createTable,
       );
     } catch (e) {
-      if (kDebugMode) {
-        print('Error initializing database: $e');
-      }
+      loggerError('Error initializing database: $e');
       rethrow;
     }
   }
@@ -67,23 +70,24 @@ class LocalDatabase {
       await db.execute('''
         CREATE TABLE events (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
-          eventName TEXT,
-          eventMoment TEXT,
-          revenue REAL,
-          customData TEXT
+          name TEXT,
+          event TEXT,
+          uuid TEXT,
+          createdAt TEXT
         );
       ''');
       await db.execute('''
-        CREATE TABLE notification (
+        CREATE TABLE user (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
-          event TEXT,
-          token TEXT
+          name TEXT,
+          user TEXT,
+          uuid TEXT,
+          createdAt TEXT
         );
       ''');
     } catch (e) {
-      if (kDebugMode) {
-        print('Error creating table: $e');
-      }
+      loggerError('Error creating table: $e');
+
       rethrow;
     }
   }
@@ -103,9 +107,8 @@ class LocalDatabase {
         whereArgs: whereArgs,
       );
     } catch (e) {
-      if (kDebugMode) {
-        print('Error deleting event: $e');
-      }
+      loggerError('Error deleting event: $e');
+
       rethrow;
     }
   }
@@ -124,9 +127,8 @@ class LocalDatabase {
       final db = await database;
       await db.delete(tableName);
     } catch (e) {
-      if (kDebugMode) {
-        print('Error clearing database: $e');
-      }
+      loggerError('Error clearing event: $e');
+
       rethrow;
     }
   }

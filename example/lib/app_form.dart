@@ -1,6 +1,4 @@
 import 'package:dito_sdk/dito_sdk.dart';
-import 'package:dito_sdk/event/event_entity.dart';
-import 'package:dito_sdk/user/user_entity.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -23,41 +21,174 @@ class AppFormState extends State<AppForm> {
     String cpf = "33333333333";
     String email = "teste.sdk-flutter@dito.com.br";
 
-    identify() async {
-      final user = UserEntity(
-          userID: "e400c65b1800bee5bf546c5b7bd37cd4f7452bb8",
+    identify() {
+      return dito.user.identify(
+          userID: "1575213826e164f73d28c4ed1b5fabaad4bd4a13",
           cpf: cpf,
-          name: 'Teste SDK Flutter 33333333333',
+          name: 'Usuário SDK FLutter - Teste',
           email: email);
+    }
 
-      await dito.user.identify(user);
-      await dito.notification
-          .registryToken(await dito.notification.getFirebaseToken());
+    login() {
+      return dito.user
+          .login(userID: '1575213826e164f73d28c4ed1b5fabaad4bd4a13');
     }
 
     handleIdentify() async {
       if (_formKey.currentState!.validate()) {
-        await identify().then((response) => {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Usuário identificado')),
-              )
-            });
+        final bool response = await identify();
+
+        if (response) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Usuário identificado')),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+                content: Text('Ocorreu um erro!'),
+                backgroundColor: Colors.redAccent),
+          );
+        }
       }
     }
 
-    handleNotification() async {
+    handleLogin() async {
       if (_formKey.currentState!.validate()) {
-        await dito.event.trackEvent(EventEntity(eventName: 'action-test'));
+        final bool response = await login();
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Evento de notificação solicitado')),
+        if (response) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Usuário logado')),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+                content: Text('Ocorreu um erro!'),
+                backgroundColor: Colors.redAccent),
+          );
+        }
+      }
+    }
+
+    handleGenericTrack() async {
+      if (_formKey.currentState!.validate()) {
+        final bool response = await dito.event.track(action: 'action-test');
+
+        if (response) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Evento de notificação solicitado')),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+                content: Text('Ocorreu um erro!'),
+                backgroundColor: Colors.redAccent),
+          );
+        }
+      }
+    }
+
+    handleNavigation() async {
+      if (_formKey.currentState!.validate()) {
+        final bool response = await dito.event.navigate(name: 'home');
+
+        if (response) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Evento de notificação solicitado')),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+                content: Text('Ocorreu um erro!'),
+                backgroundColor: Colors.redAccent),
+          );
+        }
+      }
+    }
+
+    handleClickNotification() async {
+      if (_formKey.currentState!.validate()) {
+        final bool response = await dito.notification.click(
+          notification: 'notification-sdk-test',
         );
+
+        if (response) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Evento de notificação solicitado')),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+                content: Text('Ocorreu um erro!'),
+                backgroundColor: Colors.redAccent),
+          );
+        }
+      }
+    }
+
+    handleReceivedNotification() async {
+      if (_formKey.currentState!.validate()) {
+        final bool response = await dito.notification.received(
+            notification: 'notification-sdk-test',
+        );
+
+        if (response) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Evento de notificação solicitado')),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+                content: Text('Ocorreu um erro!'),
+                backgroundColor: Colors.redAccent),
+          );
+        }
       }
     }
 
     handleDeleteToken() async {
-      await dito.notification
-          .removeToken(await dito.notification.getFirebaseToken());
+      final bool response = await dito.user.token.removeToken(dito.user.data.token);
+      if (response) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Evento de notificação solicitado')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('Ocorreu um erro!'),
+              backgroundColor: Colors.redAccent),
+        );
+      }
+    }
+
+    handleRegistryToken() async {
+      final bool response =  await dito.user.token.registryToken(dito.user.data.token);
+      if (response) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Evento de notificação solicitado')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('Ocorreu um erro!'),
+              backgroundColor: Colors.redAccent),
+        );
+      }
+    }
+
+    handlePingToken() async {
+      final bool response = await dito.user.token.pingToken(dito.user.data.token);
+      if (response) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Evento de notificação solicitado')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('Ocorreu um erro!'),
+              backgroundColor: Colors.redAccent),
+        );
+      }
     }
 
     return Form(
@@ -95,15 +226,39 @@ class AppFormState extends State<AppForm> {
                   child: Column(children: [
                     FilledButton(
                       onPressed: handleIdentify,
-                      child: const Text('Registrar Identify'),
+                      child: const Text('Alterar cadastro'),
+                    ),
+                    FilledButton(
+                      onPressed: handleLogin,
+                      child: const Text('Logar usuário'),
                     ),
                     OutlinedButton(
-                      onPressed: handleNotification,
-                      child: const Text('Receber Notification'),
+                      onPressed: handleGenericTrack,
+                      child: const Text('Registrar evento genérico'),
                     ),
                     OutlinedButton(
+                      onPressed: handleNavigation,
+                      child: const Text('Registrar evento de navegação'),
+                    ),
+                    OutlinedButton(
+                      onPressed: handleClickNotification,
+                      child: const Text('Registrar evento de click'),
+                    ),
+                    OutlinedButton(
+                      onPressed: handleReceivedNotification,
+                      child: const Text('Registrar evento de Entrega'),
+                    ),
+                    FilledButton(
+                      onPressed: handleRegistryToken,
+                      child: const Text('Registrar token'),
+                    ),
+                    FilledButton(
                       onPressed: handleDeleteToken,
                       child: const Text('Deletar token'),
+                    ),
+                    FilledButton(
+                      onPressed: handlePingToken,
+                      child: const Text('Validar token'),
                     ),
                   ])))
         ],
