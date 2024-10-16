@@ -28,5 +28,16 @@ node_modules
 **/.dart_tool/
 example/build/
 package/build/
+package/proto/
+package/lib/proto/
 .flutter-plugins*
 package/test/.env-test.json
+/example/ios/_GoogleService-Info.plist
+/build/
+/example/lib/firebase_options.dart
+/example/ios/Podfile.lock
+
+# Lockfiles
+pubspec.lock
+example/pubspec.lock
+package/pubspec.lock

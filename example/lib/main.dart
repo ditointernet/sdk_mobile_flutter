@@ -1,46 +1,45 @@
-import 'dart:convert';
-
 import 'package:dito_sdk/dito_sdk.dart';
-import 'package:dito_sdk/entity/custom_notification.dart';
-import 'package:dito_sdk/entity/data_payload.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 
 import 'app.dart';
-import 'constants.dart';
+
+const apiKey = String.fromEnvironment(
+  'API_KEY',
+  defaultValue: '',
+);
+
+const secretKey = String.fromEnvironment(
+  'SECRET_KEY',
+  defaultValue: '',
+);
 
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  PackageInfo packageInfo = await PackageInfo.fromPlatform();
-  final appName = packageInfo.appName;
-
+  await Firebase.initializeApp();
   DitoSDK dito = DitoSDK();
-  dito.initialize(
-      apiKey: Constants.ditoApiKey, secretKey: Constants.ditoSecretKey);
-  await dito.initializePushNotificationService();
-
-  final notification = DataPayload.fromJson(jsonDecode(message.data["data"]));
-
-  dito.notificationService().showLocalNotification(CustomNotification(
-      id: message.hashCode,
-      title: appName,
-      body: notification.details.message,
-      payload: notification));
+  dito.initialize(apiKey: apiKey, secretKey: secretKey);
+  dito.onBackgroundPushNotificationHandler(message: message);
 }
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
   await Firebase.initializeApp();
-  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
   DitoSDK dito = DitoSDK();
-  dito.initialize(
-      apiKey: Constants.ditoApiKey, secretKey: Constants.ditoSecretKey);
+  dito.initialize(apiKey: apiKey, secretKey: secretKey);
   await dito.initializePushNotificationService();
+
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
+  dito.notification.onMessageClick = (data) {
+    if (kDebugMode) {
+      print(data);
+    }
+  };
 
   runApp(MultiProvider(providers: [
     Provider<DitoSDK>(
