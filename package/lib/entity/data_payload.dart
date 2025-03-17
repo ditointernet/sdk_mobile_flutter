@@ -1,12 +1,13 @@
 class Details {
   final String? link;
   final String message;
+  final String title;
 
-  Details(this.link, this.message);
+  Details(this.link, this.title,this.message);
 
   factory Details.fromJson(dynamic json) {
     assert(json is Map);
-    return Details(json["link"], json["message"]);
+    return Details(json["link"],  json["title"], json["message"]);
   }
 
   Map<String, dynamic> toJson() => {

@@ -19,28 +19,32 @@ class AppFormState extends State<AppForm> {
   Widget build(BuildContext context) {
     final dito = Provider.of<DitoSDK>(context);
 
-    String cpf = "22222222222";
-    String email = "teste@dito.com.br";
+    String cpf = "66666666666";
+    String email = "testepush@dito.com.br";
 
     identify() async {
       dito.identify(
-          userID: cpf, cpf: cpf, name: 'Teste SDK Flutter', email: email);
+        userID: cpf,
+        cpf: cpf,
+        name: 'Teste SDK Flutter',
+        email: email,
+      );
       await dito.identifyUser();
 
-      // final token = await dito.notificationService().getDeviceFirebaseToken();
-      //
-      // if (token != null && token.isNotEmpty) {
-      //   dito.registryMobileToken(token: token);
-      // }
+      final token = await dito.notificationService().getDeviceFirebaseToken();
+
+      if (token != null && token.isNotEmpty) {
+        dito.registryMobileToken(token: token);
+      }
     }
 
     handleIdentify() async {
       if (_formKey.currentState!.validate()) {
         await identify();
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Usuário identificado')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Usuário identificado')));
       }
     }
 
@@ -56,15 +60,18 @@ class AppFormState extends State<AppForm> {
     }
 
     handleLocalNotification() {
-      dito.notificationService().addNotificationToStream(CustomNotification(
+      dito.notificationService().addNotificationToStream(
+        CustomNotification(
           id: 123,
           title: "Notificação local",
           body:
-              "Está é uma mensagem de teste, validando o stream de dados das notificações locais"));
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Push enviado para a fila')),
+              "Está é uma mensagem de teste, validando o stream de dados das notificações locais",
+        ),
       );
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Push enviado para a fila')));
     }
 
     return Form(
@@ -97,22 +104,26 @@ class AppFormState extends State<AppForm> {
             },
           ),
           Center(
-              child: Padding(
-                  padding: const EdgeInsets.all(15.0),
-                  child: Column(children: [
-                    FilledButton(
-                      child: const Text('Registrar Identify'),
-                      onPressed: handleIdentify,
-                    ),
-                    OutlinedButton(
-                      child: const Text('Receber Notification'),
-                      onPressed: handleNotification,
-                    ),
-                    TextButton(
-                      child: const Text('Criar notificação local'),
-                      onPressed: handleLocalNotification,
-                    )
-                  ])))
+            child: Padding(
+              padding: const EdgeInsets.all(15.0),
+              child: Column(
+                children: [
+                  FilledButton(
+                    child: const Text('Registrar Identify'),
+                    onPressed: handleIdentify,
+                  ),
+                  OutlinedButton(
+                    child: const Text('Receber Notification'),
+                    onPressed: handleNotification,
+                  ),
+                  TextButton(
+                    child: const Text('Criar notificação local'),
+                    onPressed: handleLocalNotification,
+                  ),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
     );

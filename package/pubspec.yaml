@@ -1,6 +1,6 @@
 name: dito_sdk
 description: A Flutter package by Dito that enables user registration and user event tracking.
-version: 0.5.4
+version: 0.5.6
 homepage: https://github.com/ditointernet/sdk_mobile_flutter
 
 environment:
