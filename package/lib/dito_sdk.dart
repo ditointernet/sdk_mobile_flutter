@@ -210,7 +210,8 @@ class DitoSDK {
     return await _postEvent(event);
   }
 
-  Future<http.Response> registryMobileToken({required String token}) async {
+  Future<http.Response> registryMobileToken(
+      {required String token, String? platform}) async {
     _checkConfiguration();
 
     if (_user.isNotValid) {
@@ -221,7 +222,7 @@ class DitoSDK {
     final queryParameters = {
       'id_type': 'id',
       'token': token,
-      'platform': constants.platform,
+      'platform': platform ?? constants.platform,
     };
 
     queryParameters.addAll(_assign);
