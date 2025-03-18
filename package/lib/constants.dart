@@ -4,7 +4,7 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 class Constants {
-  String platform = Platform.isIOS ? 'iPhone' : 'Android';
+  String platform = Platform.isIOS ? 'Apple iPhone' : 'Android';
 
   Future<String> getUserAgent() async {
     final deviceInfo = DeviceInfoPlugin();

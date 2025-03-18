@@ -6,7 +6,6 @@ import 'package:dito_sdk/entity/data_payload.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 
 import 'app.dart';
@@ -14,21 +13,26 @@ import 'constants.dart';
 
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  PackageInfo packageInfo = await PackageInfo.fromPlatform();
-  final appName = packageInfo.appName;
-
   DitoSDK dito = DitoSDK();
   dito.initialize(
-      apiKey: Constants.ditoApiKey, secretKey: Constants.ditoSecretKey);
-  await dito.initializePushNotificationService();
+    apiKey: Constants.ditoApiKey,
+    secretKey: Constants.ditoSecretKey,
+  );
+
+  await dito.initializePushNotificationService((Map<String, dynamic> payload) {
+    print(payload);
+  });
 
   final notification = DataPayload.fromJson(jsonDecode(message.data["data"]));
 
-  dito.notificationService().showLocalNotification(CustomNotification(
+  dito.notificationService().showLocalNotification(
+    CustomNotification(
       id: message.hashCode,
-      title: appName,
+      title: notification.details.title,
       body: notification.details.message,
-      payload: notification));
+      payload: notification,
+    ),
+  );
 }
 
 void main() async {
@@ -39,14 +43,24 @@ void main() async {
 
   DitoSDK dito = DitoSDK();
   dito.initialize(
-      apiKey: Constants.ditoApiKey, secretKey: Constants.ditoSecretKey);
-  await dito.initializePushNotificationService();
+    apiKey: Constants.ditoApiKey,
+    secretKey: Constants.ditoSecretKey,
+  );
 
-  runApp(MultiProvider(providers: [
-    Provider<DitoSDK>(
-      create: (context) {
-        return dito;
-      },
+  await dito.initializePushNotificationService((Map<String, dynamic> payload) {
+    print(payload);
+  });
+
+  runApp(
+    MultiProvider(
+      providers: [
+        Provider<DitoSDK>(
+          create: (context) {
+            return dito;
+          },
+        ),
+      ],
+      child: const App(),
     ),
-  ], child: const App()));
+  );
 }

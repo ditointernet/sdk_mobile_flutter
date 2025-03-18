@@ -4,7 +4,6 @@ import 'dart:io';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 
 import '../dito_sdk.dart';
 import '../entity/custom_notification.dart';
@@ -12,13 +11,13 @@ import '../entity/data_payload.dart';
 
 class NotificationService {
   bool _messagingAllowed = false;
-  late String _appName;
   late DitoSDK _dito;
   late FlutterLocalNotificationsPlugin localNotificationsPlugin;
   final StreamController<CustomNotification> didReceiveLocalNotificationStream =
       StreamController<CustomNotification>.broadcast();
   final StreamController<String?> selectNotificationStream =
       StreamController<String?>.broadcast();
+  Function(Map<String, dynamic>)? _onTap;
 
   AndroidNotificationDetails androidDetails = const AndroidNotificationDetails(
     'dito_notifications',
@@ -39,7 +38,11 @@ class NotificationService {
     _dito = dito;
   }
 
-  Future<void> initialize() async {
+  Future<void> initialize(Function(Map<String, dynamic>)? onTap) async {
+    if (onTap != null) {
+      _onTap = onTap;
+    }
+
     if (Platform.isAndroid) {
       await FirebaseMessaging.instance.setAutoInitEnabled(true);
     }
@@ -51,15 +54,16 @@ class NotificationService {
         .setForegroundNotificationPresentationOptions(
             badge: true, sound: true, alert: true);
 
-    PackageInfo packageInfo = await PackageInfo.fromPlatform();
-    _appName = packageInfo.appName;
-
     await checkPermissions();
     _onMessage();
   }
 
   Future<String?> getDeviceFirebaseToken() async {
-    return FirebaseMessaging.instance.getToken();
+    if (Platform.isIOS) {
+      return FirebaseMessaging.instance.getAPNSToken();
+    } else {
+      return FirebaseMessaging.instance.getToken();
+    }
   }
 
   _onMessage() {
@@ -77,7 +81,7 @@ class NotificationService {
     if (_messagingAllowed && notification.details.message.isNotEmpty) {
       didReceiveLocalNotificationStream.add(CustomNotification(
           id: message.hashCode,
-          title: _appName,
+          title: notification.details.title,
           body: notification.details.message,
           payload: notification));
     }
@@ -175,6 +179,8 @@ class NotificationService {
   Future<void> onTapNotification(NotificationResponse? response) async {
     if (response?.payload != null) {
       selectNotificationStream.add(response?.payload);
+
+      _onTap!(jsonDecode(response!.payload!)["details"]);
     }
   }
 }
