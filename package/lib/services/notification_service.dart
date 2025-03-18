@@ -59,7 +59,11 @@ class NotificationService {
   }
 
   Future<String?> getDeviceFirebaseToken() async {
-    return FirebaseMessaging.instance.getToken();
+    if (Platform.isIOS) {
+      return FirebaseMessaging.instance.getAPNSToken();
+    } else {
+      return FirebaseMessaging.instance.getToken();
+    }
   }
 
   _onMessage() {
