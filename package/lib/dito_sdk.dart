@@ -50,7 +50,7 @@ class DitoSDK {
   }
 
   Future<void> initializePushNotificationService(
-      Function(Map<String, dynamic>)? onTap) async {
+      {Function(Map<String, dynamic>)? onTap}) async {
     await Firebase.initializeApp();
     await _notificationService.initialize(onTap);
 
