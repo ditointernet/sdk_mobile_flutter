@@ -17,7 +17,7 @@ class NotificationService {
       StreamController<CustomNotification>.broadcast();
   final StreamController<String?> selectNotificationStream =
       StreamController<String?>.broadcast();
-  Function(Map<String, dynamic>)? _onTap;
+  Function(Map<String, dynamic>)? onClick;
 
   AndroidNotificationDetails androidDetails = const AndroidNotificationDetails(
     'dito_notifications',
@@ -38,11 +38,7 @@ class NotificationService {
     _dito = dito;
   }
 
-  Future<void> initialize(Function(Map<String, dynamic>)? onTap) async {
-    if (onTap != null) {
-      _onTap = onTap;
-    }
-
+  Future<void> initialize() async {
     if (Platform.isAndroid) {
       await FirebaseMessaging.instance.setAutoInitEnabled(true);
     }
@@ -51,31 +47,34 @@ class NotificationService {
     _setupNotifications();
 
     await FirebaseMessaging.instance
-        .setForegroundNotificationPresentationOptions(
-            badge: true, sound: true, alert: true);
+        .setForegroundNotificationPresentationOptions();
 
     await checkPermissions();
-    _onMessage();
+    await _initializeMessages();
   }
 
   Future<String?> getDeviceFirebaseToken() async {
-    if (Platform.isIOS) {
-      return FirebaseMessaging.instance.getAPNSToken();
-    } else {
-      return FirebaseMessaging.instance.getToken();
-    }
+    return FirebaseMessaging.instance.getToken();
   }
 
-  _onMessage() {
+  Future<void> _initializeMessages() async {
+    NotificationAppLaunchDetails? notificationAppLaunchDetails =
+        await localNotificationsPlugin.getNotificationAppLaunchDetails();
+
+    if (notificationAppLaunchDetails != null &&
+        notificationAppLaunchDetails.didNotificationLaunchApp) {
+      onClick!(notificationAppLaunchDetails.notificationResponse
+          as Map<String, dynamic>);
+    }
+
     FirebaseMessaging.onMessage.listen(handleMessage);
-    FirebaseMessaging.onMessageOpenedApp.listen(handleMessage);
+
+    FirebaseMessaging.onMessageOpenedApp.listen(
+      (message) => selectNotificationStream.add(message.data["data"]),
+    );
   }
 
   void handleMessage(RemoteMessage message) {
-    if (message.data["data"] == null) {
-      print("Data is not defined: ${message.data}");
-    }
-
     final notification = DataPayload.fromJson(jsonDecode(message.data["data"]));
 
     if (_messagingAllowed && notification.details.message.isNotEmpty) {
@@ -131,7 +130,7 @@ class NotificationService {
         InitializationSettings(android: android, iOS: ios);
 
     await localNotificationsPlugin.initialize(initializationSettings,
-        onDidReceiveNotificationResponse: onTapNotification);
+        onDidReceiveNotificationResponse: onClickNotification);
   }
 
   void dispose() {
@@ -153,6 +152,10 @@ class NotificationService {
               notificationId: data.notification,
               identifier: data.identifier,
               reference: data.reference);
+        }
+
+        if (onClick != null) {
+          onClick!(data.details.toJson());
         }
       }
     });
@@ -176,11 +179,13 @@ class NotificationService {
     );
   }
 
-  Future<void> onTapNotification(NotificationResponse? response) async {
+  Future<void> onClickNotification(NotificationResponse? response) async {
     if (response?.payload != null) {
       selectNotificationStream.add(response?.payload);
 
-      _onTap!(jsonDecode(response!.payload!)["details"]);
+      if (onClick != null) {
+        onClick!(jsonDecode(response!.payload!)["details"]);
+      }
     }
   }
 }

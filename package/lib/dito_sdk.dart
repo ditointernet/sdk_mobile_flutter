@@ -49,10 +49,9 @@ class DitoSDK {
     };
   }
 
-  Future<void> initializePushNotificationService(
-      {Function(Map<String, dynamic>)? onTap}) async {
+  Future<void> initializePushNotificationService() async {
     await Firebase.initializeApp();
-    await _notificationService.initialize(onTap);
+    await _notificationService.initialize();
 
     RemoteMessage? initialMessage =
         await FirebaseMessaging.instance.getInitialMessage();

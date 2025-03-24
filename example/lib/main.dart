@@ -19,10 +19,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     secretKey: Constants.ditoSecretKey,
   );
 
-  await dito.initializePushNotificationService((Map<String, dynamic> payload) {
-    print(payload);
-  });
-
+  await dito.initializePushNotificationService();
   final notification = DataPayload.fromJson(jsonDecode(message.data["data"]));
 
   dito.notificationService().showLocalNotification(
@@ -47,15 +44,19 @@ void main() async {
     secretKey: Constants.ditoSecretKey,
   );
 
-  await dito.initializePushNotificationService((Map<String, dynamic> payload) {
-    print(payload);
-  });
+  await dito.initializePushNotificationService();
 
   runApp(
     MultiProvider(
       providers: [
         Provider<DitoSDK>(
           create: (context) {
+            dito.notificationService().onClick = (
+              Map<String, dynamic> payload,
+            ) {
+              print(payload);
+            };
+
             return dito;
           },
         ),
