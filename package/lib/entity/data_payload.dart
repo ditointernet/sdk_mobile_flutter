@@ -1,48 +1,57 @@
-class Details {
-  final String? link;
-  final String message;
-  final String title;
-
-  Details(this.link, this.title, this.message);
-
-  factory Details.fromJson(dynamic json) {
-    assert(json is Map);
-    return Details(json["link"], json["title"], json["message"]);
-  }
-
-  Map<String, dynamic> toJson() => {
-        'link': link,
-        'message': message,
-        'title': title,
-      };
-}
-
 class DataPayload {
   final String reference;
-  final String identifier;
+  final String user_id;
   final String notification;
-  final String notification_log_id;
-  final Details details;
+  final String log_id;
+  final String notification_name;
+  final String device_type;
+  final String title;
+  final String message;
+  final String link;
+  final String icon;
+  final String channel;
 
-  DataPayload(this.reference, this.identifier, this.notification,
-      this.notification_log_id, this.details);
+  DataPayload(
+      this.reference,
+      this.user_id,
+      this.notification,
+      this.log_id,
+      this.notification_name,
+      this.device_type,
+      this.title,
+      this.message,
+      this.link,
+      this.icon,
+      this.channel);
 
   factory DataPayload.fromJson(dynamic json) {
     assert(json is Map);
 
     return DataPayload(
-        json["reference"],
-        json["identifier"],
-        json["notification"],
-        json["notification_log_id"],
-        Details.fromJson(json["details"]));
+        json["reference"] ?? "",
+        json["user_id"] ?? "",
+        json["notification"] ?? "",
+        json["log_id"] ?? "",
+        json["notification_name"] ?? "",
+        json["device_type"] ?? "",
+        json["title"] ?? "",
+        json["message"] ?? "",
+        json["link"] ?? "",
+        json["icon"] ?? "",
+        json["channel"] ?? "");
   }
 
   Map<String, dynamic> toJson() => {
         'reference': reference,
-        'identifier': identifier,
+        'user_id': user_id,
         'notification': notification,
-        'notification_log_id': notification_log_id,
-        'details': details.toJson(),
+        'log_id': log_id,
+        'notification_name': notification_name,
+        'device_type': device_type,
+        'title': title,
+        'message': message,
+        'link': link,
+        'icon': icon,
+        'channel': channel,
       };
 }

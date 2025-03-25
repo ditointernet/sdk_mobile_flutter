@@ -16,7 +16,6 @@ dependencies:
   package_info_plus: ">=4.1.0"
   sqflite: ">=2.3.3"
   firebase_messaging: ">=14.9.1"
-  flutter_local_notifications: ">=17.1.0"
   firebase_core: ">=2.30.1"
   sqflite_common_ffi: ">=2.3.3"
 

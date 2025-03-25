@@ -1,5 +1,4 @@
 import 'package:dito_sdk/dito_sdk.dart';
-import 'package:dito_sdk/entity/custom_notification.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -59,21 +58,6 @@ class AppFormState extends State<AppForm> {
       }
     }
 
-    handleLocalNotification() {
-      dito.notificationService().addNotificationToStream(
-        CustomNotification(
-          id: 123,
-          title: "Notificação local",
-          body:
-              "Está é uma mensagem de teste, validando o stream de dados das notificações locais",
-        ),
-      );
-
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Push enviado para a fila')));
-    }
-
     return Form(
       key: _formKey,
       child: Column(
@@ -109,16 +93,12 @@ class AppFormState extends State<AppForm> {
               child: Column(
                 children: [
                   FilledButton(
-                    child: const Text('Registrar Identify'),
                     onPressed: handleIdentify,
+                    child: const Text('Registrar Identify'),
                   ),
                   OutlinedButton(
-                    child: const Text('Receber Notification'),
                     onPressed: handleNotification,
-                  ),
-                  TextButton(
-                    child: const Text('Criar notificação local'),
-                    onPressed: handleLocalNotification,
+                    child: const Text('Receber Notification'),
                   ),
                 ],
               ),
