@@ -5,14 +5,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'app.dart';
-import 'constants.dart';
 
 Future<DitoSDK> _setupDito() async {
+  final String ditoApiKey = String.fromEnvironment('API_KEY');
+  final String ditoSecretKey = String.fromEnvironment('SECRET_KEY');
+
   DitoSDK dito = DitoSDK();
-  dito.initialize(
-    apiKey: Constants.ditoApiKey,
-    secretKey: Constants.ditoSecretKey,
-  );
+  dito.initialize(apiKey: ditoApiKey, secretKey: ditoSecretKey);
   await dito.initializePushNotificationService();
 
   dito.notificationService().onClick = (String link) {
