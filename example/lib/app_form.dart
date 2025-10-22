@@ -1,5 +1,4 @@
 import 'package:dito_sdk/dito_sdk.dart';
-import 'package:dito_sdk/entity/custom_notification.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -15,19 +14,27 @@ class AppForm extends StatefulWidget {
 class AppFormState extends State<AppForm> {
   final _formKey = GlobalKey<FormState>();
 
+  final cpfController = TextEditingController(text: "33333333333");
+  final emailController = TextEditingController(text: "testepush@dito.com.br");
+
   @override
   Widget build(BuildContext context) {
     final dito = Provider.of<DitoSDK>(context);
 
-    String cpf = "66666666666";
-    String email = "testepush@dito.com.br";
+    @override
+    void dispose() {
+      // Clean up the controller when the widget is disposed.
+      cpfController.dispose();
+      emailController.dispose();
+      super.dispose();
+    }
 
     identify() async {
       dito.identify(
-        userID: cpf,
-        cpf: cpf,
-        name: 'Teste SDK Flutter',
-        email: email,
+        userID: cpfController.text,
+        cpf: cpfController.text,
+        name: emailController.text,
+        email: emailController.text,
       );
       await dito.identifyUser();
 
@@ -59,72 +66,50 @@ class AppFormState extends State<AppForm> {
       }
     }
 
-    handleLocalNotification() {
-      dito.notificationService().addNotificationToStream(
-        CustomNotification(
-          id: 123,
-          title: "Notificação local",
-          body:
-              "Está é uma mensagem de teste, validando o stream de dados das notificações locais",
-        ),
-      );
-
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Push enviado para a fila')));
-    }
-
     return Form(
       key: _formKey,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          TextFormField(
-            onSaved: (value) {
-              cpf = value!;
-            },
-            initialValue: cpf,
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Please enter some text';
-              }
-              return null;
-            },
-          ),
-          TextFormField(
-            onSaved: (value) {
-              email = value!;
-            },
-            initialValue: email,
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Please enter some text';
-              }
-              return null;
-            },
-          ),
-          Center(
-            child: Padding(
-              padding: const EdgeInsets.all(15.0),
-              child: Column(
-                children: [
-                  FilledButton(
-                    child: const Text('Registrar Identify'),
-                    onPressed: handleIdentify,
-                  ),
-                  OutlinedButton(
-                    child: const Text('Receber Notification'),
-                    onPressed: handleNotification,
-                  ),
-                  TextButton(
-                    child: const Text('Criar notificação local'),
-                    onPressed: handleLocalNotification,
-                  ),
-                ],
+      child: Padding(
+        padding: const EdgeInsets.all(15.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            TextFormField(
+              controller: cpfController,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter some text';
+                }
+                return null;
+              },
+            ),
+            TextFormField(
+              controller: emailController,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter some text';
+                }
+                return null;
+              },
+            ),
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.all(15.0),
+                child: Column(
+                  children: [
+                    FilledButton(
+                      onPressed: handleIdentify,
+                      child: const Text('Registrar Identify'),
+                    ),
+                    OutlinedButton(
+                      onPressed: handleNotification,
+                      child: const Text('Receber Notification'),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

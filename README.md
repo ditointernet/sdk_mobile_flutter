@@ -1,325 +1,241 @@
-# Dito SDK (Flutter)
 
-DitoSDK é uma biblioteca Dart que fornece métodos para integrar aplicativos com a plataforma da Dito. Ela permite identificar usuários, registrar eventos e enviar dados personalizados.
+# 📦 Dito SDK (Flutter)
 
-## Instalação
+`dito_sdk` é uma biblioteca Flutter que facilita a integração com a plataforma Dito, permitindo a identificação de usuários, o envio de eventos personalizados e a integração com notificações push.
 
-Para instalar a biblioteca DitoSDK em seu aplicativo Flutter, você deve seguir as instruções fornecidas [nesse link](https://pub.dev/packages/dito_sdk/install).
+[![pub package](https://img.shields.io/pub/v/dito_sdk.svg)](https://pub.dev/packages/dito_sdk)
 
-## Métodos
+## ✨ Recursos
 
-### initialize()
+- 📌 Identificação de usuários
+- 📊 Envio e rastreamento de eventos personalizados
+- 📱 Integração com notificações push (via Firebase Cloud Messaging)
+- 💾 Armazenamento local de eventos para usuários não identificados
+- 🔗 Suporte a deep linking via notificações
 
-Este método deve ser chamado antes de qualquer outra operação com o SDK. Ele inicializa as chaves de API e SECRET necessárias para a autenticação na plataforma Dito.
+---
 
-```dart
-void initialize({required String apiKey, required String secretKey});
+## 🚀 Começando
+
+### ✅ Pré-requisitos
+
+- **Dart SDK**: `>=2.12.0 <3.0.0` *(ajuste conforme a versão utilizada)*
+- **Flutter SDK**: `>=1.20.0`
+- **Conta na Dito**: Você precisará de uma conta ativa e credenciais da plataforma Dito (API Key e Secret).
+
+### 📦 Instalação
+
+Adicione o pacote no seu projeto Flutter:
+
+```bash
+flutter pub add dito_sdk
 ```
 
-#### Parâmetros
+### ⚙️ Inicialização
 
-- **apiKey** _(String, obrigatório)_: A chave de API da plataforma Dito.
-- **secretKey** _(String, obrigatório)_: O segredo da chave de API da plataforma Dito.
-
-### initializePushNotificationService()
-
-Este método deve ser chamado após a inicialização da SDK. Ele inicializa as configurações e serviços necessários para o funcionamento de push notifications da plataforma Dito.
-
-```dart
-void initializePushNotificationService();
-```
-
-#### Parâmetros
-
-- **apiKey** _(String, obrigatório)_: A chave de API da plataforma Dito.
-- **secretKey** _(String, obrigatório)_: O segredo da chave de API da plataforma Dito.
-
-### identify()
-
-Este método define o ID do usuário que será usado para todas as operações subsequentes.
-
-```dart
-void identify(String userId);
-```
-
-- **userID** _(String, obrigatório)_: Id para identificar o usuário na plataforma da Dito.
-- **name** _(String)_: Parâmetro para identificar o usuário na plataforma da Dito.
-- **email** _(String)_: Parâmetro para identificar o usuário na plataforma da Dito.
-- **gender** _(String)_: Parâmetro para identificar o usuário na plataforma da Dito.
-- **birthday** _(String)_: Parâmetro para identificar o usuário na plataforma da Dito.
-- **location** _(String)_: Parâmetro para identificar o usuário na plataforma da Dito.
-- **customData** _(Map<String, dynamic>)_: Parâmetro para identificar o usuário na plataforma da Dito.
-
-
-#### identifyUser()
-
-Este método registra o usuário na plataforma da Dito com as informações fornecidas anteriormente usando o método `identify()`.
-
-```dart
-Future<http.Response> identifyUser() async;
-```
-
-#### Exception
-
-- Caso a SDK ainda não tenha `userId` cadastrado quando esse método for chamado, irá ocorrer um erro no aplicativo. (utilize o método `setUserId()` para definir o `userId`)
-
-### trackEvent()
-
-O método `trackEvent()` tem a finalidade de registrar um evento na plataforma da Dito. Caso o userID já tenha sido registrado, o evento será enviado imediatamente. No entanto, caso o userID ainda não tenha sido registrado, o evento será armazenado localmente e posteriormente enviado quando o userID for registrado por meio do método `setUserId()`.
-
-```dart
-Future<void> trackEvent({
-  required String eventName,
-  double? revenue,
-  Map<String, String>? customData,
-}) async;
-```
-
-#### Parâmetros
-
-- **eventName** _(String, obrigatório)_: O nome do evento a ser registrado.
-- **revenue** _(double, opcional)_: A receita associada ao evento.
-- **customData** _(Map<String, String>, opcional)_: Dados personalizados adicionais associados ao evento.
-
-### registryMobileToken()
-
-Este método permite registrar um token mobile para o usuário.
-
-```dart
-Future<http.Response> registryMobileToken({
-  required String token,
-  String? platform,
-});
-```
-
-#### Parâmetros
-
-- **token** _(String, obrigatório)_: O token mobile que será registrado.
-- **platform** _(String, opcional)_: Nome da plataforma que o usuário está acessando o aplicativo. Valores válidos: 'iPhone' e 'Android'.
-  `<br>`_Caso não seja passado algum valor nessa prop, a sdk irá pegar por default o valor pelo `platform`._
-
-#### Exception
-
-- Caso seja passado um valor diferente de 'iPhone' ou 'Android' na propriedade platform, irá ocorrer um erro no aplicativo.
-- Caso a SDK ainda não tenha `identify` cadastrado quando esse método for chamado, irá ocorrer um erro no aplicativo. (utilize o método `identify()` para definir o id do usuário)
-
-### removeMobileToken()
-
-Este método permite remover um token mobile para o usuário.
-
-```dart
-Future<http.Response> removeMobileToken({
-  required String token,
-  String? platform,
-});
-```
-
-#### Parâmetros
-
-- **token** _(String, obrigatório)_: O token mobile que será removido.
-- **platform** _(String, opcional)_: Nome da plataforma que o usuário está acessando o aplicativo. Valores válidos: 'iPhone' e 'Android'.
-  `<br>`_Caso não seja passado algum valor nessa prop, a sdk irá pegar por default o valor pelo `platform`._
-
-#### Exception
-
-- Caso seja passado um valor diferente de 'iPhone' ou 'Android' na propriedade platform, irá ocorrer um erro no aplicativo.
-- Caso a SDK ainda não tenha `identify` cadastrado quando esse método for chamado, irá ocorrer um erro no aplicativo. (utilize o método `identify()` para definir o id do usuário)
-
-### openNotification()
-
-Este método permite registrar a abertura de uma notificação mobile.
-
-```dart
-Future<http.Response> openNotification({
-  required String notificationId,
-  required String identifier,
-  required String reference
-}) async
-```
-
-#### Parâmetros
-
-- **notificationId** _(String, obrigatório)_: Id da notificação da Dito recebida pelo aplicativo.
-- **identifier** _(String, obrigatório)_: Parâmetro para dentificar a notificação na plataforma da Dito.
-- **reference** _(String, obrigatório)_: Parâmetro para identificar o usuário na plataforma da Dito.
-
-###### Observações
-
-- Esses parâmetros estarão presentes no data da notificação
-
-## Classes
-
-### User
-
-Classe para manipulação dos dados do usuário.
-
-```dart
-User user = User( sha1("joao@example.com"), 'João da Silva', 'joao@example.com', 'São Paulo');
-```
-
-#### Parâmetros
-
-- **userID** _(String, obrigatório)_: Id para identificar o usuário na plataforma da Dito.
-- **name** _(String)_: Parâmetro para identificar o usuário na plataforma da Dito.
-- **email** _(String)_: Parâmetro para identificar o usuário na plataforma da Dito.
-- **gender** _(String)_: Parâmetro para identificar o usuário na plataforma da Dito.
-- **birthday** _(String)_: Parâmetro para identificar o usuário na plataforma da Dito.
-- **location** _(String)_: Parâmetro para identificar o usuário na plataforma da Dito.
-- **customData** _(Map<String, dynamic>)_: Parâmetro para identificar o usuário na plataforma da Dito.
-
-## Exemplos
-
-### Uso básico da SDK:
+Importe o pacote e inicialize o SDK com suas credenciais:
 
 ```dart
 import 'package:dito_sdk/dito_sdk.dart';
+void main() async { 
+// Certifique-se de inicializar o binding do Flutter se estiver usando em um app Flutter
+WidgetsFlutterBinding. ensureInitialized();
+final String ditoApiKey = String.fromEnvironment('API_KEY');  
+final String ditoSecretKey = String.fromEnvironment('SECRET_KEY'); 
 
-final dito = DitoSDK();
-
-// Inicializa a SDK com suas chaves de API
-dito.initialize(apiKey: 'sua_api_key', secretKey: 'sua_secret_key');
-
-// Define ou atualiza informações do usuário na instância (neste momento, ainda não há comunicação com a Dito)
-dito.identify( sha1("joao@example.com"), 'João da Silva', 'joao@example.com', 'São Paulo');
-
-// Envia as informações do usuário (que foram definidas ou atualizadas pelo identify) para a Dito
-await dito.identifyUser();
-
-// Registra um evento na Dito
-await dito.trackEvent(eventName: 'login');
+DitoSDK dito = DitoSDK();  
+dito.initialize(apiKey: ditoApiKey, secretKey: ditoSecretKey);  
+await dito.initializePushNotificationService(); //está linha é necessário se for utilizar o serviço de push notification, aqui é feito o registro automático dos eventos de push;
 ```
 
-### Uso avançado da SDK:
+## 🛠️ Uso da SDK
 
-#### main.dart
-
-```dart
-import 'package:dito_sdk/dito_sdk.dart';
-
-final dito = DitoSDK();
-
-// Inicializa a SDK com suas chaves de API
-dito.initialize(apiKey: 'sua_api_key', secretKey: 'sua_secret_key');
-```
-
-#### login.dart
+### 👤 Identificando um usuário
 
 ```dart
-import 'package:dito_sdk/dito_sdk.dart';
-
-final dito = DitoSDK();
-
-// Define o ID do usuário
-dito.setUserId('id_do_usuario');
-dito.identify( sha1("joao@example.com"), 'João da Silva', 'joao@example.com', 'São Paulo');
+dito.identify(  
+  userID: 'id_do_usuario',  
+  cpf: 'cpf_do_usuario',  
+  name: 'nome_do_usuario',  
+  email: 'email_do_usuario',  
+);  
 await dito.identifyUser();
 ```
+📌 Enquanto o usuário não for identificado, os eventos serão armazenados localmente.
+___
 
-#### arquivoX.dart
-
+### 📈 Enviando eventos
 ```dart
-import 'package:dito_sdk/dito_sdk.dart';
-
-final dito = DitoSDK();
-
-// Define ou atualiza informações do usuário na instância (neste momento, ainda não há comunicação com a Dito)
-dito.identify( sha1("joao@example.com"), 'João da Silva', 'joao@example.com', 'São Paulo');
-await dito.identifyUser();
-await dito.registryMobileToken(token: token);
-
-```
-
-#### arquivoY.dart
-
-```dart
-import 'package:dito_sdk/dito_sdk.dart';
-
-final dito = DitoSDK();
-
-// Define ou atualiza informações do usuário na instância (neste momento, ainda não há comunicação com a Dito)
-dito.identify( sha1("joao@example.com"), 'João da Silva', 'joao@example.com', 'Rio de Janeiro',  {
-  'loja preferida': 'LojaX',
-  'canal preferido': 'Loja Física'
-});
-await dito.identifyUser();
-```
-
-Isso resultará no envio do seguinte payload do usuário ao chamar `identifyUser()`:
-
-```javascript
-{
-  name: 'João da Silva',
-  email: 'joao@example.com',
-  location: 'Rio de Janeiro',
-  customData: {
-    'loja preferida': 'LojaX',
-    'canal preferido': 'Loja Física'
-  }
-}
-```
-
-A nossa SDK é uma instância única, o que significa que, mesmo que ela seja inicializada em vários arquivos ou mais de uma vez, ela sempre referenciará as mesmas informações previamente armazenadas. Isso nos proporciona a flexibilidade de chamar o método `identify()` a qualquer momento para adicionar ou atualizar os detalhes do usuário, e somente quando necessário, enviá-los através do método `identifyUser()`.
-
-#### arquivoZ.dart
-
-```dart
-import 'package:dito_sdk/dito_sdk.dart';
-
-final dito = DitoSDK();
-
-// Registra um evento na Dito
-dito.trackEvent(
-  eventName: 'comprou produto',
-  revenue: 99.90,
-  customData: {
-    'produto': 'produtoX',
-    'sku_produto': '99999999',
-    'metodo_pagamento': 'Visa',
-  },
+await dito.trackEvent( 
+	eventName:  'comprou produto', 
+	customData:  { 
+		'produto':  'produtoX', 
+		'sku_produto':  '99999999', 
+	}, 
 );
 ```
+___
 
-### Uso da SDK com push notification:
 
-Para o funcionamento é necessário configurar a lib do Firebase Cloud Message (FCM), seguindo os seguintes passos:
+### 📲 Registrando o dispositivo
+```dart
+final token = await dito.notificationService().getDeviceFirebaseToken();
+await dito.registryMobileToken(token: token);
+```
+*Importante: o usuário precisa estar identificado antes do registro do token.*
+___
 
-```shell
+## 🔔 Integração com Push Notifications (FCM)
+
+### 1. Instale os pacotes Firebase:
+
+```dart
 dart pub global activate flutterfire_cli
 flutter pub add firebase_core firebase_messaging
-```
-
-```shell
 flutterfire configure
 ```
+Siga as instruções para configurar o Firebase para Android e iOS.
 
-Siga os passos que irá aparecer na CLI, assim terá as chaves de acesso do Firebase configuradas dentro dos App's Android e iOS.
+### 2. Exemplo de uso com notificação:
 
-#### main.dart
 ```dart
 import 'package:dito_sdk/dito_sdk.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
-// Método para registrar um serviço que irá receber os push quando o app estiver totalmente fechado
+Future<DitoSDK> _setupDito() async {
+  final String apiKey = String.fromEnvironment('API_KEY');
+  final String secretKey = String.fromEnvironment('SECRET_KEY');
+
+  DitoSDK dito = DitoSDK();
+  dito.initialize(apiKey: apiKey, secretKey: secretKey);
+  await dito.initializePushNotificationService();
+
+  dito.notificationService().onClick = (String link) {
+    deepLinkHandle(link); // sua lógica de navegação
+  };
+
+  return dito;
+}
+
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  final notification = DataPayload.fromJson(jsonDecode(message.data["data"]));
-
-  dito.notificationService().showLocalNotification(CustomNotification(
-      id: message.hashCode,
-      title: notification.details.title || "O nome do aplicativo",
-      body: notification.details.message,
-      payload: notification));
+  await _setupDito();
 }
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
   await Firebase.initializeApp();
+
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
-  DitoSDK dito = DitoSDK();
-  dito.initialize(apiKey: 'sua_api_key', secretKey: 'sua_secret_key');
-  await dito.initializePushService();
+  final dito = await _setupDito();
+  // continuação do app...
 }
 ```
 
-> Lembre-se de substituir 'sua_api_key', 'sua_secret_key' e 'id_do_usuario' pelos valores corretos em seu ambiente.
+___
+
+## 📚 API da SDK
+
+`initialize()`
+
+Inicializa a SDK com suas credenciais.
+
+```dart  
+void initialize({required String apiKey, required String secretKey});  
+```  
+ 
+--- 
+
+`initializePushNotificationService()`
+Ativa os serviços de notificação da Dito.
+```dart  
+Future<void> initializePushNotificationService();  
+```
+  
+---
+
+`identify()`  
+Configura os dados de identificação do usuário.
+```dart  
+void identify({
+  required String userID,
+  String? name,
+  String? email,
+  String? gender,
+  String? birthday,
+  String? location,
+  String? cpf,
+  Map<String, dynamic>? customData,
+});
+```
+
+---
+
+`identifyUser() `
+Registra o usuário na plataforma com base nas informações previamente definidas.
+```dart  
+Future<http.Response> identifyUser();  
+```  
+*:warning: Gera erro se `userID` não estiver definido.*
+
+---
+
+`trackEvent()`
+
+Registra um evento para o usuário.
+
+```dart  
+Future<void> trackEvent({
+  required String eventName,
+  double? revenue,
+  Map<String, String>? customData,
+});
+```  
+
+---
+
+`registryMobileToken() `
+Registra um token de push notification para o usuário.
+```dart  
+Future<http.Response> registryMobileToken({
+  required String token,
+  String? platform, // 'Android' ou 'Apple iPhone'
+});
+```  
+*:warning: Gera erro se o usuário não estiver identificado ou se a plataforma for inválida.*
+
+---
+
+`removeMobileToken()`
+Remove o token de notificação de um usuário.
+```dart  
+Future<http.Response> removeMobileToken({
+  required String token,
+  String? platform,
+});
+```  
+*:warning: Mesmas regras de exceção do `registryMobileToken()`.*
+
+___
+
+`openNotification() `
+Registra a abertura de uma notificação.
+```dart  
+Future<http.Response> openNotification({
+  required String notificationId,
+  required String identifier,
+  required String reference,
+});
+```  
+:bulb: *Obs: Esses parâmetros estarão presentes no data da notificação*
+ 
+---
+
+## 🧪 Contribuição
+
+Contribuições são bem-vindas! Sinta-se à vontade para abrir issues ou pull requests. Antes de contribuir, por favor leia o arquivo `CONTRIBUTING.md` se disponível.
+
+
+<center>Desenvolvido com 💙 pela equipe Dito.</center>
