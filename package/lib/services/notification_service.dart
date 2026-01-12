@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:ui';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -94,7 +95,9 @@ class NotificationService {
         eventName:
             "receive-${Platform.isIOS ? "ios" : "android"}-notification");
 
-    await _showLocalNotification(message);
+    if (message.notification?.body == null && message.data["message"] != null) {
+      await _showLocalNotification(message);
+    }
   }
 
   _setupAndroidChannel() async {
