@@ -6,18 +6,13 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 import '../dito_sdk.dart';
-import '../entity/custom_notification.dart';
 import '../entity/data_payload.dart';
 
 class NotificationService {
   bool _messagingAllowed = false;
   late DitoSDK _dito;
   late FlutterLocalNotificationsPlugin localNotificationsPlugin;
-  final StreamController<CustomNotification> didReceiveLocalNotificationStream =
-      StreamController<CustomNotification>.broadcast();
-  final StreamController<String?> selectNotificationStream =
-      StreamController<String?>.broadcast();
-  Function(Map<String, dynamic>)? _onTap;
+  Function(String)? onClick;
 
   AndroidNotificationDetails androidDetails = const AndroidNotificationDetails(
     'dito_notifications',
@@ -38,89 +33,81 @@ class NotificationService {
     _dito = dito;
   }
 
-  Future<void> initialize(Function(Map<String, dynamic>)? onTap) async {
-    if (onTap != null) {
-      _onTap = onTap;
-    }
-
+  Future<void> initialize() async {
     if (Platform.isAndroid) {
       await FirebaseMessaging.instance.setAutoInitEnabled(true);
     }
 
     localNotificationsPlugin = FlutterLocalNotificationsPlugin();
-    _setupNotifications();
 
     await FirebaseMessaging.instance
         .setForegroundNotificationPresentationOptions(
-            badge: true, sound: true, alert: true);
+            alert: true, badge: true, sound: true);
 
     await checkPermissions();
-    _onMessage();
+    await _initializeNotifications();
+    await _initializeMessages();
   }
 
   Future<String?> getDeviceFirebaseToken() async {
-    if (Platform.isIOS) {
-      return FirebaseMessaging.instance.getAPNSToken();
-    } else {
-      return FirebaseMessaging.instance.getToken();
+    return FirebaseMessaging.instance.getToken();
+  }
+
+  Future<void> _initializeMessages() async {
+    RemoteMessage? initialMessage =
+        await FirebaseMessaging.instance.getInitialMessage();
+
+    if (initialMessage != null) {
+      _handleMessage(initialMessage);
+    }
+
+    FirebaseMessaging.onMessageOpenedApp.listen(_handleOnNotificationClick);
+    FirebaseMessaging.onMessage.listen(_handleMessage);
+  }
+
+  void _handleOnNotificationClick(RemoteMessage message) async {
+    final data = DataPayload.fromJson(message.data);
+    await _handleClick(data);
+  }
+
+  Future<void> _handleClick(DataPayload data) async {
+    if (data.notification.isNotEmpty) {
+      await _dito.openNotification(
+          notificationId: data.notification,
+          identifier: data.user_id,
+          reference: data.reference);
+    }
+
+    if (onClick != null) {
+      onClick!(data.link);
     }
   }
 
-  _onMessage() {
-    FirebaseMessaging.onMessage.listen(handleMessage);
-    FirebaseMessaging.onMessageOpenedApp.listen(handleMessage);
-  }
-
-  void handleMessage(RemoteMessage message) {
-    if (message.data["data"] == null) {
-      print("Data is not defined: ${message.data}");
+  void _handleMessage(RemoteMessage message) async {
+    if (_dito.user.isNotValid) {
+      final dynamic reference = message.data["reference"];
+      if (reference is String && reference.isNotEmpty) {
+        _dito.identify(userID: reference);
+        await _dito.identifyUser();
+      }
     }
 
-    final notification = DataPayload.fromJson(jsonDecode(message.data["data"]));
+    final data = DataPayload.fromJson(message.data);
 
-    if (_messagingAllowed && notification.details.message.isNotEmpty) {
-      didReceiveLocalNotificationStream.add(CustomNotification(
-          id: message.hashCode,
-          title: notification.details.title,
-          body: notification.details.message,
-          payload: notification));
-    }
-  }
+    final token = await _dito.notificationService().getDeviceFirebaseToken();
 
-  addNotificationToStream(CustomNotification notification) {
-    didReceiveLocalNotificationStream.add(notification);
-  }
-
-  Future<void> checkPermissions() async {
-    var settings = await FirebaseMessaging.instance.getNotificationSettings();
-
-    if (settings.authorizationStatus != AuthorizationStatus.authorized) {
-      await FirebaseMessaging.instance.requestPermission();
-      settings = await FirebaseMessaging.instance.getNotificationSettings();
-      _messagingAllowed =
-          (settings.authorizationStatus == AuthorizationStatus.authorized);
-    } else {
-      _messagingAllowed = true;
-    }
-  }
-
-  _setupAndroidChannel() async {
-    const AndroidNotificationChannel channel = AndroidNotificationChannel(
-      'dito_notifications',
-      'Notifications sended by Dito',
-      importance: Importance.max,
-    );
-
-    await localNotificationsPlugin
-        .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
-        ?.createNotificationChannel(channel);
-  }
-
-  _setupNotifications() async {
-    await _initializeNotifications();
-    await _setupAndroidChannel();
-    _listenStream();
+    await _dito.trackEvent(
+        eventName:
+            "receive-${Platform.isIOS ? "ios" : "android"}-notification",
+        customData: {
+          "canal": "mobile",
+          "token": token ?? "",
+          "id-disparo": data.log_id,
+          "id-notificacao": data.notification,
+          "nome_notificacao": data.notification_name,
+          "provedor": "firebase",
+          "sistema_operacional": Platform.isIOS ? "Apple iPhone" : "Android",
+        });
   }
 
   _initializeNotifications() async {
@@ -131,30 +118,10 @@ class NotificationService {
         InitializationSettings(android: android, iOS: ios);
 
     await localNotificationsPlugin.initialize(initializationSettings,
-        onDidReceiveNotificationResponse: onTapNotification);
-  }
+        onDidReceiveNotificationResponse: (message) async {
+      final data = DataPayload.fromJson(jsonDecode(message.payload!));
 
-  void dispose() {
-    didReceiveLocalNotificationStream.close();
-    selectNotificationStream.close();
-  }
-
-  _listenStream() {
-    didReceiveLocalNotificationStream.stream
-        .listen((CustomNotification receivedNotification) {
-      showLocalNotification(receivedNotification);
-    });
-    selectNotificationStream.stream.listen((String? payload) async {
-      if (payload != null) {
-        final data = DataPayload.fromJson(jsonDecode(payload));
-
-        if (data.notification.isNotEmpty) {
-          await _dito.openNotification(
-              notificationId: data.notification,
-              identifier: data.identifier,
-              reference: data.reference);
-        }
-      }
+      await _handleClick(data);
     });
   }
 
@@ -166,21 +133,14 @@ class NotificationService {
     iosDetails = details;
   }
 
-  showLocalNotification(CustomNotification notification) {
-    localNotificationsPlugin.show(
-      notification.id,
-      notification.title,
-      notification.body,
-      NotificationDetails(android: androidDetails, iOS: iosDetails),
-      payload: jsonEncode(notification.payload?.toJson()),
-    );
-  }
+  Future<void> checkPermissions() async {
+    var settings = await FirebaseMessaging.instance.getNotificationSettings();
 
-  Future<void> onTapNotification(NotificationResponse? response) async {
-    if (response?.payload != null) {
-      selectNotificationStream.add(response?.payload);
-
-      _onTap!(jsonDecode(response!.payload!)["details"]);
+    if (settings.authorizationStatus != AuthorizationStatus.authorized) {
+      final newSettings =
+          await FirebaseMessaging.instance.requestPermission();
+      _messagingAllowed =
+          (newSettings.authorizationStatus == AuthorizationStatus.authorized);
     }
   }
 }

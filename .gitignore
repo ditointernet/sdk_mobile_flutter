@@ -30,3 +30,4 @@ example/build/
 package/build/
 .flutter-plugins*
 package/test/.env-test.json
+build/

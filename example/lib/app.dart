@@ -25,19 +25,13 @@ class _AppState extends State<App> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-        debugShowCheckedModeBanner: false,
-        title: 'Notification Demo',
-        theme: ThemeData(
-          primarySwatch: Colors.amber,
-          useMaterial3: true,
-        ),
-        home: Scaffold(
-            appBar: AppBar(
-              title: const Text('Test SDK Flutter'),
-            ),
-            body: const Center(
-              child: AppForm(),
-            ))
+      debugShowCheckedModeBanner: false,
+      title: 'Notification Demo',
+      theme: ThemeData(primarySwatch: Colors.amber, useMaterial3: true),
+      home: Scaffold(
+        appBar: AppBar(title: const Text('Test SDK Flutter')),
+        body: const Center(child: AppForm()),
+      ),
     );
   }
 }

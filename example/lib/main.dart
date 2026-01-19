@@ -1,38 +1,29 @@
-import 'dart:convert';
-
 import 'package:dito_sdk/dito_sdk.dart';
-import 'package:dito_sdk/entity/custom_notification.dart';
-import 'package:dito_sdk/entity/data_payload.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'app.dart';
-import 'constants.dart';
+
+Future<DitoSDK> _setupDito() async {
+  final String ditoApiKey = String.fromEnvironment('API_KEY');
+  final String ditoSecretKey = String.fromEnvironment('SECRET_KEY');
+
+  DitoSDK dito = DitoSDK();
+  dito.initialize(apiKey: ditoApiKey, secretKey: ditoSecretKey);
+  await dito.initializePushNotificationService();
+
+  dito.notificationService().onClick = (String link) {
+    print(link);
+  };
+
+  return dito;
+}
 
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  DitoSDK dito = DitoSDK();
-  dito.initialize(
-    apiKey: Constants.ditoApiKey,
-    secretKey: Constants.ditoSecretKey,
-  );
-
-  await dito.initializePushNotificationService((Map<String, dynamic> payload) {
-    print(payload);
-  });
-
-  final notification = DataPayload.fromJson(jsonDecode(message.data["data"]));
-
-  dito.notificationService().showLocalNotification(
-    CustomNotification(
-      id: message.hashCode,
-      title: notification.details.title,
-      body: notification.details.message,
-      payload: notification,
-    ),
-  );
+  await _setupDito();
 }
 
 void main() async {
@@ -41,15 +32,7 @@ void main() async {
   await Firebase.initializeApp();
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
-  DitoSDK dito = DitoSDK();
-  dito.initialize(
-    apiKey: Constants.ditoApiKey,
-    secretKey: Constants.ditoSecretKey,
-  );
-
-  await dito.initializePushNotificationService((Map<String, dynamic> payload) {
-    print(payload);
-  });
+  final dito = await _setupDito();
 
   runApp(
     MultiProvider(
