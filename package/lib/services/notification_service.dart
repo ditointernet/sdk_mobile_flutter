@@ -85,8 +85,11 @@ class NotificationService {
 
   void _handleMessage(RemoteMessage message) async {
     if (_dito.user.isNotValid) {
-      _dito.identify(userID: message.data["reference"]);
-      await _dito.identifyUser();
+      final dynamic reference = message.data["reference"];
+      if (reference is String && reference.isNotEmpty) {
+        _dito.identify(userID: reference);
+        await _dito.identifyUser();
+      }
     }
 
     final data = DataPayload.fromJson(message.data);
