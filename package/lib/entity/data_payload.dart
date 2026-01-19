@@ -1,6 +1,7 @@
 class DataPayload {
   final String reference;
   final String user_id;
+  final String identifier;
   final String notification;
   final String log_id;
   final String notification_name;
@@ -14,6 +15,7 @@ class DataPayload {
   DataPayload(
       this.reference,
       this.user_id,
+      this.identifier,
       this.notification,
       this.log_id,
       this.notification_name,
@@ -30,6 +32,7 @@ class DataPayload {
     return DataPayload(
         json["reference"] ?? "",
         json["user_id"] ?? "",
+        json["identifier"] ?? "",
         json["notification"] ?? "",
         json["log_id"] ?? "",
         json["notification_name"] ?? "",
@@ -44,6 +47,7 @@ class DataPayload {
   Map<String, dynamic> toJson() => {
         'reference': reference,
         'user_id': user_id,
+        'identifier': identifier,
         'notification': notification,
         'log_id': log_id,
         'notification_name': notification_name,
