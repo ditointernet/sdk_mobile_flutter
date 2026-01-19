@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:ui';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -47,7 +46,6 @@ class NotificationService {
 
     await checkPermissions();
     await _initializeNotifications();
-    await _setupAndroidChannel();
     await _initializeMessages();
   }
 
@@ -91,29 +89,23 @@ class NotificationService {
       await _dito.identifyUser();
     }
 
+    final data = DataPayload.fromJson(message.data);
+
+    final token = await _dito.notificationService().getDeviceFirebaseToken();
+
     await _dito.trackEvent(
         eventName:
-            "receive-${Platform.isIOS ? "ios" : "android"}-notification");
-
-    if (message.notification?.body == null && message.data["message"] != null) {
-      await _showLocalNotification(message);
-    }
+            "receive-${Platform.isIOS ? "ios" : "android"}-notification",
+        customData: {
+          "canal": "mobile",
+          "token": token ?? "",
+          "id-disparo": data.log_id,
+          "id-notificacao": data.notification,
+          "nome_notificacao": data.notification_name,
+          "provedor": "firebase",
+          "sistema_operacional": Platform.isIOS ? "Apple iPhone" : "Android",
+        });
   }
-
-  _setupAndroidChannel() async {
-    const AndroidNotificationChannel channel = AndroidNotificationChannel(
-      'dito_notifications',
-      'Notifications sended by Dito',
-      importance: Importance.max,
-    );
-
-    await localNotificationsPlugin
-        .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
-        ?.createNotificationChannel(channel);
-  }
-
-  _setupNotifications() async {}
 
   _initializeNotifications() async {
     const android = AndroidInitializationSettings('@mipmap/ic_launcher');
@@ -136,16 +128,6 @@ class NotificationService {
 
   setIosDetails(DarwinNotificationDetails details) {
     iosDetails = details;
-  }
-
-  _showLocalNotification(RemoteMessage message) async {
-    await localNotificationsPlugin.show(
-      message.hashCode % 2147483647,
-      message.notification?.title ?? "",
-      message.notification?.body ?? "",
-      NotificationDetails(android: androidDetails, iOS: iosDetails),
-      payload: jsonEncode(message.data),
-    );
   }
 
   Future<void> checkPermissions() async {
