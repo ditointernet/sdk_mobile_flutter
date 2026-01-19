@@ -137,9 +137,10 @@ class NotificationService {
     var settings = await FirebaseMessaging.instance.getNotificationSettings();
 
     if (settings.authorizationStatus != AuthorizationStatus.authorized) {
-      await FirebaseMessaging.instance.requestPermission();
+      final newSettings =
+          await FirebaseMessaging.instance.requestPermission();
       _messagingAllowed =
-          (settings.authorizationStatus == AuthorizationStatus.authorized);
+          (newSettings.authorizationStatus == AuthorizationStatus.authorized);
     }
   }
 }
