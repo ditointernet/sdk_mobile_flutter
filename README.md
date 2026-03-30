@@ -1,4 +1,5 @@
-# Dito SDK (Flutter)
+# Dito SDK (Flutter) - Deprecado
+Módulo atual - [https://github.com/ditointernet/sdk-mobile](https://github.com/ditointernet/sdk-mobile)
 
 DitoSDK é uma biblioteca Dart que fornece métodos para integrar aplicativos com a plataforma da Dito. Ela permite identificar usuários, registrar eventos e enviar dados personalizados.
 
